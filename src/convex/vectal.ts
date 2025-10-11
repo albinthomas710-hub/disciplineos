@@ -37,11 +37,11 @@ export const initializeTodayTasks = mutation({
     if (existing) return existing._id;
 
     const defaultTasks = [
-      { id: "1", title: "Morning Routine", completed: false, importance: 90, isRecurring: true },
-      { id: "2", title: "Focus Work Block", completed: false, importance: 100, isRecurring: true },
-      { id: "3", title: "Exercise/Movement", completed: false, importance: 80, isRecurring: true },
-      { id: "4", title: "Learning Session", completed: false, importance: 95, isRecurring: true },
-      { id: "5", title: "Evening Reflection", completed: false, importance: 85, isRecurring: true },
+      { id: "1", title: "Morning Routine", completed: false, importance: 90, isRecurring: true, recurringPattern: "every day" },
+      { id: "2", title: "Focus Work Block", completed: false, importance: 100, isRecurring: true, recurringPattern: "every day" },
+      { id: "3", title: "Exercise/Movement", completed: false, importance: 80, isRecurring: true, recurringPattern: "every day" },
+      { id: "4", title: "Learning Session", completed: false, importance: 95, isRecurring: true, recurringPattern: "every day" },
+      { id: "5", title: "Evening Reflection", completed: false, importance: 85, isRecurring: true, recurringPattern: "every day" },
     ];
 
     return await ctx.db.insert("vectal", {
@@ -94,6 +94,7 @@ export const addTask = mutation({
     title: v.string(),
     importance: v.optional(v.number()),
     isRecurring: v.optional(v.boolean()),
+    recurringPattern: v.optional(v.string()),
     dueDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -115,6 +116,7 @@ export const addTask = mutation({
       completed: false,
       importance: args.importance ?? 50,
       isRecurring: args.isRecurring ?? true,
+      recurringPattern: args.recurringPattern ?? "every day",
       dueDate: args.dueDate,
     };
 

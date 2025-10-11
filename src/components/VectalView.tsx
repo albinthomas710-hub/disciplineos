@@ -22,6 +22,7 @@ export default function VectalView() {
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskImportance, setNewTaskImportance] = useState(50);
   const [newTaskIsRecurring, setNewTaskIsRecurring] = useState(true);
+  const [newTaskRecurringPattern, setNewTaskRecurringPattern] = useState("every day");
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
@@ -54,11 +55,13 @@ export default function VectalView() {
         title: newTaskTitle,
         importance: newTaskImportance,
         isRecurring: newTaskIsRecurring,
+        recurringPattern: newTaskIsRecurring ? newTaskRecurringPattern : undefined,
         dueDate: newTaskIsRecurring ? undefined : newTaskDueDate || undefined,
       });
       setNewTaskTitle("");
       setNewTaskImportance(50);
       setNewTaskIsRecurring(true);
+      setNewTaskRecurringPattern("every day");
       setNewTaskDueDate("");
       setIsAdding(false);
       toast.success("Task added!");
@@ -213,7 +216,7 @@ export default function VectalView() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between">
+              <div className="space-y-3">
                 <div className="flex items-center gap-2">
                   <Switch
                     checked={newTaskIsRecurring}
@@ -223,7 +226,7 @@ export default function VectalView() {
                     {newTaskIsRecurring ? (
                       <>
                         <Repeat className="h-4 w-4" />
-                        Recurring (Every day)
+                        Recurring
                       </>
                     ) : (
                       <>
@@ -233,6 +236,21 @@ export default function VectalView() {
                     )}
                   </Label>
                 </div>
+
+                {newTaskIsRecurring && (
+                  <div>
+                    <Label>Recurring Pattern</Label>
+                    <Input
+                      placeholder="e.g., every day, every Monday, every month"
+                      value={newTaskRecurringPattern}
+                      onChange={(e) => setNewTaskRecurringPattern(e.target.value)}
+                      className="mt-1"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Examples: every day, every Monday, every month, every week
+                    </p>
+                  </div>
+                )}
               </div>
 
               {!newTaskIsRecurring && (
@@ -256,6 +274,7 @@ export default function VectalView() {
                     setNewTaskTitle("");
                     setNewTaskImportance(50);
                     setNewTaskIsRecurring(true);
+                    setNewTaskRecurringPattern("every day");
                     setNewTaskDueDate("");
                   }}
                   className="cursor-pointer"
@@ -305,7 +324,7 @@ export default function VectalView() {
                     {task.isRecurring ? (
                       <span className="flex items-center gap-1">
                         <Repeat className="h-3 w-3" />
-                        Every day
+                        {task.recurringPattern || "Every day"}
                       </span>
                     ) : (
                       <span className="flex items-center gap-1">
