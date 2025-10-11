@@ -187,6 +187,9 @@ const schema = defineSchema(
           id: v.string(),
           title: v.string(),
           completed: v.boolean(),
+          importance: v.number(), // 0-100 score
+          isRecurring: v.boolean(), // true for daily recurring, false for date-specific
+          dueDate: v.optional(v.string()), // for date-specific tasks
         })
       ),
       allCompleted: v.boolean(),

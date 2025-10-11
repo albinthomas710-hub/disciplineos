@@ -37,11 +37,11 @@ export const initializeTodayTasks = mutation({
     if (existing) return existing._id;
 
     const defaultTasks = [
-      { id: "1", title: "Morning Routine", completed: false },
-      { id: "2", title: "Focus Work Block", completed: false },
-      { id: "3", title: "Exercise/Movement", completed: false },
-      { id: "4", title: "Learning Session", completed: false },
-      { id: "5", title: "Evening Reflection", completed: false },
+      { id: "1", title: "Morning Routine", completed: false, importance: 90, isRecurring: true },
+      { id: "2", title: "Focus Work Block", completed: false, importance: 100, isRecurring: true },
+      { id: "3", title: "Exercise/Movement", completed: false, importance: 80, isRecurring: true },
+      { id: "4", title: "Learning Session", completed: false, importance: 95, isRecurring: true },
+      { id: "5", title: "Evening Reflection", completed: false, importance: 85, isRecurring: true },
     ];
 
     return await ctx.db.insert("vectal", {
@@ -92,6 +92,9 @@ export const toggleTask = mutation({
 export const addTask = mutation({
   args: {
     title: v.string(),
+    importance: v.optional(v.number()),
+    isRecurring: v.optional(v.boolean()),
+    dueDate: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -110,6 +113,9 @@ export const addTask = mutation({
       id: crypto.randomUUID(),
       title: args.title,
       completed: false,
+      importance: args.importance ?? 50,
+      isRecurring: args.isRecurring ?? true,
+      dueDate: args.dueDate,
     };
 
     const updatedTasks = [...vectalRecord.tasks, newTask];

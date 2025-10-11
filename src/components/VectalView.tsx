@@ -5,7 +5,10 @@ import { Progress } from "@/components/ui/progress";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Circle, Loader2, Plus, Trash2, Target } from "lucide-react";
+import { CheckCircle2, Circle, Loader2, Plus, Trash2, Target, Calendar as CalendarIcon, Repeat } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -17,6 +20,9 @@ export default function VectalView() {
   const deleteTask = useMutation(api.vectal.deleteTask);
   
   const [newTaskTitle, setNewTaskTitle] = useState("");
+  const [newTaskImportance, setNewTaskImportance] = useState(50);
+  const [newTaskIsRecurring, setNewTaskIsRecurring] = useState(true);
+  const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [isAdding, setIsAdding] = useState(false);
 
   // Initialize tasks if they don't exist
@@ -44,13 +50,46 @@ export default function VectalView() {
     }
 
     try {
-      await addTask({ title: newTaskTitle });
+      await addTask({ 
+        title: newTaskTitle,
+        importance: newTaskImportance,
+        isRecurring: newTaskIsRecurring,
+        dueDate: newTaskIsRecurring ? undefined : newTaskDueDate || undefined,
+      });
       setNewTaskTitle("");
+      setNewTaskImportance(50);
+      setNewTaskIsRecurring(true);
+      setNewTaskDueDate("");
       setIsAdding(false);
       toast.success("Task added!");
     } catch (error) {
       toast.error("Failed to add task");
     }
+  };
+
+  const getPriorityColor = (importance: number) => {
+    if (importance >= 80) return "red"; // P1 - High
+    if (importance >= 50) return "yellow"; // P2 - Medium
+    return "green"; // P3 - Low
+  };
+
+  const getPriorityLabel = (importance: number) => {
+    if (importance >= 80) return "P1";
+    if (importance >= 50) return "P2";
+    return "P3";
+  };
+
+  const getPriorityBgClass = (importance: number, completed: boolean) => {
+    if (completed) return "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800";
+    if (importance >= 80) return "bg-red-50 dark:bg-red-950 border-red-200 dark:border-red-800";
+    if (importance >= 50) return "bg-yellow-50 dark:bg-yellow-950 border-yellow-200 dark:border-yellow-800";
+    return "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800";
+  };
+
+  const getPriorityIconColor = (importance: number) => {
+    if (importance >= 80) return "text-red-600 dark:text-red-400";
+    if (importance >= 50) return "text-yellow-600 dark:text-yellow-400";
+    return "text-green-600 dark:text-green-400";
   };
 
   const handleDeleteTask = async (taskId: string) => {
@@ -144,25 +183,86 @@ export default function VectalView() {
             <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
-              className="flex gap-2"
+              className="space-y-4 p-4 border-2 border-cyan-200 dark:border-cyan-800 rounded-lg bg-cyan-50/50 dark:bg-cyan-950/50"
             >
-              <Input
-                placeholder="Enter task title..."
-                value={newTaskTitle}
-                onChange={(e) => setNewTaskTitle(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
-              />
-              <Button onClick={handleAddTask} className="cursor-pointer">Add</Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsAdding(false);
-                  setNewTaskTitle("");
-                }}
-                className="cursor-pointer"
-              >
-                Cancel
-              </Button>
+              <div>
+                <Label>Task Title</Label>
+                <Input
+                  placeholder="Enter task title..."
+                  value={newTaskTitle}
+                  onChange={(e) => setNewTaskTitle(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
+                  className="mt-1"
+                />
+              </div>
+
+              <div>
+                <Label>Importance: {newTaskImportance} ({getPriorityLabel(newTaskImportance)})</Label>
+                <Slider
+                  value={[newTaskImportance]}
+                  onValueChange={(value) => setNewTaskImportance(value[0])}
+                  min={0}
+                  max={100}
+                  step={5}
+                  className="mt-2"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>Low (P3)</span>
+                  <span>Medium (P2)</span>
+                  <span>High (P1)</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={newTaskIsRecurring}
+                    onCheckedChange={setNewTaskIsRecurring}
+                  />
+                  <Label className="flex items-center gap-2">
+                    {newTaskIsRecurring ? (
+                      <>
+                        <Repeat className="h-4 w-4" />
+                        Recurring (Every day)
+                      </>
+                    ) : (
+                      <>
+                        <CalendarIcon className="h-4 w-4" />
+                        Date-specific
+                      </>
+                    )}
+                  </Label>
+                </div>
+              </div>
+
+              {!newTaskIsRecurring && (
+                <div>
+                  <Label>Due Date</Label>
+                  <Input
+                    type="date"
+                    value={newTaskDueDate}
+                    onChange={(e) => setNewTaskDueDate(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button onClick={handleAddTask} className="cursor-pointer flex-1">Add Task</Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsAdding(false);
+                    setNewTaskTitle("");
+                    setNewTaskImportance(50);
+                    setNewTaskIsRecurring(true);
+                    setNewTaskDueDate("");
+                  }}
+                  className="cursor-pointer"
+                >
+                  Cancel
+                </Button>
+              </div>
             </motion.div>
           )}
 
@@ -173,28 +273,50 @@ export default function VectalView() {
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: index * 0.05 }}
-              className={`flex items-center gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                task.completed
-                  ? "bg-green-50 dark:bg-green-950 border-green-200 dark:border-green-800"
-                  : "hover:bg-gray-50 dark:hover:bg-gray-900 border-gray-200 dark:border-gray-800"
-              }`}
+              className={`flex items-center gap-3 p-4 rounded-lg border-2 transition-all ${getPriorityBgClass(task.importance, task.completed)}`}
             >
               <div
                 onClick={() => handleToggleTask(task.id)}
-                className="flex items-center gap-3 flex-1"
+                className="flex items-center gap-3 flex-1 cursor-pointer"
               >
                 {task.completed ? (
                   <CheckCircle2 className="h-6 w-6 text-green-600 dark:text-green-400 shrink-0" />
                 ) : (
-                  <Circle className="h-6 w-6 text-gray-400 shrink-0" />
+                  <Circle className={`h-6 w-6 shrink-0 ${getPriorityIconColor(task.importance)}`} />
                 )}
-                <span
-                  className={`font-medium ${
-                    task.completed ? "line-through text-muted-foreground" : ""
-                  }`}
-                >
-                  {task.title}
-                </span>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`font-medium ${
+                        task.completed ? "line-through text-muted-foreground" : ""
+                      }`}
+                    >
+                      {task.title}
+                    </span>
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                      task.importance >= 80 ? "bg-red-200 dark:bg-red-900 text-red-800 dark:text-red-200" :
+                      task.importance >= 50 ? "bg-yellow-200 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200" :
+                      "bg-green-200 dark:bg-green-900 text-green-800 dark:text-green-200"
+                    }`}>
+                      {getPriorityLabel(task.importance)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground">
+                    {task.isRecurring ? (
+                      <span className="flex items-center gap-1">
+                        <Repeat className="h-3 w-3" />
+                        Every day
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <CalendarIcon className="h-3 w-3" />
+                        {task.dueDate || "No due date"}
+                      </span>
+                    )}
+                    <span>•</span>
+                    <span>Importance: {task.importance}</span>
+                  </div>
+                </div>
               </div>
               <Button
                 size="sm"
