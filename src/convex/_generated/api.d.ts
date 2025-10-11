@@ -15,7 +15,12 @@ import type {
 } from "convex/server";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as auth from "../auth.js";
+import type * as completionLogs from "../completionLogs.js";
 import type * as http from "../http.js";
+import type * as reflections from "../reflections.js";
+import type * as seedData from "../seedData.js";
+import type * as timeBlocks from "../timeBlocks.js";
+import type * as timetables from "../timetables.js";
 import type * as users from "../users.js";
 
 /**
@@ -29,7 +34,12 @@ import type * as users from "../users.js";
 declare const fullApi: ApiFromModules<{
   "auth/emailOtp": typeof auth_emailOtp;
   auth: typeof auth;
+  completionLogs: typeof completionLogs;
   http: typeof http;
+  reflections: typeof reflections;
+  seedData: typeof seedData;
+  timeBlocks: typeof timeBlocks;
+  timetables: typeof timetables;
   users: typeof users;
 }>;
 export declare const api: FilterApi<
