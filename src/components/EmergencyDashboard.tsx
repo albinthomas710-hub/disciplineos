@@ -110,45 +110,8 @@ export default function EmergencyDashboard({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Support Strategies Grid */}
-        <div className="grid md:grid-cols-2 gap-4 my-6">
-          {temptationStrategies.map((strategy, i) => (
-            <motion.div
-              key={i}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <Card className="bg-gray-800/50 border-gray-700 hover:border-cyan-500/50 transition-all cursor-pointer group">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                      <strategy.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-white mb-2">
-                        {strategy.title}
-                      </h4>
-                      <p className="text-sm text-gray-400 mb-3">
-                        {strategy.description}
-                      </p>
-                      <Button
-                        size="sm"
-                        onClick={() => handleStrategyClick(strategy.action)}
-                        className="bg-cyan-600 hover:bg-cyan-700 text-white cursor-pointer"
-                      >
-                        {strategy.action}
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Your Specific Triggers */}
-        <div className="mt-8">
+        {/* Your Specific Triggers - MOVED TO TOP */}
+        <div className="my-6">
           <h3 className="text-xl font-bold mb-4 text-center">
             Your Temptation Triggers
           </h3>
@@ -199,6 +162,43 @@ export default function EmergencyDashboard({
               </motion.div>
             ))}
           </div>
+        </div>
+
+        {/* Support Strategies Grid - MOVED TO BOTTOM */}
+        <div className="grid md:grid-cols-2 gap-4 mt-8">
+          {temptationStrategies.map((strategy, i) => (
+            <motion.div
+              key={i}
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: i * 0.1 }}
+            >
+              <Card className="bg-gray-800/50 border-gray-700 hover:border-cyan-500/50 transition-all cursor-pointer group">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                      <strategy.icon className="h-6 w-6 text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-white mb-2">
+                        {strategy.title}
+                      </h4>
+                      <p className="text-sm text-gray-400 mb-3">
+                        {strategy.description}
+                      </p>
+                      <Button
+                        size="sm"
+                        onClick={() => handleStrategyClick(strategy.action)}
+                        className="bg-cyan-600 hover:bg-cyan-700 text-white cursor-pointer"
+                      >
+                        {strategy.action}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </div>
 
         {/* Encouragement Footer */}
