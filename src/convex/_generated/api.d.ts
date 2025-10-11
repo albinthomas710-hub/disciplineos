@@ -30,6 +30,7 @@ import type * as timeBlockValidation from "../timeBlockValidation.js";
 import type * as timeBlocks from "../timeBlocks.js";
 import type * as timetables from "../timetables.js";
 import type * as users from "../users.js";
+import type * as vectal from "../vectal.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -57,6 +58,7 @@ declare const fullApi: ApiFromModules<{
   timeBlocks: typeof timeBlocks;
   timetables: typeof timetables;
   users: typeof users;
+  vectal: typeof vectal;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

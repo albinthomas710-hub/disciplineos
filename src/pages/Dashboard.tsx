@@ -26,17 +26,19 @@ import TimetableManager from "@/components/TimetableManager";
 import AnalyticsView from "@/components/AnalyticsView";
 import ReflectionDialog from "@/components/ReflectionDialog";
 import DopamineShieldView from "@/components/DopamineShieldView";
+import VectalView from "@/components/VectalView";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield">("timer");
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield" | "vectal">("timer");
   const [showReflection, setShowReflection] = useState(false);
 
   const activeTimetable = useQuery(api.timetables.getActive);
   const seedData = useMutation(api.seedData.seedDefaultTimetable);
   const todayLogs = useQuery(api.completionLogs.getToday);
   const reflectionCheck = useQuery(api.reflectionTriggers.shouldShowReflection);
+  const vectalCheck = useQuery(api.vectal.checkDailyCompletion);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -63,6 +65,19 @@ export default function Dashboard() {
       return () => clearTimeout(timer);
     }
   }, [reflectionCheck, showReflection]);
+
+  // New: Show alert if Vectal tasks are not completed
+  useEffect(() => {
+    if (vectalCheck && !vectalCheck.allCompleted && vectalCheck.totalTasks > 0) {
+      const incompleteTasks = vectalCheck.totalTasks - vectalCheck.completedTasks;
+      if (incompleteTasks > 0) {
+        toast.info(
+          `⚠️ Vectal Check: ${incompleteTasks} task${incompleteTasks > 1 ? 's' : ''} remaining today`,
+          { duration: 5000 }
+        );
+      }
+    }
+  }, [vectalCheck]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -227,6 +242,14 @@ export default function Dashboard() {
             <Shield className="h-4 w-4 mr-2" />
             Shield
           </Button>
+          <Button
+            variant={activeTab === "vectal" ? "default" : "ghost"}
+            onClick={() => setActiveTab("vectal")}
+            className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700"
+          >
+            <Target className="h-4 w-4 mr-2" />
+            Vectal
+          </Button>
         </div>
       </div>
 
@@ -236,6 +259,7 @@ export default function Dashboard() {
         {activeTab === "timetables" && <TimetableManager />}
         {activeTab === "analytics" && <AnalyticsView />}
         {activeTab === "shield" && <DopamineShieldView />}
+        {activeTab === "vectal" && <VectalView />}
       </div>
 
       {/* Reflection Dialog */}

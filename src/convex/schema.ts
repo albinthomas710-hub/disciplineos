@@ -177,6 +177,21 @@ const schema = defineSchema(
       color: v.string(), // gradient colors like "from-blue-500 to-cyan-500"
       glowColor: v.string(), // rgba color for glow effect
     }).index("by_user", ["userId"]),
+
+    // Vectal - Daily Task Tracking
+    vectal: defineTable({
+      userId: v.id("users"),
+      date: v.string(), // "2025-01-11"
+      tasks: v.array(
+        v.object({
+          id: v.string(),
+          title: v.string(),
+          completed: v.boolean(),
+        })
+      ),
+      allCompleted: v.boolean(),
+      lastChecked: v.number(),
+    }).index("by_user_and_date", ["userId", "date"]),
   },
   {
     schemaValidation: false,
