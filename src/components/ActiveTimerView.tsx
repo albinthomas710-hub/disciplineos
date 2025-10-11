@@ -20,11 +20,11 @@ const categoryStyles = {
     text: "text-blue-600 dark:text-blue-400",
   },
   Health: {
-    gradient: "from-green-500 to-emerald-500",
-    glow: "shadow-[0_0_20px_rgba(34,197,94,0.5)]",
-    bg: "bg-gradient-to-r from-green-500/10 to-emerald-500/10",
-    border: "border-green-500/30",
-    text: "text-green-600 dark:text-green-400",
+    gradient: "from-gray-500 to-slate-500",
+    glow: "shadow-[0_0_20px_rgba(107,114,128,0.5)]",
+    bg: "bg-gradient-to-r from-gray-500/10 to-slate-500/10",
+    border: "border-gray-500/30",
+    text: "text-gray-600 dark:text-gray-400",
   },
   Spiritual: {
     gradient: "from-purple-500 to-pink-500",
@@ -41,11 +41,11 @@ const categoryStyles = {
     text: "text-orange-600 dark:text-orange-400",
   },
   General: {
-    gradient: "from-gray-500 to-slate-500",
-    glow: "shadow-[0_0_20px_rgba(107,114,128,0.5)]",
-    bg: "bg-gradient-to-r from-gray-500/10 to-slate-500/10",
-    border: "border-gray-500/30",
-    text: "text-gray-600 dark:text-gray-400",
+    gradient: "from-green-500 to-lime-500",
+    glow: "shadow-[0_0_20px_rgba(34,197,94,0.6)]",
+    bg: "bg-gradient-to-r from-green-500/10 to-lime-500/10",
+    border: "border-green-500/30",
+    text: "text-green-500 dark:text-green-400",
   },
 };
 
