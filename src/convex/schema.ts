@@ -90,6 +90,24 @@ const schema = defineSchema(
       notificationsEnabled: v.optional(v.boolean()),
       theme: v.optional(v.string()), // "light", "dark", "auto"
     }).index("by_user", ["userId"]),
+
+    // Dopamine Shield - Temptation Interceptor
+    dopamineShield: defineTable({
+      userId: v.id("users"),
+      sessionId: v.string(),
+      lastLearningEnd: v.union(v.number(), v.null()),
+      cooldownExpiresAt: v.union(v.number(), v.null()),
+      bypassAttemptsToday: v.number(),
+      microChallengeHistory: v.array(
+        v.object({
+          type: v.string(),
+          completedAt: v.number(),
+          success: v.boolean(),
+          content: v.optional(v.string()),
+        })
+      ),
+      strictBlockUntil: v.union(v.number(), v.null()),
+    }).index("by_user", ["userId"]),
   },
   {
     schemaValidation: false,

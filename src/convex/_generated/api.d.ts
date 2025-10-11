@@ -16,6 +16,7 @@ import type {
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as auth from "../auth.js";
 import type * as completionLogs from "../completionLogs.js";
+import type * as dopamineShield from "../dopamineShield.js";
 import type * as http from "../http.js";
 import type * as reflections from "../reflections.js";
 import type * as seedData from "../seedData.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   "auth/emailOtp": typeof auth_emailOtp;
   auth: typeof auth;
   completionLogs: typeof completionLogs;
+  dopamineShield: typeof dopamineShield;
   http: typeof http;
   reflections: typeof reflections;
   seedData: typeof seedData;

@@ -16,6 +16,7 @@ import {
   Plus,
   Settings,
   Target,
+  Shield,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
@@ -24,11 +25,12 @@ import ActiveTimerView from "@/components/ActiveTimerView";
 import TimetableManager from "@/components/TimetableManager";
 import AnalyticsView from "@/components/AnalyticsView";
 import ReflectionDialog from "@/components/ReflectionDialog";
+import DopamineShieldView from "@/components/DopamineShieldView";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics">("timer");
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield">("timer");
   const [showReflection, setShowReflection] = useState(false);
 
   const activeTimetable = useQuery(api.timetables.getActive);
@@ -205,6 +207,14 @@ export default function Dashboard() {
             <Target className="h-4 w-4 mr-2" />
             Analytics
           </Button>
+          <Button
+            variant={activeTab === "shield" ? "default" : "ghost"}
+            onClick={() => setActiveTab("shield")}
+            className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
+          >
+            <Shield className="h-4 w-4 mr-2" />
+            Shield
+          </Button>
         </div>
       </div>
 
@@ -213,6 +223,7 @@ export default function Dashboard() {
         {activeTab === "timer" && <ActiveTimerView />}
         {activeTab === "timetables" && <TimetableManager />}
         {activeTab === "analytics" && <AnalyticsView />}
+        {activeTab === "shield" && <DopamineShieldView />}
       </div>
 
       {/* Reflection Dialog */}
