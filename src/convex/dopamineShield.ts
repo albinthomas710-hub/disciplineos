@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 
 // Get current shield status
@@ -154,7 +154,7 @@ export const completeMicroChallenge = mutation({
 });
 
 // Reset daily bypass attempts (should be called by a cron job)
-export const resetDailyAttempts = mutation({
+export const resetDailyAttempts = internalMutation({
   args: {},
   handler: async (ctx) => {
     const allStatuses = await ctx.db.query("dopamineShield").collect();

@@ -18,7 +18,7 @@ export const listByTimetable = query({
   },
 });
 
-// Create time block
+// Create time block with overlap validation
 export const create = mutation({
   args: {
     timetableId: v.id("timetables"),
@@ -36,6 +36,28 @@ export const create = mutation({
     const timetable = await ctx.db.get(args.timetableId);
     if (!timetable || timetable.userId !== user._id) {
       throw new Error("Timetable not found");
+    }
+
+    // New: Check for overlaps
+    const blocks = await ctx.db
+      .query("timeBlocks")
+      .withIndex("by_timetable", (q) => q.eq("timetableId", args.timetableId))
+      .collect();
+
+    const newStart = timeToMinutes(args.startTime);
+    const newEnd = timeToMinutes(args.endTime);
+
+    for (const block of blocks) {
+      const existingStart = timeToMinutes(block.startTime);
+      const existingEnd = timeToMinutes(block.endTime);
+
+      if (
+        (newStart >= existingStart && newStart < existingEnd) ||
+        (newEnd > existingStart && newEnd <= existingEnd) ||
+        (newStart <= existingStart && newEnd >= existingEnd)
+      ) {
+        throw new Error(`Time block overlaps with "${block.title}" (${block.startTime}-${block.endTime})`);
+      }
     }
 
     return await ctx.db.insert("timeBlocks", {
@@ -103,3 +125,9 @@ export const remove = mutation({
     await ctx.db.delete(args.id);
   },
 });
+
+// Helper function
+function timeToMinutes(time: string): number {
+  const [hours, minutes] = time.split(":").map(Number);
+  return hours * 60 + minutes;
+}

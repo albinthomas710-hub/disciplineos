@@ -17,21 +17,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
-import { Loader2, Plus, Trash } from "lucide-react";
-import { useState } from "react";
 import { toast } from "sonner";
+import { useState } from "react";
+import { Loader2, Trash, Plus } from "lucide-react";
 
 interface TimeBlockEditorProps {
   timetableId: Id<"timetables">;
   onClose: () => void;
+  onSave?: (updatedBlock: any) => void;
 }
 
 export default function TimeBlockEditor({
   timetableId,
   onClose,
+  onSave,
 }: TimeBlockEditorProps) {
   const timetable = useQuery(api.timetables.getById, { id: timetableId });
   const timeBlocks = useQuery(api.timeBlocks.listByTimetable, { timetableId });

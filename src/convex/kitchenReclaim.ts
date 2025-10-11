@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 
 // Get user's kitchen reclaim status
@@ -194,7 +194,7 @@ export const logMindfulMeal = mutation({
 });
 
 // Reset weekly stats (should be called by cron)
-export const resetWeeklyStats = mutation({
+export const resetWeeklyStats = internalMutation({
   args: {},
   handler: async (ctx) => {
     const allStatuses = await ctx.db.query("kitchenReclaim").collect();

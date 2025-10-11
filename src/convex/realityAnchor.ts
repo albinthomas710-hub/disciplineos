@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 
 // Get user's anchor statistics
@@ -182,7 +182,7 @@ export const completeMicroPlan = mutation({
 });
 
 // Reset weekly counter (should be called by cron)
-export const resetWeeklyCounter = mutation({
+export const resetWeeklyCounter = internalMutation({
   args: {},
   handler: async (ctx) => {
     const allStatuses = await ctx.db.query("realityAnchor").collect();

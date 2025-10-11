@@ -48,7 +48,7 @@ export const getById = query({
   },
 });
 
-// Create new timetable
+// Enhanced create to ensure first timetable is always active
 export const create = mutation({
   args: {
     name: v.string(),
@@ -59,14 +59,19 @@ export const create = mutation({
     const user = await getCurrentUser(ctx);
     if (!user) throw new Error("Not authenticated");
 
-    // Deactivate all other timetables
+    // Check if this is the first timetable
     const existing = await ctx.db
       .query("timetables")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
 
-    for (const tt of existing) {
-      await ctx.db.patch(tt._id, { isActive: false });
+    const isFirstTimetable = existing.length === 0;
+
+    // Deactivate all other timetables if not first
+    if (!isFirstTimetable) {
+      for (const tt of existing) {
+        await ctx.db.patch(tt._id, { isActive: false });
+      }
     }
 
     const timetableId = await ctx.db.insert("timetables", {
@@ -74,7 +79,7 @@ export const create = mutation({
       name: args.name,
       description: args.description,
       color: args.color || "#6366f1",
-      isActive: true,
+      isActive: true, // Always active for first timetable, or when explicitly created
     });
 
     // Update user's active timetable
@@ -135,7 +140,7 @@ export const setActive = mutation({
   },
 });
 
-// Delete timetable
+// Enhanced remove to prevent deleting last timetable
 export const remove = mutation({
   args: { id: v.id("timetables") },
   handler: async (ctx, args) => {
@@ -145,6 +150,25 @@ export const remove = mutation({
     const timetable = await ctx.db.get(args.id);
     if (!timetable || timetable.userId !== user._id) {
       throw new Error("Timetable not found");
+    }
+
+    // New: Check if this is the last timetable
+    const allTimetables = await ctx.db
+      .query("timetables")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    if (allTimetables.length === 1) {
+      throw new Error("Cannot delete your last timetable. Create a new one first.");
+    }
+
+    // If deleting active timetable, activate another one
+    if (timetable.isActive) {
+      const nextTimetable = allTimetables.find(tt => tt._id !== args.id);
+      if (nextTimetable) {
+        await ctx.db.patch(nextTimetable._id, { isActive: true });
+        await ctx.db.patch(user._id, { activeTimetableId: nextTimetable._id });
+      }
     }
 
     // Delete all time blocks

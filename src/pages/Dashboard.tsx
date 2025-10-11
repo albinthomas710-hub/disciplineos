@@ -36,6 +36,7 @@ export default function Dashboard() {
   const activeTimetable = useQuery(api.timetables.getActive);
   const seedData = useMutation(api.seedData.seedDefaultTimetable);
   const todayLogs = useQuery(api.completionLogs.getToday);
+  const reflectionCheck = useQuery(api.reflectionTriggers.shouldShowReflection);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -51,6 +52,17 @@ export default function Dashboard() {
       });
     }
   }, [user, activeTimetable, seedData]);
+
+  // New: Auto-show reflection dialog when appropriate
+  useEffect(() => {
+    if (reflectionCheck?.shouldShow && !showReflection) {
+      // Small delay to avoid showing immediately on page load
+      const timer = setTimeout(() => {
+        setShowReflection(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [reflectionCheck, showReflection]);
 
   const handleSignOut = async () => {
     await signOut();
