@@ -139,6 +139,18 @@ export default function VectalView() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
+              {/* Motivational Quote */}
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                className="p-4 rounded-lg bg-gradient-to-r from-cyan-100 to-blue-100 dark:from-cyan-900/30 dark:to-blue-900/30 border border-cyan-300 dark:border-cyan-700"
+              >
+                <p className="text-sm text-center italic text-cyan-900 dark:text-cyan-100">
+                  "Check your Vectal daily — small tasks completed consistently build the discipline that transforms your life."
+                </p>
+              </motion.div>
+
               <div>
                 <div className="flex justify-between mb-2">
                   <span className="text-sm text-muted-foreground">
