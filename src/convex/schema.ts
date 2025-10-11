@@ -108,6 +108,34 @@ const schema = defineSchema(
       ),
       strictBlockUntil: v.union(v.number(), v.null()),
     }).index("by_user", ["userId"]),
+
+    // Reality Anchor - Fantasy To Plan Converter
+    realityAnchor: defineTable({
+      userId: v.id("users"),
+      anchorEvents: v.array(
+        v.object({
+          timestamp: v.number(),
+          eventType: v.union(
+            v.literal("vision_captured"),
+            v.literal("grounding"),
+            v.literal("redirect")
+          ),
+          vision: v.optional(v.string()),
+          why: v.optional(v.string()),
+          microPlan: v.optional(v.array(v.string())),
+        })
+      ),
+      microPlans: v.array(
+        v.object({
+          createdAt: v.number(),
+          vision: v.string(),
+          steps: v.array(v.string()),
+          completed: v.boolean(),
+        })
+      ),
+      conversionsCountWeek: v.number(),
+      lastWeeklyReset: v.number(),
+    }).index("by_user", ["userId"]),
   },
   {
     schemaValidation: false,

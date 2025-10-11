@@ -10,12 +10,14 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import TemptationInterceptorModal from "./TemptationInterceptorModal";
 import UrgeModal from "./UrgeModal";
+import RealityAnchorModal from "./RealityAnchorModal";
 
 export default function DopamineShieldView() {
   const shieldStatus = useQuery(api.dopamineShield.getStatus);
   const initializeStatus = useMutation(api.dopamineShield.initializeStatus);
   const [showInterceptor, setShowInterceptor] = useState(false);
   const [showUrgeModal, setShowUrgeModal] = useState(false);
+  const [showRealityAnchor, setShowRealityAnchor] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   useEffect(() => {
@@ -197,7 +199,7 @@ export default function DopamineShieldView() {
         </motion.div>
       </div>
 
-      {/* Action Buttons */}
+      {/* Action Buttons - Temptation Interceptor */}
       <Card>
         <CardHeader>
           <CardTitle>Temptation Interceptor</CardTitle>
@@ -223,6 +225,37 @@ export default function DopamineShieldView() {
               {cooldownRemaining > 0 ? "Request Shorts Access" : "Access Shorts"}
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Reality Anchor - Fantasy To Plan Converter */}
+      <Card className="border-2 border-yellow-200 dark:border-yellow-800 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="bg-gradient-to-br from-yellow-600 to-orange-600 p-2 rounded-lg">
+              <Shield className="h-5 w-5 text-white" />
+            </div>
+            Reality Anchor — Fantasy To Plan Converter
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground">
+            Stop long fantasy loops where you imagine success and then do nothing. 
+            This feature captures the fantasy moment and immediately converts that mental 
+            energy into a short, concrete action plan (5–20 minutes) so the fantasy becomes fuel, not escape.
+          </p>
+          <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg border border-yellow-300 dark:border-yellow-700">
+            <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+              💡 Caught yourself daydreaming about success? Convert it into action right now.
+            </p>
+          </div>
+          <Button
+            onClick={() => setShowRealityAnchor(true)}
+            className="w-full bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700 cursor-pointer"
+            size="lg"
+          >
+            I'm Zoning Out — Anchor Me
+          </Button>
         </CardContent>
       </Card>
 
@@ -266,6 +299,10 @@ export default function DopamineShieldView() {
       <UrgeModal
         open={showUrgeModal}
         onOpenChange={setShowUrgeModal}
+      />
+      <RealityAnchorModal
+        open={showRealityAnchor}
+        onOpenChange={setShowRealityAnchor}
       />
     </div>
   );
