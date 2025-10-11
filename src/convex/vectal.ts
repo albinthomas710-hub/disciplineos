@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 
 // Get today's vectal tasks
@@ -183,3 +183,106 @@ export const checkDailyCompletion = query({
     };
   },
 });
+
+// Internal mutation to process recurring tasks (called by cron)
+export const processRecurringTasks = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const today = new Date().toISOString().split("T")[0];
+    const dayOfWeek = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    const currentDayName = dayNames[dayOfWeek];
+    const dateObj = new Date();
+    const dayOfMonth = dateObj.getDate();
+
+    // Get all users
+    const allUsers = await ctx.db.query("users").collect();
+
+    for (const user of allUsers) {
+      // Check if today's vectal record exists
+      const existingRecord = await ctx.db
+        .query("vectal")
+        .withIndex("by_user_and_date", (q) => q.eq("userId", user._id).eq("date", today))
+        .first();
+
+      if (existingRecord) {
+        // Record exists, skip this user
+        continue;
+      }
+
+      // Get yesterday's record to find recurring tasks
+      const yesterday = new Date(dateObj);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+      const yesterdayRecord = await ctx.db
+        .query("vectal")
+        .withIndex("by_user_and_date", (q) => q.eq("userId", user._id).eq("date", yesterdayStr))
+        .first();
+
+      if (!yesterdayRecord) {
+        // No previous record, create default tasks
+        const defaultTasks = [
+          { id: crypto.randomUUID(), title: "Morning Routine", completed: false, importance: 90, isRecurring: true, recurringPattern: "every day" },
+          { id: crypto.randomUUID(), title: "Focus Work Block", completed: false, importance: 100, isRecurring: true, recurringPattern: "every day" },
+          { id: crypto.randomUUID(), title: "Exercise/Movement", completed: false, importance: 80, isRecurring: true, recurringPattern: "every day" },
+          { id: crypto.randomUUID(), title: "Learning Session", completed: false, importance: 95, isRecurring: true, recurringPattern: "every day" },
+          { id: crypto.randomUUID(), title: "Evening Reflection", completed: false, importance: 85, isRecurring: true, recurringPattern: "every day" },
+        ];
+
+        await ctx.db.insert("vectal", {
+          userId: user._id,
+          date: today,
+          tasks: defaultTasks,
+          allCompleted: false,
+          lastChecked: Date.now(),
+        });
+        continue;
+      }
+
+      // Filter recurring tasks that match today's pattern
+      const recurringTasks = yesterdayRecord.tasks.filter((task: any) => {
+        if (!task.isRecurring || !task.recurringPattern) return false;
+
+        const pattern = task.recurringPattern.toLowerCase().trim();
+
+        // Check pattern matching
+        if (pattern === "every day" || pattern === "everyday" || pattern === "daily") {
+          return true;
+        }
+
+        if (pattern === "every week" || pattern === "weekly") {
+          return dayOfWeek === 1; // Monday
+        }
+
+        if (pattern === "every month" || pattern === "monthly") {
+          return dayOfMonth === 1; // First day of month
+        }
+
+        // Check for specific day patterns
+        if (pattern.includes("every") && dayNames.some(day => pattern.includes(day))) {
+          return pattern.includes(currentDayName);
+        }
+
+        // Default: include if pattern is set
+        return true;
+      });
+
+      // Create new tasks with reset completion status
+      const newTasks = recurringTasks.map((task: any) => ({
+        ...task,
+        id: crypto.randomUUID(), // New ID for new day
+        completed: false, // Reset completion
+      }));
+
+      // Create today's record
+      await ctx.db.insert("vectal", {
+        userId: user._id,
+        date: today,
+        tasks: newTasks,
+        allCompleted: false,
+        lastChecked: Date.now(),
+      });
+    }
+  },
+})

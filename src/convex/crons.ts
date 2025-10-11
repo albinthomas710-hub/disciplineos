@@ -31,4 +31,11 @@ crons.weekly(
   internal.kitchenReclaim.resetWeeklyStats
 );
 
+// Process recurring vectal tasks daily
+crons.daily(
+  "process recurring vectal tasks",
+  { hourUTC: 0, minuteUTC: 5 },
+  internal.vectal.processRecurringTasks
+);
+
 export default crons;
