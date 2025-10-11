@@ -10,6 +10,45 @@ import { CheckCircle2, Circle, Clock, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+// Category color mappings with gradients and glows
+const categoryStyles = {
+  Focus: {
+    gradient: "from-blue-500 to-cyan-500",
+    glow: "shadow-[0_0_20px_rgba(59,130,246,0.5)]",
+    bg: "bg-gradient-to-r from-blue-500/10 to-cyan-500/10",
+    border: "border-blue-500/30",
+    text: "text-blue-600 dark:text-blue-400",
+  },
+  Health: {
+    gradient: "from-green-500 to-emerald-500",
+    glow: "shadow-[0_0_20px_rgba(34,197,94,0.5)]",
+    bg: "bg-gradient-to-r from-green-500/10 to-emerald-500/10",
+    border: "border-green-500/30",
+    text: "text-green-600 dark:text-green-400",
+  },
+  Spiritual: {
+    gradient: "from-purple-500 to-pink-500",
+    glow: "shadow-[0_0_20px_rgba(168,85,247,0.5)]",
+    bg: "bg-gradient-to-r from-purple-500/10 to-pink-500/10",
+    border: "border-purple-500/30",
+    text: "text-purple-600 dark:text-purple-400",
+  },
+  Learning: {
+    gradient: "from-orange-500 to-red-500",
+    glow: "shadow-[0_0_20px_rgba(249,115,22,0.5)]",
+    bg: "bg-gradient-to-r from-orange-500/10 to-red-500/10",
+    border: "border-orange-500/30",
+    text: "text-orange-600 dark:text-orange-400",
+  },
+  General: {
+    gradient: "from-gray-500 to-slate-500",
+    glow: "shadow-[0_0_20px_rgba(107,114,128,0.5)]",
+    bg: "bg-gradient-to-r from-gray-500/10 to-slate-500/10",
+    border: "border-gray-500/30",
+    text: "text-gray-600 dark:text-gray-400",
+  },
+};
+
 export default function ActiveTimerView() {
   const activeTimetable = useQuery(api.timetables.getActive);
   const timeBlocks = useQuery(
@@ -72,6 +111,10 @@ export default function ActiveTimerView() {
     return todayLogs?.find((l) => l.timeBlockId === blockId)?.completed || false;
   };
 
+  const getCategoryStyle = (category: string) => {
+    return categoryStyles[category as keyof typeof categoryStyles] || categoryStyles.General;
+  };
+
   if (!activeTimetable || !timeBlocks) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -109,14 +152,20 @@ export default function ActiveTimerView() {
               <div>
                 <h2 className="text-3xl font-bold mb-2">{currentBlock.title}</h2>
                 {currentBlock.description && (
-                  <p className="text-lg text-muted-foreground whitespace-pre-wrap">
-                    {currentBlock.description}
-                  </p>
+                  <div className={`p-4 rounded-lg border-2 ${getCategoryStyle(currentBlock.category).bg} ${getCategoryStyle(currentBlock.category).border} ${getCategoryStyle(currentBlock.category).glow}`}>
+                    <p className={`text-lg whitespace-pre-wrap ${getCategoryStyle(currentBlock.category).text} font-medium`}>
+                      {currentBlock.description}
+                    </p>
+                  </div>
                 )}
               </div>
 
               <div className="flex items-center gap-2">
-                <Badge variant="outline">{currentBlock.category}</Badge>
+                <Badge 
+                  className={`bg-gradient-to-r ${getCategoryStyle(currentBlock.category).gradient} text-white ${getCategoryStyle(currentBlock.category).glow} px-4 py-1.5 text-sm font-semibold`}
+                >
+                  {currentBlock.category}
+                </Badge>
               </div>
 
               <Button
@@ -172,18 +221,24 @@ export default function ActiveTimerView() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-semibold">{nextBlock.title}</h4>
-                  <Badge variant="outline">{nextBlock.category}</Badge>
+                  <h4 className="font-semibold text-lg">{nextBlock.title}</h4>
+                  <Badge 
+                    className={`bg-gradient-to-r ${getCategoryStyle(nextBlock.category).gradient} text-white ${getCategoryStyle(nextBlock.category).glow} px-3 py-1 text-sm font-semibold`}
+                  >
+                    {nextBlock.category}
+                  </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground font-mono">
                   {nextBlock.startTime} - {nextBlock.endTime}
                 </p>
                 {nextBlock.description && (
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                    {nextBlock.description}
-                  </p>
+                  <div className={`p-3 rounded-lg border-2 ${getCategoryStyle(nextBlock.category).bg} ${getCategoryStyle(nextBlock.category).border} ${getCategoryStyle(nextBlock.category).glow}`}>
+                    <p className={`text-sm whitespace-pre-wrap ${getCategoryStyle(nextBlock.category).text} font-medium`}>
+                      {nextBlock.description}
+                    </p>
+                  </div>
                 )}
               </div>
             </CardContent>
@@ -212,13 +267,14 @@ export default function ActiveTimerView() {
             {timeBlocks.map((block) => {
               const completed = isBlockCompleted(block._id);
               const isCurrent = currentBlock?._id === block._id;
+              const style = getCategoryStyle(block.category || "General");
 
               return (
                 <motion.div
                   key={block._id}
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                  className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
                     isCurrent
                       ? "bg-indigo-50 dark:bg-indigo-950 border-indigo-200 dark:border-indigo-800"
                       : completed
@@ -232,7 +288,7 @@ export default function ActiveTimerView() {
                   ) : (
                     <Circle className="h-5 w-5 text-gray-400 shrink-0 mt-0.5" />
                   )}
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 space-y-2">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
                         className={`font-medium ${
@@ -246,17 +302,21 @@ export default function ActiveTimerView() {
                           Now
                         </Badge>
                       )}
-                      <Badge variant="outline" className="text-xs">
+                      <Badge 
+                        className={`bg-gradient-to-r ${style.gradient} text-white ${style.glow} text-xs px-2 py-0.5 font-semibold`}
+                      >
                         {block.category}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+                    <p className="text-xs text-muted-foreground font-mono">
                       {block.startTime} - {block.endTime}
                     </p>
                     {block.description && (
-                      <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">
-                        {block.description}
-                      </p>
+                      <div className={`p-2 rounded-md border ${style.bg} ${style.border} ${style.glow}`}>
+                        <p className={`text-xs whitespace-pre-wrap ${style.text} font-medium`}>
+                          {block.description}
+                        </p>
+                      </div>
                     )}
                   </div>
                 </motion.div>
