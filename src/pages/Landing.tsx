@@ -104,17 +104,17 @@ export default function Landing() {
             transition={{ delay: 0.3 }}
             className="text-center max-w-4xl mx-auto"
           >
-            <h2 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-[1.1]">
-              <span className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent drop-shadow-sm">
+            <h2 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tighter mb-8 leading-[1.05]">
+              <span className="bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-50 dark:to-white bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
                 Master Your Time.
               </span>
               <br />
-              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 dark:from-indigo-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent drop-shadow-sm">
+              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-300 dark:via-purple-300 dark:to-pink-300 bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(99,102,241,0.3)]">
                 Build Discipline.
               </span>
             </h2>
 
-            <p className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed font-light">
+            <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
               The time-block productivity system that structures every hour of
               your day and keeps you ruthlessly consistent. Break free from
               distractions and unlock your potential.
@@ -129,7 +129,7 @@ export default function Landing() {
               <Button
                 size="lg"
                 onClick={handleGetStarted}
-                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] font-semibold"
+                className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-700 hover:via-purple-700 hover:to-indigo-700 text-white px-10 py-7 text-lg rounded-2xl shadow-[0_8px_30px_rgba(99,102,241,0.3)] hover:shadow-[0_12px_40px_rgba(99,102,241,0.5)] transition-all duration-500 cursor-pointer hover:scale-[1.03] active:scale-[0.97] font-bold tracking-wide"
               >
                 {isAuthenticated ? "Go to Dashboard" : "Start Your Journey"}
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -137,7 +137,7 @@ export default function Landing() {
               <Button
                 size="lg"
                 variant="outline"
-                className="px-8 py-6 text-lg rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] border-2 font-medium"
+                className="px-10 py-7 text-lg rounded-2xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-500 hover:scale-[1.03] active:scale-[0.97] border-2 font-semibold tracking-wide hover:border-indigo-300 dark:hover:border-indigo-700"
                 onClick={() => {
                   document
                     .getElementById("features")
@@ -185,10 +185,10 @@ export default function Landing() {
             transition={{ duration: 0.6 }}
             className="text-center mb-16"
           >
-            <h3 className="text-4xl font-bold mb-4 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent tracking-tight">
+            <h3 className="text-4xl sm:text-5xl font-extrabold mb-5 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 dark:from-white dark:via-gray-100 dark:to-gray-300 bg-clip-text text-transparent tracking-tighter">
               Everything You Need to Win
             </h3>
-            <p className="text-xl text-gray-600 dark:text-gray-400 font-light">
+            <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-400 font-light tracking-wide">
               Powerful features designed to keep you on track
             </p>
           </motion.div>
@@ -245,15 +245,15 @@ export default function Landing() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.6 }}
               >
-                <Card className="h-full hover:shadow-xl transition-all duration-300 border-2 cursor-pointer hover:scale-[1.02] hover:border-indigo-200 dark:hover:border-indigo-800 group">
-                  <CardContent className="p-6">
+                <Card className="h-full hover:shadow-2xl transition-all duration-500 border-2 cursor-pointer hover:scale-[1.03] hover:border-indigo-300 dark:hover:border-indigo-700 group backdrop-blur-sm">
+                  <CardContent className="p-7">
                     <div
-                      className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-110`}
+                      className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-5 shadow-lg group-hover:shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3`}
                     >
-                      <feature.icon className="h-6 w-6 text-white" />
+                      <feature.icon className="h-7 w-7 text-white" />
                     </div>
-                    <h4 className="text-xl font-bold mb-2 tracking-tight">{feature.title}</h4>
-                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                    <h4 className="text-xl font-bold mb-3 tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">{feature.title}</h4>
+                    <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">
                       {feature.description}
                     </p>
                   </CardContent>
@@ -273,8 +273,8 @@ export default function Landing() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h3 className="text-4xl font-bold mb-4 tracking-tight">How It Works</h3>
-            <p className="text-xl text-gray-600 dark:text-gray-400 font-light">
+            <h3 className="text-4xl sm:text-5xl font-extrabold mb-5 tracking-tighter bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 dark:from-white dark:via-gray-100 dark:to-gray-300 bg-clip-text text-transparent">How It Works</h3>
+            <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-400 font-light tracking-wide">
               Four simple steps to transform your day
             </p>
           </motion.div>
@@ -314,14 +314,14 @@ export default function Landing() {
                 transition={{ delay: i * 0.15 }}
                 className="text-center"
               >
-                <div className="relative mb-6 group">
-                  <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
+                <div className="relative mb-8 group">
+                  <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center text-white text-3xl font-extrabold shadow-xl group-hover:shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
                     {step.step}
                   </div>
-                  <step.icon className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-8 w-8 text-white transition-transform duration-300 group-hover:scale-110" />
+                  <step.icon className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-9 w-9 text-white transition-transform duration-500 group-hover:scale-125" />
                 </div>
-                <h4 className="text-xl font-bold mb-2 tracking-tight">{step.title}</h4>
-                <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
+                <h4 className="text-xl font-bold mb-3 tracking-tight">{step.title}</h4>
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">
                   {step.description}
                 </p>
               </motion.div>
@@ -338,17 +338,17 @@ export default function Landing() {
         className="py-24 bg-gradient-to-r from-indigo-600 to-purple-600"
       >
         <div className="max-w-4xl mx-auto text-center px-4">
-          <Shield className="h-16 w-16 mx-auto mb-6 text-white drop-shadow-lg" />
-          <h3 className="text-4xl font-bold text-white mb-4 tracking-tight drop-shadow-md">
+          <Shield className="h-20 w-20 mx-auto mb-8 text-white drop-shadow-2xl" />
+          <h3 className="text-4xl sm:text-5xl font-extrabold text-white mb-6 tracking-tighter drop-shadow-lg">
             Discipline is Freedom
           </h3>
-          <p className="text-xl text-indigo-100 mb-8 font-light leading-relaxed">
+          <p className="text-xl sm:text-2xl text-indigo-50 mb-10 font-light leading-relaxed tracking-wide">
             Break the loop. Build the life you deserve. Start today.
           </p>
           <Button
             size="lg"
             onClick={handleGetStarted}
-            className="bg-white text-indigo-600 hover:bg-gray-50 px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer hover:scale-[1.02] active:scale-[0.98] font-semibold"
+            className="bg-white text-indigo-600 hover:bg-indigo-50 px-10 py-7 text-lg rounded-2xl shadow-[0_8px_30px_rgba(255,255,255,0.3)] hover:shadow-[0_12px_40px_rgba(255,255,255,0.5)] transition-all duration-500 cursor-pointer hover:scale-[1.03] active:scale-[0.97] font-bold tracking-wide"
           >
             {isAuthenticated ? "Go to Dashboard" : "Begin Your Transformation"}
             <ArrowRight className="ml-2 h-5 w-5" />
