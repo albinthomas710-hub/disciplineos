@@ -108,9 +108,11 @@ export default function ActiveTimerView() {
             <CardContent className="space-y-4">
               <div>
                 <h2 className="text-3xl font-bold mb-2">{currentBlock.title}</h2>
-                <p className="text-lg text-muted-foreground">
-                  {currentBlock.description}
-                </p>
+                {currentBlock.description && (
+                  <p className="text-lg text-muted-foreground whitespace-pre-wrap">
+                    {currentBlock.description}
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center gap-2">
@@ -170,14 +172,19 @@ export default function ActiveTimerView() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
                   <h4 className="font-semibold">{nextBlock.title}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {nextBlock.startTime} - {nextBlock.endTime}
-                  </p>
+                  <Badge variant="outline">{nextBlock.category}</Badge>
                 </div>
-                <Badge variant="outline">{nextBlock.category}</Badge>
+                <p className="text-sm text-muted-foreground">
+                  {nextBlock.startTime} - {nextBlock.endTime}
+                </p>
+                {nextBlock.description && (
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {nextBlock.description}
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -211,7 +218,7 @@ export default function ActiveTimerView() {
                   key={block._id}
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                  className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                     isCurrent
                       ? "bg-indigo-50 dark:bg-indigo-950 border-indigo-200 dark:border-indigo-800"
                       : completed
@@ -221,12 +228,12 @@ export default function ActiveTimerView() {
                   onClick={() => handleToggleComplete(block._id)}
                 >
                   {completed ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0" />
+                    <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
                   ) : (
-                    <Circle className="h-5 w-5 text-gray-400 shrink-0" />
+                    <Circle className="h-5 w-5 text-gray-400 shrink-0 mt-0.5" />
                   )}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span
                         className={`font-medium ${
                           completed ? "line-through text-muted-foreground" : ""
@@ -239,14 +246,19 @@ export default function ActiveTimerView() {
                           Now
                         </Badge>
                       )}
+                      <Badge variant="outline" className="text-xs">
+                        {block.category}
+                      </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {block.startTime} - {block.endTime}
                     </p>
+                    {block.description && (
+                      <p className="text-xs text-muted-foreground mt-1 whitespace-pre-wrap">
+                        {block.description}
+                      </p>
+                    )}
                   </div>
-                  <Badge variant="outline" className="shrink-0">
-                    {block.category}
-                  </Badge>
                 </motion.div>
               );
             })}
