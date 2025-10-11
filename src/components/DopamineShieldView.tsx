@@ -12,6 +12,7 @@ import TemptationInterceptorModal from "./TemptationInterceptorModal";
 import UrgeModal from "./UrgeModal";
 import RealityAnchorModal from "./RealityAnchorModal";
 import KitchenReclaimModal from "./KitchenReclaimModal";
+import EmergencyDashboard from "./EmergencyDashboard";
 
 export default function DopamineShieldView() {
   const shieldStatus = useQuery(api.dopamineShield.getStatus);
@@ -20,6 +21,7 @@ export default function DopamineShieldView() {
   const [showUrgeModal, setShowUrgeModal] = useState(false);
   const [showRealityAnchor, setShowRealityAnchor] = useState(false);
   const [showKitchenReclaim, setShowKitchenReclaim] = useState(false);
+  const [showEmergencyDashboard, setShowEmergencyDashboard] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   useEffect(() => {
@@ -74,6 +76,40 @@ export default function DopamineShieldView() {
 
   return (
     <div className="space-y-6">
+      {/* Emergency Button - NEW */}
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+      >
+        <Card className="border-2 border-red-500 dark:border-red-700 bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-950 dark:to-orange-950">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <div className="bg-gradient-to-br from-red-600 to-orange-600 p-3 rounded-xl animate-pulse">
+                <Shield className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-red-600 dark:text-red-400">
+                  Emergency Support
+                </h2>
+                <p className="text-sm text-muted-foreground font-normal">
+                  Feeling tempted? Click here for immediate support
+                </p>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button
+              onClick={() => setShowEmergencyDashboard(true)}
+              className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white cursor-pointer text-lg py-6"
+              size="lg"
+            >
+              <Shield className="h-5 w-5 mr-2" />
+              I Need Help Right Now
+            </Button>
+          </CardContent>
+        </Card>
+      </motion.div>
+
       {/* Header Card */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
@@ -339,6 +375,10 @@ export default function DopamineShieldView() {
       <KitchenReclaimModal
         open={showKitchenReclaim}
         onOpenChange={setShowKitchenReclaim}
+      />
+      <EmergencyDashboard
+        open={showEmergencyDashboard}
+        onOpenChange={setShowEmergencyDashboard}
       />
     </div>
   );
