@@ -57,6 +57,7 @@ export default function ActiveTimerView() {
   );
   const todayLogs = useQuery(api.completionLogs.getToday);
   const markComplete = useMutation(api.completionLogs.markComplete);
+  const categories = useQuery(api.categories.list);
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentBlock, setCurrentBlock] = useState<any>(null);
@@ -112,10 +113,25 @@ export default function ActiveTimerView() {
   };
 
   const getCategoryStyle = (category: string) => {
+    // First check if it's a custom category
+    if (categories) {
+      const customCat = categories.find((cat: any) => cat.name === category);
+      if (customCat) {
+        return {
+          gradient: customCat.color,
+          glow: `shadow-[0_0_20px_${customCat.glowColor}]`,
+          bg: `bg-gradient-to-r ${customCat.color}/10`,
+          border: `border-${customCat.color.split('-')[1]}-500/30`,
+          text: `text-${customCat.color.split('-')[1]}-600 dark:text-${customCat.color.split('-')[1]}-400`,
+        };
+      }
+    }
+    
+    // Fallback to default styles
     return categoryStyles[category as keyof typeof categoryStyles] || categoryStyles.General;
   };
 
-  if (!activeTimetable || !timeBlocks) {
+  if (!activeTimetable || !timeBlocks || !categories) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />

@@ -169,6 +169,14 @@ const schema = defineSchema(
         overeatCount: v.number(),
       }),
     }).index("by_user", ["userId"]),
+
+    // Custom Categories - user-defined time block categories
+    customCategories: defineTable({
+      userId: v.id("users"),
+      name: v.string(),
+      color: v.string(), // gradient colors like "from-blue-500 to-cyan-500"
+      glowColor: v.string(), // rgba color for glow effect
+    }).index("by_user", ["userId"]),
   },
   {
     schemaValidation: false,

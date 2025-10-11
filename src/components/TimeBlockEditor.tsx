@@ -22,7 +22,8 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
 import { useState } from "react";
-import { Loader2, Trash, Plus } from "lucide-react";
+import { Loader2, Trash, Plus, Settings } from "lucide-react";
+import CategoryManager from "./CategoryManager";
 
 interface TimeBlockEditorProps {
   timetableId: Id<"timetables">;
@@ -39,8 +40,10 @@ export default function TimeBlockEditor({
   const timeBlocks = useQuery(api.timeBlocks.listByTimetable, { timetableId });
   const createBlock = useMutation(api.timeBlocks.create);
   const removeBlock = useMutation(api.timeBlocks.remove);
+  const categories = useQuery(api.categories.list);
 
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [newBlock, setNewBlock] = useState({
     title: "",
     description: "",
@@ -86,7 +89,7 @@ export default function TimeBlockEditor({
     }
   };
 
-  if (!timetable || !timeBlocks) {
+  if (!timetable || !timeBlocks || !categories) {
     return (
       <Dialog open onOpenChange={onClose}>
         <DialogContent>
@@ -143,7 +146,15 @@ export default function TimeBlockEditor({
             ))}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex justify-between items-center">
+            <Button
+              variant="outline"
+              onClick={() => setShowCategoryManager(true)}
+              className="cursor-pointer"
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Manage Categories
+            </Button>
             <Button
               onClick={() => setShowAddDialog(true)}
               className="cursor-pointer"
@@ -223,11 +234,11 @@ export default function TimeBlockEditor({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Focus">Focus</SelectItem>
-                  <SelectItem value="Health">Health</SelectItem>
-                  <SelectItem value="Spiritual">Spiritual</SelectItem>
-                  <SelectItem value="Learning">Learning</SelectItem>
-                  <SelectItem value="General">General</SelectItem>
+                  {categories.map((cat: any, index: number) => (
+                    <SelectItem key={cat._id || index} value={cat.name}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -246,6 +257,12 @@ export default function TimeBlockEditor({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Category Manager Dialog */}
+      <CategoryManager
+        open={showCategoryManager}
+        onOpenChange={setShowCategoryManager}
+      />
     </>
   );
 }

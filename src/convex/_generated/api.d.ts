@@ -15,6 +15,7 @@ import type {
 } from "convex/server";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as auth from "../auth.js";
+import type * as categories from "../categories.js";
 import type * as completionLogs from "../completionLogs.js";
 import type * as crons from "../crons.js";
 import type * as dopamineShield from "../dopamineShield.js";
@@ -41,6 +42,7 @@ import type * as users from "../users.js";
 declare const fullApi: ApiFromModules<{
   "auth/emailOtp": typeof auth_emailOtp;
   auth: typeof auth;
+  categories: typeof categories;
   completionLogs: typeof completionLogs;
   crons: typeof crons;
   dopamineShield: typeof dopamineShield;
