@@ -18,6 +18,7 @@ import type * as auth from "../auth.js";
 import type * as completionLogs from "../completionLogs.js";
 import type * as dopamineShield from "../dopamineShield.js";
 import type * as http from "../http.js";
+import type * as kitchenReclaim from "../kitchenReclaim.js";
 import type * as realityAnchor from "../realityAnchor.js";
 import type * as reflections from "../reflections.js";
 import type * as seedData from "../seedData.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   completionLogs: typeof completionLogs;
   dopamineShield: typeof dopamineShield;
   http: typeof http;
+  kitchenReclaim: typeof kitchenReclaim;
   realityAnchor: typeof realityAnchor;
   reflections: typeof reflections;
   seedData: typeof seedData;

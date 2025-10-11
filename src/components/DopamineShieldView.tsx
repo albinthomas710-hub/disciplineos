@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import TemptationInterceptorModal from "./TemptationInterceptorModal";
 import UrgeModal from "./UrgeModal";
 import RealityAnchorModal from "./RealityAnchorModal";
+import KitchenReclaimModal from "./KitchenReclaimModal";
 
 export default function DopamineShieldView() {
   const shieldStatus = useQuery(api.dopamineShield.getStatus);
@@ -18,6 +19,7 @@ export default function DopamineShieldView() {
   const [showInterceptor, setShowInterceptor] = useState(false);
   const [showUrgeModal, setShowUrgeModal] = useState(false);
   const [showRealityAnchor, setShowRealityAnchor] = useState(false);
+  const [showKitchenReclaim, setShowKitchenReclaim] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   useEffect(() => {
@@ -259,6 +261,36 @@ export default function DopamineShieldView() {
         </CardContent>
       </Card>
 
+      {/* Kitchen Micro-Reclaim & Mindful Eats */}
+      <Card className="border-2 border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <div className="bg-gradient-to-br from-orange-600 to-red-600 p-2 rounded-lg">
+              <Shield className="h-5 w-5 text-white" />
+            </div>
+            Kitchen Micro-Reclaim & Mindful Eats
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground">
+            Stop wasting time waiting for food. Turn those 20-30 minutes into productive 
+            micro-tasks, then eat mindfully to prevent overeating.
+          </p>
+          <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg border border-orange-300 dark:border-orange-700">
+            <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
+              🍽️ Waiting for food? Reclaim this time and eat with awareness.
+            </p>
+          </div>
+          <Button
+            onClick={() => setShowKitchenReclaim(true)}
+            className="w-full bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 cursor-pointer"
+            size="lg"
+          >
+            Start Kitchen Timer
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* Challenge History */}
       {shieldStatus.microChallengeHistory && shieldStatus.microChallengeHistory.length > 0 && (
         <Card>
@@ -303,6 +335,10 @@ export default function DopamineShieldView() {
       <RealityAnchorModal
         open={showRealityAnchor}
         onOpenChange={setShowRealityAnchor}
+      />
+      <KitchenReclaimModal
+        open={showKitchenReclaim}
+        onOpenChange={setShowKitchenReclaim}
       />
     </div>
   );

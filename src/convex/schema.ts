@@ -136,6 +136,39 @@ const schema = defineSchema(
       conversionsCountWeek: v.number(),
       lastWeeklyReset: v.number(),
     }).index("by_user", ["userId"]),
+
+    // Kitchen Micro-Reclaim & Mindful Eats
+    kitchenReclaim: defineTable({
+      userId: v.id("users"),
+      waitingSessions: v.array(
+        v.object({
+          startTime: v.number(),
+          duration: v.number(), // in minutes
+          activityChosen: v.union(
+            v.literal("micro-task"),
+            v.literal("learning"),
+            v.literal("movement")
+          ),
+          completed: v.boolean(),
+          endTime: v.number(),
+        })
+      ),
+      mindfulMeals: v.array(
+        v.object({
+          date: v.string(),
+          timestamp: v.number(),
+          preHunger: v.number(), // 1-10 scale
+          postFullness: v.number(), // 1-10 scale
+          overate: v.boolean(),
+          notes: v.optional(v.string()),
+        })
+      ),
+      weeklyStats: v.object({
+        minutesReclaimed: v.number(),
+        mindfulMealCount: v.number(),
+        overeatCount: v.number(),
+      }),
+    }).index("by_user", ["userId"]),
   },
   {
     schemaValidation: false,
