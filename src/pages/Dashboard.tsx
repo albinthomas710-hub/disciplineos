@@ -46,14 +46,8 @@ export default function Dashboard() {
     }
   }, [isLoading, isAuthenticated, navigate]);
 
-  useEffect(() => {
-    // Seed default timetable if none exists
-    if (user && activeTimetable === null) {
-      seedData().then(() => {
-        toast.success("Welcome! Your default timetable has been created.");
-      });
-    }
-  }, [user, activeTimetable, seedData]);
+  // Removed automatic timetable seeding - users create their own
+  // useEffect for seedData removed
 
   // New: Auto-show reflection dialog when appropriate
   useEffect(() => {
