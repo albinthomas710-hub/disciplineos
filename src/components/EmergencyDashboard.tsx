@@ -7,10 +7,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
-import { AlertCircle, Heart, Phone, BookOpen, Users, CheckCircle } from "lucide-react";
-import { useState } from "react";
+import { AlertCircle, Heart, Phone, BookOpen, Users, CheckCircle, Plus, Trash2, Edit2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface EmergencyDashboardProps {
   open: boolean;
@@ -44,45 +49,59 @@ const temptationStrategies = [
   },
 ];
 
-const temptationTriggers = [
-  {
-    id: 1,
-    title: "YouTube Shorts After Learning",
-    description: "Watching useful AI/educational videos → triggered by YT Shorts thumbnails → scrolling for hours",
-    color: "from-red-500 to-orange-500",
-  },
-  {
-    id: 2,
-    title: "Funk Music Fantasy Loop",
-    description: "Listening to funk music → imagining success → experiencing fantasy for hours instead of executing",
-    color: "from-purple-500 to-pink-500",
-  },
-  {
-    id: 3,
-    title: "Kitchen Idle Time",
-    description: "Wasting 30-40 mins waiting for food or overeating instead of productive waiting",
-    color: "from-orange-500 to-yellow-500",
-  },
-  {
-    id: 4,
-    title: "Instagram Reels + Funk Music",
-    description: "Funk music trigger → watching reels and scrolling for hours → thinking about rich life",
-    color: "from-blue-500 to-cyan-500",
-  },
-  {
-    id: 5,
-    title: "School Thoughts (AVOID)",
-    description: "Thinking about school/friends mocking/ego → useless thoughts that won't happen anyway",
-    color: "from-gray-500 to-slate-500",
-    critical: true,
-  },
-];
-
 export default function EmergencyDashboard({
   open,
   onOpenChange,
 }: EmergencyDashboardProps) {
-  const [selectedTrigger, setSelectedTrigger] = useState<number | null>(null);
+  const userTriggers = useQuery(api.emergencyTriggers.getUserTriggers);
+  const initializeTriggers = useMutation(api.emergencyTriggers.initializeDefaultTriggers);
+  const addTrigger = useMutation(api.emergencyTriggers.addTrigger);
+  const deleteTrigger = useMutation(api.emergencyTriggers.deleteTrigger);
+  
+  const [selectedTrigger, setSelectedTrigger] = useState<Id<"emergencyTriggers"> | null>(null);
+  const [isAddingTrigger, setIsAddingTrigger] = useState(false);
+  const [newTrigger, setNewTrigger] = useState({
+    title: "",
+    description: "",
+    color: "from-blue-500 to-cyan-500",
+    isCritical: false,
+  });
+
+  useEffect(() => {
+    if (userTriggers !== undefined && userTriggers.length === 0) {
+      initializeTriggers();
+    }
+  }, [userTriggers, initializeTriggers]);
+
+  const handleAddTrigger = async () => {
+    if (!newTrigger.title.trim() || !newTrigger.description.trim()) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    try {
+      await addTrigger(newTrigger);
+      setNewTrigger({
+        title: "",
+        description: "",
+        color: "from-blue-500 to-cyan-500",
+        isCritical: false,
+      });
+      setIsAddingTrigger(false);
+      toast.success("Trigger added successfully");
+    } catch (error) {
+      toast.error("Failed to add trigger");
+    }
+  };
+
+  const handleDeleteTrigger = async (triggerId: Id<"emergencyTriggers">) => {
+    try {
+      await deleteTrigger({ triggerId });
+      toast.success("Trigger deleted");
+    } catch (error) {
+      toast.error("Failed to delete trigger");
+    }
+  };
 
   const handleStrategyClick = (strategy: string) => {
     toast.success(`${strategy} activated - Stay strong! 💪`);
@@ -112,24 +131,77 @@ export default function EmergencyDashboard({
 
         {/* Your Specific Triggers - MOVED TO TOP */}
         <div className="my-6">
-          <h3 className="text-xl font-bold mb-4 text-center">
-            Your Temptation Triggers
-          </h3>
-          <p className="text-sm text-gray-400 text-center mb-6">
-            Identify which trigger you're facing right now
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-xl font-bold text-center">
+                Your Temptation Triggers
+              </h3>
+              <p className="text-sm text-gray-400 text-center">
+                Identify which trigger you're facing right now
+              </p>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setIsAddingTrigger(!isAddingTrigger)}
+              className="bg-cyan-600 hover:bg-cyan-700 cursor-pointer"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Trigger
+            </Button>
+          </div>
+
+          {/* Add Trigger Form */}
+          {isAddingTrigger && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              className="mb-4 p-4 rounded-lg bg-gray-800/50 border border-gray-700 space-y-3"
+            >
+              <div>
+                <Label className="text-white">Trigger Title</Label>
+                <Input
+                  value={newTrigger.title}
+                  onChange={(e) => setNewTrigger({ ...newTrigger, title: e.target.value })}
+                  placeholder="e.g., Social Media Scrolling"
+                  className="mt-1 bg-gray-900 border-gray-700 text-white"
+                />
+              </div>
+              <div>
+                <Label className="text-white">Description</Label>
+                <Input
+                  value={newTrigger.description}
+                  onChange={(e) => setNewTrigger({ ...newTrigger, description: e.target.value })}
+                  placeholder="Describe the trigger pattern..."
+                  className="mt-1 bg-gray-900 border-gray-700 text-white"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleAddTrigger} className="cursor-pointer flex-1">
+                  Add Trigger
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddingTrigger(false)}
+                  className="cursor-pointer"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
           <div className="space-y-3">
-            {temptationTriggers.map((trigger) => (
+            {userTriggers?.map((trigger, i) => (
               <motion.div
-                key={trigger.id}
+                key={trigger._id}
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: trigger.id * 0.1 }}
-                onClick={() => setSelectedTrigger(trigger.id)}
+                transition={{ delay: i * 0.1 }}
+                onClick={() => setSelectedTrigger(trigger._id)}
                 className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                  selectedTrigger === trigger.id
+                  selectedTrigger === trigger._id
                     ? "border-cyan-500 bg-cyan-500/10"
-                    : trigger.critical
+                    : trigger.isCritical
                     ? "border-red-500/50 bg-red-500/5 hover:border-red-500"
                     : "border-gray-700 bg-gray-800/30 hover:border-gray-600"
                 }`}
@@ -138,19 +210,19 @@ export default function EmergencyDashboard({
                   <div
                     className={`w-10 h-10 rounded-lg bg-gradient-to-br ${trigger.color} flex items-center justify-center shrink-0`}
                   >
-                    <span className="text-white font-bold">{trigger.id}</span>
+                    <span className="text-white font-bold">{i + 1}</span>
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <h4 className="font-semibold text-white">
                         {trigger.title}
                       </h4>
-                      {trigger.critical && (
+                      {trigger.isCritical && (
                         <span className="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">
                           CRITICAL
                         </span>
                       )}
-                      {selectedTrigger === trigger.id && (
+                      {selectedTrigger === trigger._id && (
                         <CheckCircle className="h-5 w-5 text-cyan-500 ml-auto" />
                       )}
                     </div>
@@ -158,6 +230,17 @@ export default function EmergencyDashboard({
                       {trigger.description}
                     </p>
                   </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteTrigger(trigger._id);
+                    }}
+                    className="cursor-pointer text-red-400 hover:text-red-300 hover:bg-red-950"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
               </motion.div>
             ))}

@@ -196,6 +196,16 @@ const schema = defineSchema(
       allCompleted: v.boolean(),
       lastChecked: v.number(),
     }).index("by_user_and_date", ["userId", "date"]),
+
+    // Emergency Triggers - user-defined temptation triggers
+    emergencyTriggers: defineTable({
+      userId: v.id("users"),
+      title: v.string(),
+      description: v.string(),
+      color: v.string(), // gradient colors like "from-red-500 to-orange-500"
+      isCritical: v.boolean(),
+      order: v.number(),
+    }).index("by_user", ["userId"]),
   },
   {
     schemaValidation: false,
