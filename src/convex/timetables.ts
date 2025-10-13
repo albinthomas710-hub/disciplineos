@@ -152,23 +152,24 @@ export const remove = mutation({
       throw new Error("Timetable not found");
     }
 
-    // New: Check if this is the last timetable
+    // Get all timetables for checking if we need to activate another
     const allTimetables = await ctx.db
       .query("timetables")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
 
-    if (allTimetables.length === 1) {
-      throw new Error("Cannot delete your last timetable. Create a new one first.");
-    }
-
-    // If deleting active timetable, activate another one
-    if (timetable.isActive) {
+    // If deleting active timetable, activate another one (if available)
+    if (timetable.isActive && allTimetables.length > 1) {
       const nextTimetable = allTimetables.find(tt => tt._id !== args.id);
       if (nextTimetable) {
         await ctx.db.patch(nextTimetable._id, { isActive: true });
         await ctx.db.patch(user._id, { activeTimetableId: nextTimetable._id });
       }
+    }
+
+    // If this is the last timetable, clear the user's active timetable
+    if (allTimetables.length === 1) {
+      await ctx.db.patch(user._id, { activeTimetableId: undefined });
     }
 
     // Delete all time blocks
