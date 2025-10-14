@@ -35,7 +35,6 @@ export default function Dashboard() {
   const [showReflection, setShowReflection] = useState(false);
 
   const activeTimetable = useQuery(api.timetables.getActive);
-  const seedData = useMutation(api.seedData.seedDefaultTimetable);
   const todayLogs = useQuery(api.completionLogs.getToday);
   const reflectionCheck = useQuery(api.reflectionTriggers.shouldShowReflection);
   const vectalCheck = useQuery(api.vectal.checkDailyCompletion);
