@@ -13,15 +13,20 @@ import UrgeModal from "./UrgeModal";
 import RealityAnchorModal from "./RealityAnchorModal";
 import KitchenReclaimModal from "./KitchenReclaimModal";
 import EmergencyDashboard from "./EmergencyDashboard";
+import DopamineShieldOnboarding from "./DopamineShieldOnboarding";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function DopamineShieldView() {
+  const { user } = useAuth();
   const shieldStatus = useQuery(api.dopamineShield.getStatus);
   const initializeStatus = useMutation(api.dopamineShield.initializeStatus);
+  const triggers = useQuery(api.emergencyTriggers.getUserTriggers);
   const [showInterceptor, setShowInterceptor] = useState(false);
   const [showUrgeModal, setShowUrgeModal] = useState(false);
   const [showRealityAnchor, setShowRealityAnchor] = useState(false);
   const [showKitchenReclaim, setShowKitchenReclaim] = useState(false);
   const [showEmergencyDashboard, setShowEmergencyDashboard] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
 
   useEffect(() => {
@@ -29,6 +34,13 @@ export default function DopamineShieldView() {
       initializeStatus();
     }
   }, [shieldStatus, initializeStatus]);
+
+  // Check if user needs onboarding
+  useEffect(() => {
+    if (user && !user.hasCompletedShieldOnboarding && triggers && triggers.length === 0) {
+      setShowOnboarding(true);
+    }
+  }, [user, triggers]);
 
   useEffect(() => {
     if (!shieldStatus) return;
@@ -61,12 +73,22 @@ export default function DopamineShieldView() {
     }
   };
 
+  const handleOnboardingComplete = () => {
+    setShowOnboarding(false);
+    toast.success("Your personalized Dopamine Shield is ready! 🛡️");
+  };
+
   if (!shieldStatus) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
+  }
+
+  // Show onboarding for new users
+  if (showOnboarding) {
+    return <DopamineShieldOnboarding onComplete={handleOnboardingComplete} />;
   }
 
   const isStrictBlock = shieldStatus.bypassAttemptsToday >= 3;

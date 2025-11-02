@@ -87,49 +87,83 @@ export const markComplete = mutation({
   },
 });
 
-// Helper to update user streak
+// Helper to update user streak - HONEST calculation based on actual completion
 async function updateStreak(ctx: any, userId: any) {
   const user = await ctx.db.get(userId);
   if (!user) return;
 
   const today = new Date().toISOString().split("T")[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
-
-  const todayLogs = await ctx.db
+  
+  // Get all completion logs for this user, sorted by date
+  const allLogs = await ctx.db
     .query("completionLogs")
-    .withIndex("by_user_and_date", (q: any) => 
-      q.eq("userId", userId).eq("date", today)
-    )
+    .withIndex("by_user_and_date", (q: any) => q.eq("userId", userId))
     .collect();
 
-  const todayCompleted = todayLogs.filter((log: any) => log.completed).length;
-  const todayTotal = todayLogs.length;
-
-  // If 80% or more completed, count as successful day
-  if (todayTotal > 0 && todayCompleted / todayTotal >= 0.8) {
-    const yesterdayLogs = await ctx.db
-      .query("completionLogs")
-      .withIndex("by_user_and_date", (q: any) => 
-        q.eq("userId", userId).eq("date", yesterday)
-      )
-      .collect();
-
-    const yesterdayCompleted = yesterdayLogs.filter((log: any) => log.completed).length;
-    const yesterdayTotal = yesterdayLogs.length;
-
-    const currentStreak = user.currentStreak || 0;
-    let newStreak = 1;
-
-    if (yesterdayTotal > 0 && yesterdayCompleted / yesterdayTotal >= 0.8) {
-      newStreak = currentStreak + 1;
+  // Group logs by date
+  const logsByDate = new Map<string, any[]>();
+  for (const log of allLogs) {
+    if (!logsByDate.has(log.date)) {
+      logsByDate.set(log.date, []);
     }
-
-    const longestStreak = Math.max(user.longestStreak || 0, newStreak);
-
-    await ctx.db.patch(userId, {
-      currentStreak: newStreak,
-      longestStreak,
-      totalDaysCompleted: (user.totalDaysCompleted || 0) + 1,
-    });
+    logsByDate.get(log.date)!.push(log);
   }
+
+  // Calculate which days were successful (80%+ completion)
+  const successfulDates = new Set<string>();
+  for (const [date, logs] of logsByDate.entries()) {
+    const completed = logs.filter(log => log.completed).length;
+    const total = logs.length;
+    if (total > 0 && completed / total >= 0.8) {
+      successfulDates.add(date);
+    }
+  }
+
+  // Calculate current streak (consecutive days ending today)
+  let currentStreak = 0;
+  let checkDate = new Date();
+  while (true) {
+    const dateStr = checkDate.toISOString().split("T")[0];
+    if (successfulDates.has(dateStr)) {
+      currentStreak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else {
+      break;
+    }
+  }
+
+  // Calculate longest streak ever
+  const sortedDates = Array.from(successfulDates).sort();
+  let longestStreak = 0;
+  let tempStreak = 0;
+  let prevDate: Date | null = null;
+
+  for (const dateStr of sortedDates) {
+    const currentDate = new Date(dateStr);
+    
+    if (prevDate === null) {
+      tempStreak = 1;
+    } else {
+      const dayDiff = Math.floor((currentDate.getTime() - prevDate.getTime()) / 86400000);
+      if (dayDiff === 1) {
+        tempStreak++;
+      } else {
+        longestStreak = Math.max(longestStreak, tempStreak);
+        tempStreak = 1;
+      }
+    }
+    
+    prevDate = currentDate;
+  }
+  longestStreak = Math.max(longestStreak, tempStreak);
+
+  // Total days completed is just the count of successful days
+  const totalDaysCompleted = successfulDates.size;
+
+  // Update user with REAL stats
+  await ctx.db.patch(userId, {
+    currentStreak,
+    longestStreak,
+    totalDaysCompleted,
+  });
 }

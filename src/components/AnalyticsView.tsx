@@ -133,7 +133,9 @@ export default function AnalyticsView() {
                   className="p-4 border rounded-lg space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold">{reflection.date}</span>
+                    <span className="font-semibold">
+                      {reflection.date} ({new Date(reflection.date).toLocaleDateString('en-US', { weekday: 'long' })})
+                    </span>
                   </div>
                   <div className="space-y-1 text-sm">
                     <p>

@@ -1,5 +1,5 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { query, QueryCtx } from "./_generated/server";
+import { query, mutation, QueryCtx } from "./_generated/server";
 
 /**
  * Get the current signed in user. Returns null if the user is not signed in.
@@ -31,3 +31,18 @@ export const getCurrentUser = async (ctx: QueryCtx) => {
   }
   return await ctx.db.get(userId);
 };
+
+/**
+ * Mark the Dopamine Shield onboarding as complete for the current user
+ */
+export const completeShieldOnboarding = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    await ctx.db.patch(user._id, {
+      hasCompletedShieldOnboarding: true,
+    });
+  },
+});

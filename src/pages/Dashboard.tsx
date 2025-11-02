@@ -17,6 +17,14 @@ import {
   Settings,
   Target,
   Shield,
+  BookOpen,
+  FolderOpen,
+  Sparkles,
+  Brain,
+  Heart,
+  Video,
+  Lightbulb,
+  Ban,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
@@ -27,11 +35,20 @@ import AnalyticsView from "@/components/AnalyticsView";
 import ReflectionDialog from "@/components/ReflectionDialog";
 import DopamineShieldView from "@/components/DopamineShieldView";
 import VectalView from "@/components/VectalView";
+import QuotesView from "@/components/QuotesView";
+import ProjectsView from "@/components/ProjectsView";
+import ManifestationView from "@/components/ManifestationView";
+import FutureTimelineView from "@/components/FutureTimelineView";
+import KnowYourselfView from "@/components/KnowYourselfView";
+import PrayerView from "@/components/PrayerView";
+import VideoLibraryView from "@/components/VideoLibraryView";
+import AdviceView from "@/components/AdviceView";
+import NotToDoListView from "@/components/NotToDoListView";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield" | "vectal">("timer");
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield" | "vectal" | "quotes" | "projects" | "manifest" | "future" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo">("timer");
   const [showReflection, setShowReflection] = useState(false);
 
   const activeTimetable = useQuery(api.timetables.getActive);
@@ -202,7 +219,7 @@ export default function Dashboard() {
 
       {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
-        <div className="flex gap-2 bg-white/50 dark:bg-gray-900/50 p-1 rounded-lg w-fit">
+        <div className="flex flex-wrap gap-2 bg-white/50 dark:bg-gray-900/50 p-1 rounded-lg">
           <Button
             variant={activeTab === "timer" ? "default" : "ghost"}
             onClick={() => setActiveTab("timer")}
@@ -243,6 +260,78 @@ export default function Dashboard() {
             <Target className="h-4 w-4 mr-2" />
             Vectal
           </Button>
+          <Button
+            variant={activeTab === "quotes" ? "default" : "ghost"}
+            onClick={() => setActiveTab("quotes")}
+            className="cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700"
+          >
+            <BookOpen className="h-4 w-4 mr-2" />
+            Quotes
+          </Button>
+          <Button
+            variant={activeTab === "projects" ? "default" : "ghost"}
+            onClick={() => setActiveTab("projects")}
+            className="cursor-pointer bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700"
+          >
+            <FolderOpen className="h-4 w-4 mr-2" />
+            Projects
+          </Button>
+          <Button
+            variant={activeTab === "manifest" ? "default" : "ghost"}
+            onClick={() => setActiveTab("manifest")}
+            className="cursor-pointer bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700"
+          >
+            <Sparkles className="h-4 w-4 mr-2" />
+            Manifest
+          </Button>
+          <Button
+            variant={activeTab === "future" ? "default" : "ghost"}
+            onClick={() => setActiveTab("future")}
+            className="cursor-pointer bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
+          >
+            <Sparkles className="h-4 w-4 mr-2" />
+            Future
+          </Button>
+          <Button
+            variant={activeTab === "knowyourself" ? "default" : "ghost"}
+            onClick={() => setActiveTab("knowyourself")}
+            className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700"
+          >
+            <Brain className="h-4 w-4 mr-2" />
+            Know Yourself
+          </Button>
+          <Button
+            variant={activeTab === "prayer" ? "default" : "ghost"}
+            onClick={() => setActiveTab("prayer")}
+            className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
+          >
+            <Heart className="h-4 w-4 mr-2" />
+            Prayer
+          </Button>
+          <Button
+            variant={activeTab === "videos" ? "default" : "ghost"}
+            onClick={() => setActiveTab("videos")}
+            className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700"
+          >
+            <Video className="h-4 w-4 mr-2" />
+            Videos
+          </Button>
+          <Button
+            variant={activeTab === "advice" ? "default" : "ghost"}
+            onClick={() => setActiveTab("advice")}
+            className="cursor-pointer bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700"
+          >
+            <Lightbulb className="h-4 w-4 mr-2" />
+            Advice
+          </Button>
+          <Button
+            variant={activeTab === "nottodo" ? "default" : "ghost"}
+            onClick={() => setActiveTab("nottodo")}
+            className="cursor-pointer bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700"
+          >
+            <Ban className="h-4 w-4 mr-2" />
+            Not To Do
+          </Button>
         </div>
       </div>
 
@@ -253,6 +342,15 @@ export default function Dashboard() {
         {activeTab === "analytics" && <AnalyticsView />}
         {activeTab === "shield" && <DopamineShieldView />}
         {activeTab === "vectal" && <VectalView />}
+        {activeTab === "quotes" && <QuotesView />}
+        {activeTab === "projects" && <ProjectsView />}
+        {activeTab === "manifest" && <ManifestationView />}
+        {activeTab === "future" && <FutureTimelineView />}
+        {activeTab === "knowyourself" && <KnowYourselfView />}
+        {activeTab === "prayer" && <PrayerView />}
+        {activeTab === "videos" && <VideoLibraryView />}
+        {activeTab === "advice" && <AdviceView />}
+        {activeTab === "nottodo" && <NotToDoListView />}
       </div>
 
       {/* Reflection Dialog */}

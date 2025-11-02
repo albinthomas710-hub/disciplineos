@@ -18,6 +18,40 @@ export const getStats = query({
   },
 });
 
+// Get a random action-oriented quote
+export const getActionQuote = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return null;
+
+    // Get quotes related to action, discipline, or focus
+    const allQuotes = await ctx.db
+      .query("quotes")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const actionQuotes = allQuotes.filter(q => 
+      q.category === "action" || 
+      q.category === "discipline" || 
+      q.category === "focus" ||
+      q.tags?.some(tag => ["action", "discipline", "focus", "work"].includes(tag))
+    );
+
+    if (actionQuotes.length === 0) {
+      // Return a default quote if user has none
+      return {
+        text: "A vision without action is merely a dream. Action without vision just passes the time. Vision with action can change the world.",
+        author: "Joel A. Barker",
+        category: "action"
+      };
+    }
+
+    // Return random action quote
+    return actionQuotes[Math.floor(Math.random() * actionQuotes.length)];
+  },
+});
+
 // Initialize anchor status for new users
 export const initializeStatus = mutation({
   args: {},
@@ -38,16 +72,18 @@ export const initializeStatus = mutation({
       microPlans: [],
       conversionsCountWeek: 0,
       lastWeeklyReset: Date.now(),
+      wisdomJourney: [],
     });
   },
 });
 
-// Capture vision and create micro-plan
+// Capture vision and create micro-plan with quote integration
 export const captureVision = mutation({
   args: {
     vision: v.string(),
     why: v.string(),
     tinyAction: v.string(),
+    triggerQuoteId: v.optional(v.id("quotes")),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -65,6 +101,7 @@ export const captureVision = mutation({
         microPlans: [],
         conversionsCountWeek: 0,
         lastWeeklyReset: Date.now(),
+        wisdomJourney: [],
       });
       status = await ctx.db.get(statusId);
       if (!status) throw new Error("Failed to create status");
@@ -72,11 +109,39 @@ export const captureVision = mutation({
 
     const now = Date.now();
 
-    // Generate AI micro-plan (3 steps)
+    // Get relevant quotes for each step
+    const allQuotes = await ctx.db
+      .query("quotes")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const getRelevantQuote = (stepType: string) => {
+      const filtered = allQuotes.filter(q => {
+        if (stepType === "action") return q.category === "action" || q.tags?.includes("action");
+        if (stepType === "reflection") return q.category === "wisdom" || q.tags?.includes("mindset");
+        if (stepType === "continuation") return q.category === "resilience" || q.tags?.includes("goals");
+        return false;
+      });
+      return filtered.length > 0 ? filtered[Math.floor(Math.random() * filtered.length)] : null;
+    };
+
+    // Generate AI micro-plan with quote assignments
     const microPlan = [
-      `Step 1: ${args.tinyAction}`,
-      `Step 2: Document your progress in 2 sentences`,
-      `Step 3: Identify the next smallest action to continue`,
+      {
+        step: `Step 1: ${args.tinyAction}`,
+        quoteId: getRelevantQuote("action")?._id,
+        completed: false,
+      },
+      {
+        step: `Step 2: Document your progress in 2 sentences`,
+        quoteId: getRelevantQuote("reflection")?._id,
+        completed: false,
+      },
+      {
+        step: `Step 3: Identify the next smallest action to continue`,
+        quoteId: getRelevantQuote("continuation")?._id,
+        completed: false,
+      },
     ];
 
     const newEvent = {
@@ -84,7 +149,8 @@ export const captureVision = mutation({
       eventType: "vision_captured" as const,
       vision: args.vision,
       why: args.why,
-      microPlan,
+      microPlan: microPlan.map(p => p.step),
+      triggerQuoteId: args.triggerQuoteId,
     };
 
     const newMicroPlan = {
@@ -92,6 +158,7 @@ export const captureVision = mutation({
       vision: args.vision,
       steps: microPlan,
       completed: false,
+      triggerQuoteId: args.triggerQuoteId,
     };
 
     const events = [...(status.anchorEvents || []), newEvent];
@@ -112,6 +179,88 @@ export const captureVision = mutation({
       microPlan,
       shouldScheduleWeeklySession: weeklyCount >= 5,
     };
+  },
+});
+
+// Complete a micro-plan step and track wisdom manifestation
+export const completeMicroPlanStep = mutation({
+  args: {
+    planIndex: v.number(),
+    stepIndex: v.number(),
+    reflection: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const status = await ctx.db
+      .query("realityAnchor")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    if (!status) throw new Error("Status not found");
+
+    const plans = [...(status.microPlans || [])];
+    if (plans[args.planIndex] && plans[args.planIndex].steps[args.stepIndex]) {
+      plans[args.planIndex].steps[args.stepIndex].completed = true;
+
+      // Check if all steps completed
+      const allStepsCompleted = plans[args.planIndex].steps.every(s => s.completed);
+      if (allStepsCompleted) {
+        plans[args.planIndex].completed = true;
+
+        // Add to wisdom journey
+        const wisdomJourney = [...(status.wisdomJourney || [])];
+        wisdomJourney.push({
+          timestamp: Date.now(),
+          vision: plans[args.planIndex].vision,
+          triggerQuoteId: plans[args.planIndex].triggerQuoteId,
+          stepsCompleted: plans[args.planIndex].steps.length,
+          reflection: args.reflection,
+        });
+
+        await ctx.db.patch(status._id, {
+          microPlans: plans,
+          wisdomJourney,
+        });
+      } else {
+        await ctx.db.patch(status._id, {
+          microPlans: plans,
+        });
+      }
+    }
+  },
+});
+
+// Get wisdom journey timeline
+export const getWisdomJourney = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    const status = await ctx.db
+      .query("realityAnchor")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    if (!status || !status.wisdomJourney) return [];
+
+    // Enrich with quote data
+    const enrichedJourney = await Promise.all(
+      status.wisdomJourney.map(async (entry) => {
+        let quote = null;
+        if (entry.triggerQuoteId) {
+          quote = await ctx.db.get(entry.triggerQuoteId);
+        }
+        return {
+          ...entry,
+          quote,
+        };
+      })
+    );
+
+    return enrichedJourney.sort((a, b) => b.timestamp - a.timestamp);
   },
 });
 
@@ -136,6 +285,7 @@ export const recordAnchorEvent = mutation({
         microPlans: [],
         conversionsCountWeek: 0,
         lastWeeklyReset: Date.now(),
+        wisdomJourney: [],
       });
       status = await ctx.db.get(statusId);
       if (!status) throw new Error("Failed to create status");
@@ -154,7 +304,7 @@ export const recordAnchorEvent = mutation({
   },
 });
 
-// Complete a micro-plan
+// Complete a micro-plan (legacy - kept for compatibility)
 export const completeMicroPlan = mutation({
   args: {
     planIndex: v.number(),
@@ -173,6 +323,7 @@ export const completeMicroPlan = mutation({
     const plans = [...(status.microPlans || [])];
     if (plans[args.planIndex]) {
       plans[args.planIndex].completed = true;
+      plans[args.planIndex].steps.forEach(s => s.completed = true);
     }
 
     await ctx.db.patch(status._id, {

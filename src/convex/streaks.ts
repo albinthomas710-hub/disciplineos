@@ -14,55 +14,92 @@ export const calculateDailyStreaks = internalMutation({
   },
 });
 
-// Helper function to update a single user's streak
+// Helper function to update a single user's streak - HONEST calculation
 async function updateUserStreak(ctx: any, userId: any) {
-  const today = new Date().toISOString().split("T")[0];
-  const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
-
-  // Get today's logs
-  const todayLogs = await ctx.db
-    .query("completionLogs")
-    .withIndex("by_user_and_date", (q: any) => 
-      q.eq("userId", userId).eq("date", today)
-    )
-    .collect();
-
-  if (todayLogs.length === 0) return;
-
-  const todayCompleted = todayLogs.filter((log: any) => log.completed).length;
-  const todayTotal = todayLogs.length;
-  const todayRate = todayCompleted / todayTotal;
-
-  // Only update if 80% or more completed
-  if (todayRate < 0.8) return;
-
   const user = await ctx.db.get(userId);
   if (!user) return;
 
-  // Get yesterday's logs
-  const yesterdayLogs = await ctx.db
+  // Get ALL completion logs for this user
+  const allLogs = await ctx.db
     .query("completionLogs")
-    .withIndex("by_user_and_date", (q: any) => 
-      q.eq("userId", userId).eq("date", yesterday)
-    )
+    .withIndex("by_user_and_date", (q: any) => q.eq("userId", userId))
     .collect();
 
-  const yesterdayCompleted = yesterdayLogs.filter((log: any) => log.completed).length;
-  const yesterdayTotal = yesterdayLogs.length;
-  const yesterdayRate = yesterdayTotal > 0 ? yesterdayCompleted / yesterdayTotal : 0;
-
-  let newStreak = 1;
-  
-  // Continue streak if yesterday was also 80%+
-  if (yesterdayRate >= 0.8) {
-    newStreak = (user.currentStreak || 0) + 1;
+  // Group logs by date
+  const logsByDate = new Map<string, any[]>();
+  for (const log of allLogs) {
+    if (!logsByDate.has(log.date)) {
+      logsByDate.set(log.date, []);
+    }
+    logsByDate.get(log.date)!.push(log);
   }
 
-  const longestStreak = Math.max(user.longestStreak || 0, newStreak);
-  const totalDaysCompleted = (user.totalDaysCompleted || 0) + 1;
+  // Calculate which days were successful (80%+ completion)
+  const successfulDates = new Set<string>();
+  for (const [date, logs] of logsByDate.entries()) {
+    const completed = logs.filter((log: any) => log.completed).length;
+    const total = logs.length;
+    if (total > 0 && completed / total >= 0.8) {
+      successfulDates.add(date);
+    }
+  }
 
+  // Calculate current streak (consecutive days ending today or yesterday)
+  let currentStreak = 0;
+  let checkDate = new Date();
+  
+  // Start from today
+  while (true) {
+    const dateStr = checkDate.toISOString().split("T")[0];
+    if (successfulDates.has(dateStr)) {
+      currentStreak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    } else if (currentStreak === 0) {
+      // If today isn't complete, check yesterday
+      checkDate.setDate(checkDate.getDate() - 1);
+      const yesterdayStr = checkDate.toISOString().split("T")[0];
+      if (successfulDates.has(yesterdayStr)) {
+        currentStreak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    } else {
+      break;
+    }
+  }
+
+  // Calculate longest streak ever
+  const sortedDates = Array.from(successfulDates).sort();
+  let longestStreak = 0;
+  let tempStreak = 0;
+  let prevDate: Date | null = null;
+
+  for (const dateStr of sortedDates) {
+    const currentDate = new Date(dateStr);
+    
+    if (prevDate === null) {
+      tempStreak = 1;
+    } else {
+      const dayDiff = Math.floor((currentDate.getTime() - prevDate.getTime()) / 86400000);
+      if (dayDiff === 1) {
+        tempStreak++;
+      } else {
+        longestStreak = Math.max(longestStreak, tempStreak);
+        tempStreak = 1;
+      }
+    }
+    
+    prevDate = currentDate;
+  }
+  longestStreak = Math.max(longestStreak, tempStreak);
+
+  // Total days completed
+  const totalDaysCompleted = successfulDates.size;
+
+  // Update with REAL stats
   await ctx.db.patch(userId, {
-    currentStreak: newStreak,
+    currentStreak,
     longestStreak,
     totalDaysCompleted,
   });

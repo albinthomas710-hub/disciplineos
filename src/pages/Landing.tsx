@@ -16,6 +16,11 @@ import {
   Sparkles,
   Target,
   Zap,
+  X,
+  TrendingUp,
+  Users,
+  Award,
+  Rocket,
 } from "lucide-react";
 import { useNavigate } from "react-router";
 
@@ -41,7 +46,7 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-indigo-950">
-      {/* Hero Section */}
+      {/* Hero Section - REDESIGNED */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -97,7 +102,7 @@ export default function Landing() {
             </div>
           </motion.div>
 
-          {/* Hero Content */}
+          {/* Hero - Authentic & Feature-Focused */}
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -105,19 +110,18 @@ export default function Landing() {
             className="text-center max-w-4xl mx-auto"
           >
             <h2 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tighter mb-8 leading-[1.05]">
-              <span className="bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-50 dark:to-white bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(0,0,0,0.15)]">
-                Master Your Time.
+              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-300 dark:via-purple-300 dark:to-pink-300 bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(99,102,241,0.3)]">
+                Time-Block Productivity
               </span>
               <br />
-              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-300 dark:via-purple-300 dark:to-pink-300 bg-clip-text text-transparent drop-shadow-[0_2px_12px_rgba(99,102,241,0.3)]">
-                Build Discipline.
+              <span className="text-gray-900 dark:text-gray-100">
+                With a Twist
               </span>
             </h2>
 
-            <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed font-light tracking-wide">
-              The time-block productivity system that structures every hour of
-              your day and keeps you ruthlessly consistent. Break free from
-              distractions and unlock your potential.
+            <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 mb-6 max-w-3xl mx-auto leading-relaxed">
+              Create timetables, track progress, and see two parallel timelines of your future self - 
+              one where you stay disciplined, one where you drift. Your daily choices determine which future becomes real.
             </p>
 
             <motion.div
@@ -131,52 +135,16 @@ export default function Landing() {
                 onClick={handleGetStarted}
                 className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 hover:from-indigo-700 hover:via-purple-700 hover:to-indigo-700 text-white px-10 py-7 text-lg rounded-2xl shadow-[0_8px_30px_rgba(99,102,241,0.3)] hover:shadow-[0_12px_40px_rgba(99,102,241,0.5)] transition-all duration-500 cursor-pointer hover:scale-[1.03] active:scale-[0.97] font-bold tracking-wide"
               >
-                {isAuthenticated ? "Go to Dashboard" : "Start Your Journey"}
+                {isAuthenticated ? "Go to Dashboard" : "Start Free - No Credit Card"}
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="px-10 py-7 text-lg rounded-2xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-500 hover:scale-[1.03] active:scale-[0.97] border-2 font-semibold tracking-wide hover:border-indigo-300 dark:hover:border-indigo-700"
-                onClick={() => {
-                  document
-                    .getElementById("features")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                Learn More
-              </Button>
-            </motion.div>
-
-            {/* Stats */}
-            <motion.div
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.7 }}
-              className="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto"
-            >
-              {[
-                { icon: Flame, label: "Build Streaks", value: "Daily" },
-                { icon: Target, label: "Hit Goals", value: "100%" },
-                { icon: Zap, label: "Stay Focused", value: "24/7" },
-              ].map((stat, i) => (
-                <div key={i} className="text-center">
-                  <stat.icon className="h-8 w-8 mx-auto mb-2 text-indigo-600 dark:text-indigo-400" />
-                  <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {stat.value}
-                  </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400">
-                    {stat.label}
-                  </div>
-                </div>
-              ))}
             </motion.div>
           </motion.div>
         </div>
       </motion.div>
 
-      {/* Features Section */}
-      <div id="features" className="py-24 bg-white/50 dark:bg-gray-900/50">
+      {/* Features Section - ENHANCED */}
+      <div id="features" className="py-24 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-indigo-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -186,56 +154,56 @@ export default function Landing() {
             className="text-center mb-16"
           >
             <h3 className="text-4xl sm:text-5xl font-extrabold mb-5 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-700 dark:from-white dark:via-gray-100 dark:to-gray-300 bg-clip-text text-transparent tracking-tighter">
-              Everything You Need to Win
+              What Makes This Different
             </h3>
             <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-400 font-light tracking-wide">
-              Powerful features designed to keep you on track
+              Built for execution, not endless planning
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
+                icon: Sparkles,
+                title: "Future Self Mirror",
+                description:
+                  "Two parallel timelines show your future 90 days from now - one disciplined, one drifting. Your completion rate today determines which timeline becomes more vivid. No AI needed, just honest reflection.",
+                color: "from-purple-500 to-pink-500",
+              },
+              {
                 icon: Calendar,
                 title: "Multi-Timetable System",
                 description:
-                  "Create unlimited schedules for school days, holidays, and focus modes. Switch between them instantly.",
+                  "Create different schedules for school days, holidays, and focus modes. Switch between them instantly. Time-block your entire day.",
                 color: "from-blue-500 to-cyan-500",
               },
               {
-                icon: Clock,
-                title: "Time-Block Automation",
+                icon: Shield,
+                title: "Dopamine Shield",
                 description:
-                  "Structure every hour with precision. Get smart notifications and stay on schedule automatically.",
-                color: "from-indigo-500 to-purple-500",
+                  "Emergency support when temptation hits. Convert fantasies into 3-step action plans. Track your urges and build resistance.",
+                color: "from-red-500 to-orange-500",
               },
               {
-                icon: Focus,
-                title: "Dopamine Shield Mode",
+                icon: Target,
+                title: "Manifestation Board",
                 description:
-                  "Block distractions during focus hours. Grey out the screen until your task timer completes.",
-                color: "from-purple-500 to-pink-500",
+                  "Track goals with energy scores, visualization streaks, and synchronicity logging. Break big goals into micro-steps.",
+                color: "from-yellow-500 to-orange-500",
               },
               {
                 icon: LineChart,
                 title: "Progress Analytics",
                 description:
-                  "Track daily streaks, completion rates, and weekly consistency. See your discipline grow.",
+                  "Track daily streaks, completion rates, and weekly consistency. See your discipline grow over time.",
                 color: "from-green-500 to-emerald-500",
               },
               {
                 icon: Brain,
                 title: "Daily Reflections",
                 description:
-                  "End each day with guided prompts. Build self-awareness and continuous improvement.",
-                color: "from-orange-500 to-red-500",
-              },
-              {
-                icon: Sparkles,
-                title: "Beautiful Design",
-                description:
-                  "Gradient backgrounds that shift with the day. Calm, minimalist interface that inspires focus.",
-                color: "from-pink-500 to-rose-500",
+                  "End each day with guided prompts. What went well, what broke discipline, how to improve tomorrow.",
+                color: "from-indigo-500 to-purple-500",
               },
             ].map((feature, i) => (
               <motion.div
@@ -245,14 +213,14 @@ export default function Landing() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1, duration: 0.6 }}
               >
-                <Card className="h-full hover:shadow-2xl transition-all duration-500 border-2 cursor-pointer hover:scale-[1.03] hover:border-indigo-300 dark:hover:border-indigo-700 group backdrop-blur-sm">
+                <Card className="h-full hover:shadow-xl transition-all duration-300 border-2 group">
                   <CardContent className="p-7">
                     <div
                       className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-5 shadow-lg group-hover:shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-3`}
                     >
                       <feature.icon className="h-7 w-7 text-white" />
                     </div>
-                    <h4 className="text-xl font-bold mb-3 tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">{feature.title}</h4>
+                    <h4 className="text-xl font-bold mb-3">{feature.title}</h4>
                     <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-base">
                       {feature.description}
                     </p>
@@ -265,7 +233,7 @@ export default function Landing() {
       </div>
 
       {/* How It Works */}
-      <div className="py-24">
+      <div className="py-24 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-gray-900 dark:to-purple-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
@@ -330,7 +298,7 @@ export default function Landing() {
         </div>
       </div>
 
-      {/* CTA Section */}
+      {/* CTA Section - ENHANCED */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         whileInView={{ y: 0, opacity: 1 }}
@@ -338,21 +306,24 @@ export default function Landing() {
         className="py-24 bg-gradient-to-r from-indigo-600 to-purple-600"
       >
         <div className="max-w-4xl mx-auto text-center px-4">
-          <Shield className="h-20 w-20 mx-auto mb-8 text-white drop-shadow-2xl" />
+          <Rocket className="h-20 w-20 mx-auto mb-8 text-white drop-shadow-2xl" />
           <h3 className="text-4xl sm:text-5xl font-extrabold text-white mb-6 tracking-tighter drop-shadow-lg">
-            Discipline is Freedom
+            Stop Wasting Time. Start Building Discipline.
           </h3>
           <p className="text-xl sm:text-2xl text-indigo-50 mb-10 font-light leading-relaxed tracking-wide">
-            Break the loop. Build the life you deserve. Start today.
+            Join the productivity revolution. Free forever. No credit card required.
           </p>
           <Button
             size="lg"
             onClick={handleGetStarted}
             className="bg-white text-indigo-600 hover:bg-indigo-50 px-10 py-7 text-lg rounded-2xl shadow-[0_8px_30px_rgba(255,255,255,0.3)] hover:shadow-[0_12px_40px_rgba(255,255,255,0.5)] transition-all duration-500 cursor-pointer hover:scale-[1.03] active:scale-[0.97] font-bold tracking-wide"
           >
-            {isAuthenticated ? "Go to Dashboard" : "Begin Your Transformation"}
+            {isAuthenticated ? "Go to Dashboard" : "Start Free Now"}
             <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
+          <p className="text-sm text-indigo-100 mt-6">
+            ✓ No credit card required  ✓ Setup in 2 minutes  ✓ Cancel anytime
+          </p>
         </div>
       </motion.div>
 

@@ -36,7 +36,13 @@ const schema = defineSchema(
       longestStreak: v.optional(v.number()),
       totalDaysCompleted: v.optional(v.number()),
       activeTimetableId: v.optional(v.id("timetables")),
-    }).index("email", ["email"]), // index for the email. do not remove or modify
+      hasCompletedShieldOnboarding: v.optional(v.boolean()),
+    })
+      .index("email", ["email"])
+      .searchIndex("search_name", {
+        searchField: "name",
+        filterFields: ["email"],
+      }),
 
     // Timetables - different schedules (School Days, Holidays, etc)
     timetables: defineTable({
@@ -123,18 +129,35 @@ const schema = defineSchema(
           vision: v.optional(v.string()),
           why: v.optional(v.string()),
           microPlan: v.optional(v.array(v.string())),
+          triggerQuoteId: v.optional(v.id("quotes")),
         })
       ),
       microPlans: v.array(
         v.object({
           createdAt: v.number(),
           vision: v.string(),
-          steps: v.array(v.string()),
+          steps: v.array(
+            v.object({
+              step: v.string(),
+              quoteId: v.optional(v.id("quotes")),
+              completed: v.boolean(),
+            })
+          ),
           completed: v.boolean(),
+          triggerQuoteId: v.optional(v.id("quotes")),
         })
       ),
       conversionsCountWeek: v.number(),
       lastWeeklyReset: v.number(),
+      wisdomJourney: v.optional(v.array(
+        v.object({
+          timestamp: v.number(),
+          vision: v.string(),
+          triggerQuoteId: v.optional(v.id("quotes")),
+          stepsCompleted: v.number(),
+          reflection: v.optional(v.string()),
+        })
+      )),
     }).index("by_user", ["userId"]),
 
     // Kitchen Micro-Reclaim & Mindful Eats
@@ -206,6 +229,363 @@ const schema = defineSchema(
       isCritical: v.boolean(),
       order: v.number(),
     }).index("by_user", ["userId"]),
+
+    // Quotes Saver - motivational quotes and advice
+    quotes: defineTable({
+      userId: v.id("users"),
+      text: v.string(),
+      author: v.string(),
+      category: v.optional(v.string()), // "motivation", "discipline", "success", etc.
+      isFavorite: v.boolean(),
+      createdAt: v.number(),
+      chainId: v.optional(v.string()), // Links quotes into wisdom paths
+      chainOrder: v.optional(v.number()), // Order within the chain
+      tags: v.optional(v.array(v.string())), // Auto-generated tags for better discovery
+    }).index("by_user", ["userId"])
+      .index("by_user_and_favorite", ["userId", "isFavorite"])
+      .index("by_user_and_author", ["userId", "author"])
+      .index("by_user_and_chain", ["userId", "chainId"]),
+
+    // Legend Profiles - author/legend information
+    legendProfiles: defineTable({
+      userId: v.id("users"),
+      name: v.string(),
+      bio: v.string(),
+      story: v.string(), // Why this legend inspires the user
+      imageUrl: v.optional(v.string()),
+      category: v.optional(v.string()), // "entrepreneur", "philosopher", "athlete", etc.
+      createdAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_name", ["userId", "name"]),
+
+    // Quote Chains - wisdom paths
+    quoteChains: defineTable({
+      userId: v.id("users"),
+      name: v.string(),
+      description: v.string(),
+      theme: v.string(), // "discipline journey", "success mindset", etc.
+      color: v.string(), // gradient colors
+      createdAt: v.number(),
+    }).index("by_user", ["userId"]),
+
+    // Projects - organize work and learning
+    projects: defineTable({
+      userId: v.id("users"),
+      name: v.string(),
+      description: v.optional(v.string()),
+      color: v.string(), // color indicator
+      icon: v.optional(v.string()), // emoji or icon name
+      isFavorite: v.boolean(),
+      status: v.string(), // "active", "archived", "completed"
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_status", ["userId", "status"]),
+
+    // Notes - rich text notes for projects
+    notes: defineTable({
+      userId: v.id("users"),
+      projectId: v.optional(v.id("projects")),
+      title: v.string(),
+      content: v.string(), // markdown content
+      tags: v.optional(v.array(v.string())),
+      isFavorite: v.boolean(),
+      isPinned: v.boolean(),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_project", ["projectId"])
+      .index("by_user_and_favorite", ["userId", "isFavorite"]),
+
+    // Ideas - quick capture for thoughts and ideas
+    ideas: defineTable({
+      userId: v.id("users"),
+      projectId: v.optional(v.id("projects")),
+      content: v.string(),
+      color: v.optional(v.string()), // sticky note color
+      completed: v.boolean(),
+      createdAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_project", ["projectId"]),
+
+    // Manifestations - goals, affirmations, habit changes, mindset shifts
+    manifestations: defineTable({
+      userId: v.id("users"),
+      type: v.union(
+        v.literal("vision"),
+        v.literal("affirmation"),
+        v.literal("habit"),
+        v.literal("mindset")
+      ),
+      title: v.string(),
+      content: v.string(),
+      targetDate: v.optional(v.string()),
+      isFavorite: v.boolean(),
+      isAchieved: v.boolean(),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+      // World-class features
+      imageUrl: v.optional(v.string()), // Vision board image
+      currentState: v.optional(v.string()), // Where you are now
+      desiredState: v.optional(v.string()), // Where you want to be
+      energyScore: v.optional(v.number()), // 0-100 manifestation power score
+      visualizationStreak: v.optional(v.number()), // Days of consistent visualization
+      lastVisualized: v.optional(v.number()), // Timestamp of last visualization
+      microSteps: v.optional(v.array(v.object({
+        step: v.string(),
+        completed: v.boolean(),
+        completedAt: v.optional(v.number()),
+      }))),
+      synchronicities: v.optional(v.array(v.object({
+        description: v.string(),
+        timestamp: v.number(),
+        significance: v.number(), // 1-5 rating
+      }))),
+      journalEntries: v.optional(v.array(v.object({
+        date: v.string(),
+        entry: v.string(),
+        mood: v.number(), // 1-10
+        actionsToken: v.string(), // What actions were taken
+        timestamp: v.number(),
+      }))),
+      achievedAt: v.optional(v.number()), // When it was achieved
+      celebrationViewed: v.optional(v.boolean()), // Has user seen celebration animation
+      // NEW: Evidence-based manifestation features
+      identityStatement: v.optional(v.string()), // "I am the person who..."
+      painLeverage: v.optional(v.string()), // What it costs to NOT achieve this
+      dailyActions: v.optional(v.array(v.object({
+        date: v.string(),
+        actions: v.array(v.string()),
+        timestamp: v.number(),
+      }))),
+      actionStreak: v.optional(v.number()), // Days of consistent action
+      lastActionDate: v.optional(v.string()),
+      evidenceLog: v.optional(v.array(v.object({
+        date: v.string(),
+        evidence: v.string(), // Proof this is working
+        timestamp: v.number(),
+      }))),
+      limitingBeliefs: v.optional(v.array(v.object({
+        belief: v.string(),
+        reframe: v.optional(v.string()),
+        identified: v.number(),
+        resolved: v.boolean(),
+      }))),
+      visualizationSessions: v.optional(v.array(v.object({
+        date: v.string(),
+        emotionalIntensity: v.number(), // 1-10
+        sensoryDetails: v.string(), // What they saw/felt/heard
+        duration: v.number(), // minutes
+        timestamp: v.number(),
+      }))),
+      aiInsights: v.optional(v.array(v.object({
+        insight: v.string(),
+        type: v.union(
+          v.literal("limiting_belief"),
+          v.literal("action_suggestion"),
+          v.literal("pattern_recognition"),
+          v.literal("encouragement")
+        ),
+        timestamp: v.number(),
+      }))),
+      obstacles: v.optional(v.array(v.object({
+        date: v.string(),
+        obstacle: v.string(),
+        solution: v.string(),
+        timestamp: v.number(),
+      }))),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_type", ["userId", "type"])
+      .index("by_user_and_achieved", ["userId", "isAchieved"]),
+
+    // Future Timeline - Template-based parallel futures (no AI required)
+    futureTimeline: defineTable({
+      userId: v.id("users"),
+      timelineAVibrancy: v.number(), // 0-100, how vivid Timeline A appears
+      timelineBVibrancy: v.number(), // 0-100, how vivid Timeline B appears
+      lastUpdated: v.number(),
+    }).index("by_user", ["userId"]),
+
+    // Know Yourself - Self-discovery and pattern recognition
+    selfDiscovery: defineTable({
+      userId: v.id("users"),
+      // Personality Insights
+      personalityTraits: v.optional(v.object({
+        consistency: v.number(), // 0-100
+        resilience: v.number(), // 0-100
+        ambition: v.number(), // 0-100
+        discipline: v.number(), // 0-100
+      })),
+      // Strengths & Weaknesses
+      strengths: v.optional(v.array(v.string())),
+      weaknesses: v.optional(v.array(v.string())),
+      // Energy Mapping
+      peakEnergyHours: v.optional(v.array(v.number())), // Hours of day (0-23)
+      lowEnergyHours: v.optional(v.array(v.number())),
+      // Time Audit - flexible record to support custom categories
+      timeDistribution: v.optional(v.record(v.string(), v.number())),
+      // Growth Metrics
+      selfDiscoveryScore: v.optional(v.number()), // 0-100
+      lastAnalyzed: v.number(),
+    }).index("by_user", ["userId"]),
+
+    // Self-Reflection Journal
+    selfReflectionJournal: defineTable({
+      userId: v.id("users"),
+      date: v.string(),
+      prompt: v.string(),
+      response: v.string(),
+      mood: v.optional(v.number()), // 1-10
+      tags: v.optional(v.array(v.string())),
+      isPrivate: v.boolean(),
+    }).index("by_user_and_date", ["userId", "date"]),
+
+    // Pattern Insights
+    patternInsights: defineTable({
+      userId: v.id("users"),
+      insightType: v.union(
+        v.literal("productivity_pattern"),
+        v.literal("energy_pattern"),
+        v.literal("behavior_pattern"),
+        v.literal("growth_milestone")
+      ),
+      title: v.string(),
+      description: v.string(),
+      discoveredAt: v.number(),
+      isRead: v.boolean(),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_read", ["userId", "isRead"]),
+
+    // Prayer Journal - Christian spiritual feature
+    prayers: defineTable({
+      userId: v.id("users"),
+      title: v.string(),
+      content: v.string(),
+      category: v.union(
+        v.literal("gratitude"),
+        v.literal("guidance"),
+        v.literal("intercession"),
+        v.literal("confession"),
+        v.literal("praise"),
+        v.literal("petition")
+      ),
+      isAnswered: v.boolean(),
+      answeredAt: v.optional(v.number()),
+      answeredNote: v.optional(v.string()),
+      isFavorite: v.boolean(),
+      createdAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_category", ["userId", "category"])
+      .index("by_user_and_answered", ["userId", "isAnswered"]),
+
+    // Bible Scriptures Collection
+    scriptures: defineTable({
+      userId: v.id("users"),
+      reference: v.string(), // e.g., "John 3:16"
+      text: v.string(),
+      translation: v.optional(v.string()), // e.g., "NIV", "KJV"
+      category: v.optional(v.string()), // "faith", "hope", "love", "strength", etc.
+      isFavorite: v.boolean(),
+      notes: v.optional(v.string()),
+      createdAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_favorite", ["userId", "isFavorite"])
+      .searchIndex("search_reference", {
+        searchField: "reference",
+        filterFields: ["userId"],
+      }),
+
+    // Prayer Streak Tracking
+    prayerStreaks: defineTable({
+      userId: v.id("users"),
+      date: v.string(), // "2025-01-11"
+      prayersCount: v.number(),
+      scripturesRead: v.number(),
+      completed: v.boolean(),
+    }).index("by_user_and_date", ["userId", "date"]),
+
+    // Holy Videos Collection
+    holyVideos: defineTable({
+      userId: v.id("users"),
+      title: v.string(),
+      url: v.string(), // YouTube or other video URL
+      description: v.optional(v.string()),
+      category: v.optional(v.string()), // "sermon", "worship", "teaching", "testimony", etc.
+      speaker: v.optional(v.string()), // Pastor/speaker name
+      isFavorite: v.boolean(),
+      notes: v.optional(v.string()),
+      createdAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_favorite", ["userId", "isFavorite"]),
+
+    // Video Library - Organize YouTube videos by custom categories
+    videoCategories: defineTable({
+      userId: v.id("users"),
+      name: v.string(),
+      description: v.optional(v.string()),
+      color: v.string(), // gradient colors
+      icon: v.optional(v.string()),
+      createdAt: v.number(),
+    }).index("by_user", ["userId"]),
+
+    videoLibrary: defineTable({
+      userId: v.id("users"),
+      categoryId: v.id("videoCategories"),
+      title: v.string(),
+      url: v.string(),
+      description: v.optional(v.string()),
+      thumbnailUrl: v.optional(v.string()),
+      isFavorite: v.boolean(),
+      notes: v.optional(v.string()),
+      createdAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_category", ["categoryId"])
+      .index("by_user_and_favorite", ["userId", "isFavorite"]),
+
+    // Advice Library - Store and organize advice by categories
+    adviceCategories: defineTable({
+      userId: v.id("users"),
+      name: v.string(),
+      description: v.optional(v.string()),
+      color: v.string(), // gradient colors
+      createdAt: v.number(),
+    }).index("by_user", ["userId"]),
+
+    adviceLibrary: defineTable({
+      userId: v.id("users"),
+      categoryId: v.id("adviceCategories"),
+      title: v.string(),
+      content: v.string(),
+      source: v.optional(v.string()), // Where the advice came from
+      tags: v.optional(v.array(v.string())),
+      isFavorite: v.boolean(),
+      createdAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_category", ["categoryId"])
+      .index("by_user_and_favorite", ["userId", "isFavorite"]),
+
+    // Not To Do List - Track tasks/habits to AVOID
+    notToDoList: defineTable({
+      userId: v.id("users"),
+      date: v.string(), // "2025-01-11"
+      items: v.array(
+        v.object({
+          id: v.string(),
+          title: v.string(),
+          category: v.string(), // "distraction", "bad_habit", "time_waster", "temptation"
+          description: v.optional(v.string()),
+          successfullyAvoided: v.boolean(),
+          importance: v.number(), // 0-100 score (how critical to avoid)
+          color: v.string(), // gradient colors
+          createdAt: v.number(),
+          totalAvoided: v.optional(v.number()), // Track total times avoided across all days
+          lastChecked: v.optional(v.number()), // Last time this item was checked
+        })
+      ),
+      totalAvoided: v.number(),
+      lastChecked: v.number(),
+    }).index("by_user_and_date", ["userId", "date"]),
+
   },
   {
     schemaValidation: false,

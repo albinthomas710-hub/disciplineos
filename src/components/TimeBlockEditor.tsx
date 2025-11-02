@@ -22,13 +22,109 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { toast } from "sonner";
 import { useState } from "react";
-import { Loader2, Trash, Plus, Settings } from "lucide-react";
+import { Loader2, Trash, Plus, Settings, Edit2, GripVertical } from "lucide-react";
 import CategoryManager from "./CategoryManager";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface TimeBlockEditorProps {
   timetableId: Id<"timetables">;
   onClose: () => void;
   onSave?: (updatedBlock: any) => void;
+}
+
+interface SortableTimeBlockProps {
+  block: any;
+  onEdit: (block: any) => void;
+  onDelete: (blockId: Id<"timeBlocks">) => void;
+}
+
+function SortableTimeBlock({ block, onEdit, onDelete }: SortableTimeBlockProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: block._id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`flex items-center gap-3 p-3 border rounded-lg bg-background ${
+        isDragging ? "shadow-lg z-50" : ""
+      }`}
+    >
+      <div
+        {...attributes}
+        {...listeners}
+        className="cursor-grab active:cursor-grabbing touch-none"
+      >
+        <GripVertical className="h-5 w-5 text-muted-foreground" />
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{block.title}</span>
+          <span className="text-xs text-muted-foreground">
+            {block.category}
+          </span>
+        </div>
+        <p className="text-sm text-muted-foreground">
+          {block.startTime} - {block.endTime}
+        </p>
+        {block.description && (
+          <p className="text-sm text-muted-foreground mt-1">
+            {block.description}
+          </p>
+        )}
+      </div>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={(e) => {
+          e.stopPropagation();
+          onEdit(block);
+        }}
+        className="cursor-pointer text-blue-600"
+      >
+        <Edit2 className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(block._id);
+        }}
+        className="cursor-pointer text-red-600"
+      >
+        <Trash className="h-4 w-4" />
+      </Button>
+    </div>
+  );
 }
 
 export default function TimeBlockEditor({
@@ -39,11 +135,13 @@ export default function TimeBlockEditor({
   const timetable = useQuery(api.timetables.getById, { id: timetableId });
   const timeBlocks = useQuery(api.timeBlocks.listByTimetable, { timetableId });
   const createBlock = useMutation(api.timeBlocks.create);
+  const updateBlock = useMutation(api.timeBlocks.update);
   const removeBlock = useMutation(api.timeBlocks.remove);
   const categories = useQuery(api.categories.list);
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [editingBlockId, setEditingBlockId] = useState<Id<"timeBlocks"> | null>(null);
   const [newBlock, setNewBlock] = useState({
     title: "",
     description: "",
@@ -52,6 +150,43 @@ export default function TimeBlockEditor({
     category: "General",
   });
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (!over || !timeBlocks) return;
+
+    if (active.id !== over.id) {
+      const oldIndex = timeBlocks.findIndex((b) => b._id === active.id);
+      const newIndex = timeBlocks.findIndex((b) => b._id === over.id);
+
+      const reorderedBlocks = arrayMove(timeBlocks, oldIndex, newIndex);
+
+      try {
+        // Update all affected blocks with new order
+        for (let i = 0; i < reorderedBlocks.length; i++) {
+          await updateBlock({
+            id: reorderedBlocks[i]._id,
+            order: i + 1,
+          });
+        }
+        toast.success("Time blocks reordered!");
+      } catch (error) {
+        toast.error("Failed to reorder time blocks");
+      }
+    }
+  };
+
   const handleAddBlock = async () => {
     if (!newBlock.title.trim() || !newBlock.startTime || !newBlock.endTime) {
       toast.error("Please fill in all required fields");
@@ -59,13 +194,22 @@ export default function TimeBlockEditor({
     }
 
     try {
-      await createBlock({
-        timetableId,
-        ...newBlock,
-        order: (timeBlocks?.length || 0) + 1,
-      });
-      toast.success("Time block added!");
+      if (editingBlockId) {
+        await updateBlock({
+          id: editingBlockId,
+          ...newBlock,
+        });
+        toast.success("Time block updated!");
+      } else {
+        await createBlock({
+          timetableId,
+          ...newBlock,
+          order: (timeBlocks?.length || 0) + 1,
+        });
+        toast.success("Time block added!");
+      }
       setShowAddDialog(false);
+      setEditingBlockId(null);
       setNewBlock({
         title: "",
         description: "",
@@ -74,8 +218,20 @@ export default function TimeBlockEditor({
         category: "General",
       });
     } catch (error) {
-      toast.error("Failed to add time block");
+      toast.error(editingBlockId ? "Failed to update time block" : "Failed to add time block");
     }
+  };
+
+  const handleEditBlock = (block: any) => {
+    setEditingBlockId(block._id);
+    setNewBlock({
+      title: block.title,
+      description: block.description || "",
+      startTime: block.startTime,
+      endTime: block.endTime,
+      category: block.category,
+    });
+    setShowAddDialog(true);
   };
 
   const handleDeleteBlock = async (blockId: Id<"timeBlocks">) => {
@@ -108,43 +264,31 @@ export default function TimeBlockEditor({
           <DialogHeader>
             <DialogTitle>Edit Time Blocks - {timetable.name}</DialogTitle>
             <DialogDescription>
-              Manage the time blocks for this timetable
+              Drag and drop to reorder time blocks
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3">
-            {timeBlocks.map((block) => (
-              <div
-                key={block._id}
-                className="flex items-center gap-3 p-3 border rounded-lg"
-              >
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium">{block.title}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {block.category}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {block.startTime} - {block.endTime}
-                  </p>
-                  {block.description && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {block.description}
-                    </p>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleDeleteBlock(block._id)}
-                  className="cursor-pointer text-red-600"
-                >
-                  <Trash className="h-4 w-4" />
-                </Button>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={timeBlocks.map((b) => b._id)}
+              strategy={verticalListSortingStrategy}
+            >
+              <div className="space-y-3">
+                {timeBlocks.map((block) => (
+                  <SortableTimeBlock
+                    key={block._id}
+                    block={block}
+                    onEdit={handleEditBlock}
+                    onDelete={handleDeleteBlock}
+                  />
+                ))}
               </div>
-            ))}
-          </div>
+            </SortableContext>
+          </DndContext>
 
           <DialogFooter className="flex justify-between items-center">
             <Button
@@ -156,7 +300,17 @@ export default function TimeBlockEditor({
               Manage Categories
             </Button>
             <Button
-              onClick={() => setShowAddDialog(true)}
+              onClick={() => {
+                setEditingBlockId(null);
+                setNewBlock({
+                  title: "",
+                  description: "",
+                  startTime: "",
+                  endTime: "",
+                  category: "General",
+                });
+                setShowAddDialog(true);
+              }}
               className="cursor-pointer"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -167,12 +321,24 @@ export default function TimeBlockEditor({
       </Dialog>
 
       {/* Add Block Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+      <Dialog open={showAddDialog} onOpenChange={(open) => {
+        setShowAddDialog(open);
+        if (!open) {
+          setEditingBlockId(null);
+          setNewBlock({
+            title: "",
+            description: "",
+            startTime: "",
+            endTime: "",
+            category: "General",
+          });
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Time Block</DialogTitle>
+            <DialogTitle>{editingBlockId ? "Edit Time Block" : "Add Time Block"}</DialogTitle>
             <DialogDescription>
-              Create a new time block for this timetable
+              {editingBlockId ? "Update the time block details" : "Create a new time block for this timetable"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -246,13 +412,16 @@ export default function TimeBlockEditor({
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setShowAddDialog(false)}
+              onClick={() => {
+                setShowAddDialog(false);
+                setEditingBlockId(null);
+              }}
               className="cursor-pointer"
             >
               Cancel
             </Button>
             <Button onClick={handleAddBlock} className="cursor-pointer">
-              Add Block
+              {editingBlockId ? "Update Block" : "Add Block"}
             </Button>
           </DialogFooter>
         </DialogContent>

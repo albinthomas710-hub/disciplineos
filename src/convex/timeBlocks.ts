@@ -96,14 +96,15 @@ export const update = mutation({
       throw new Error("Unauthorized");
     }
 
-    await ctx.db.patch(args.id, {
-      title: args.title,
-      description: args.description,
-      startTime: args.startTime,
-      endTime: args.endTime,
-      category: args.category,
-      order: args.order,
-    });
+    const updateData: any = {};
+    if (args.title !== undefined) updateData.title = args.title;
+    if (args.description !== undefined) updateData.description = args.description;
+    if (args.startTime !== undefined) updateData.startTime = args.startTime;
+    if (args.endTime !== undefined) updateData.endTime = args.endTime;
+    if (args.category !== undefined) updateData.category = args.category;
+    if (args.order !== undefined) updateData.order = args.order;
+
+    await ctx.db.patch(args.id, updateData);
   },
 });
 

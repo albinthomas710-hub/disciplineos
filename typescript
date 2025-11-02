@@ -1,0 +1,1 @@
+{reflection.date} ({new Date(reflection.date).toLocaleDateString('en-US', { weekday: 'long' })})
