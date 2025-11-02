@@ -404,7 +404,6 @@ const schema = defineSchema(
         solution: v.string(),
         timestamp: v.number(),
       }))),
-      realityCheckDismissedAt: v.optional(v.number()), // Track when user dismissed reality check
     }).index("by_user", ["userId"])
       .index("by_user_and_type", ["userId", "type"])
       .index("by_user_and_achieved", ["userId", "isAchieved"]),
