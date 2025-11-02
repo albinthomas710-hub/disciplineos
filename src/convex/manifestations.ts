@@ -349,6 +349,25 @@ export const markCelebrationViewed = mutation({
   },
 });
 
+// Dismiss reality check (snooze for 24 hours)
+export const dismissRealityCheck = mutation({
+  args: { manifestationId: v.id("manifestations") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const manifestation = await ctx.db.get(args.manifestationId);
+    if (!manifestation || manifestation.userId !== user._id) {
+      throw new Error("Manifestation not found or unauthorized");
+    }
+
+    await ctx.db.patch(args.manifestationId, {
+      realityCheckDismissedAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});
+
 // Internal mutation to add AI insights (called from actions)
 export const addAIInsights = internalMutation({
   args: {

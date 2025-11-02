@@ -53,6 +53,7 @@ export default function ManifestationView() {
   const addLimitingBelief = useMutation(api.manifestationActions.addLimitingBelief);
   const resolveLimitingBelief = useMutation(api.manifestationActions.resolveLimitingBelief);
   const analyzeLimitingBeliefs = useAction(api.manifestationAI.analyzeLimitingBeliefs);
+  const dismissRealityCheck = useMutation(api.manifestations.dismissRealityCheck);
 
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "vision" | "affirmations" | "habits" | "mindset">("all");
@@ -220,9 +221,16 @@ export default function ManifestationView() {
   const checkForInactivity = () => {
     const today = new Date().toISOString().split('T')[0];
     const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
     
     const inactiveManifestations = manifestations?.filter(m => {
       if (m.isAchieved) return false;
+      
+      // Don't show if dismissed within last 24 hours
+      if (m.realityCheckDismissedAt && m.realityCheckDismissedAt > oneDayAgo) {
+        return false;
+      }
+      
       const lastActionDate = m.lastActionDate;
       return !lastActionDate || lastActionDate < twoDaysAgo;
     }) || [];
@@ -287,7 +295,12 @@ export default function ManifestationView() {
       {realityCheckItem && (
         <RealityCheckModal
           isOpen={!!realityCheckItem}
-          onClose={() => setRealityCheckItem(null)}
+          onClose={async () => {
+            if (realityCheckItem._id) {
+              await dismissRealityCheck({ manifestationId: realityCheckItem._id });
+            }
+            setRealityCheckItem(null);
+          }}
           manifestation={realityCheckItem}
           daysSinceLastAction={realityCheckItem.daysSinceLastAction}
         />
