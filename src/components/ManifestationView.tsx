@@ -33,7 +33,7 @@ import { BeliefAudit } from "./manifestation/BeliefAudit";
 import { ProgressAnalytics } from "./manifestation/ProgressAnalytics";
 import { ManifestationForm } from "./manifestation/ManifestationForm";
 import { ManifestationDashboard } from "./manifestation/ManifestationDashboard";
-import { RealityCheckModal } from "./manifestation/RealityCheckModal";
+import { BrainDump } from "./manifestation/BrainDump";
 
 export default function ManifestationView() {
   const manifestations = useQuery(api.manifestations.getUserManifestations);
@@ -53,7 +53,6 @@ export default function ManifestationView() {
   const addLimitingBelief = useMutation(api.manifestationActions.addLimitingBelief);
   const resolveLimitingBelief = useMutation(api.manifestationActions.resolveLimitingBelief);
   const analyzeLimitingBeliefs = useAction(api.manifestationAI.analyzeLimitingBeliefs);
-  const dismissRealityCheck = useMutation(api.manifestations.dismissRealityCheck);
 
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "vision" | "affirmations" | "habits" | "mindset">("all");
@@ -62,7 +61,6 @@ export default function ManifestationView() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [celebratingItem, setCelebratingItem] = useState<any>(null);
   const [showFoundation, setShowFoundation] = useState(false);
-  const [realityCheckItem, setRealityCheckItem] = useState<any>(null);
   
   const [newManifestation, setNewManifestation] = useState({
     type: "vision" as "vision" | "affirmation" | "habit" | "mindset",
@@ -217,42 +215,6 @@ export default function ManifestationView() {
     }
   };
 
-  // Reality Check: Show modal for manifestations with no action in 2+ days
-  const checkForInactivity = () => {
-    const today = new Date().toISOString().split('T')[0];
-    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
-    
-    const inactiveManifestations = manifestations?.filter(m => {
-      if (m.isAchieved) return false;
-      
-      // Don't show if dismissed within last 24 hours
-      if (m.realityCheckDismissedAt && m.realityCheckDismissedAt > oneDayAgo) {
-        return false;
-      }
-      
-      const lastActionDate = m.lastActionDate;
-      return !lastActionDate || lastActionDate < twoDaysAgo;
-    }) || [];
-
-    if (inactiveManifestations.length > 0 && !realityCheckItem) {
-      // Show reality check for the first inactive manifestation
-      const item = inactiveManifestations[0];
-      const daysSince = item.lastActionDate 
-        ? Math.floor((Date.now() - new Date(item.lastActionDate).getTime()) / (1000 * 60 * 60 * 24))
-        : Math.floor((Date.now() - item.createdAt) / (1000 * 60 * 60 * 24));
-      
-      if (daysSince >= 2) {
-        setTimeout(() => setRealityCheckItem({ ...item, daysSinceLastAction: daysSince }), 2000);
-      }
-    }
-  };
-
-  // Check for inactivity on mount
-  if (manifestations && manifestations.length > 0) {
-    checkForInactivity();
-  }
-
   if (!manifestations) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -292,19 +254,10 @@ export default function ManifestationView() {
         <CelebrationModal item={celebratingItem} onClose={() => setCelebratingItem(null)} />
       )}
 
-      {realityCheckItem && (
-        <RealityCheckModal
-          isOpen={!!realityCheckItem}
-          onClose={async () => {
-            if (realityCheckItem._id) {
-              await dismissRealityCheck({ manifestationId: realityCheckItem._id });
-            }
-            setRealityCheckItem(null);
-          }}
-          manifestation={realityCheckItem}
-          daysSinceLastAction={realityCheckItem.daysSinceLastAction}
-        />
-      )}
+      {/* Brain Dump - Quick Ideas */}
+      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+        <BrainDump />
+      </motion.div>
 
       {/* PSYCHOLOGICAL DASHBOARD - FRONT AND CENTER */}
       {manifestations.length > 0 && (

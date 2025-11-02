@@ -9,6 +9,7 @@
  */
 
 import type * as advice from "../advice.js";
+import type * as affirmationIdeas from "../affirmationIdeas.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as auth from "../auth.js";
 import type * as categories from "../categories.js";
@@ -62,6 +63,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   advice: typeof advice;
+  affirmationIdeas: typeof affirmationIdeas;
   "auth/emailOtp": typeof auth_emailOtp;
   auth: typeof auth;
   categories: typeof categories;

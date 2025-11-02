@@ -308,6 +308,16 @@ const schema = defineSchema(
     }).index("by_user", ["userId"])
       .index("by_project", ["projectId"]),
 
+    // Affirmation Ideas - Quick brain dump for affirmation thoughts
+    affirmationIdeas: defineTable({
+      userId: v.id("users"),
+      content: v.string(),
+      completed: v.boolean(), // True when converted to full affirmation
+      manifestationId: v.optional(v.id("manifestations")), // Link to created manifestation
+      createdAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_completed", ["userId", "completed"]),
+
     // Manifestations - goals, affirmations, habit changes, mindset shifts
     manifestations: defineTable({
       userId: v.id("users"),
