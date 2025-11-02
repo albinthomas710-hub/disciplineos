@@ -126,15 +126,27 @@ export const analyzePatterns = mutation({
       .first();
 
     if (existingProfile) {
-      await ctx.db.patch(existingProfile._id, {
+      // Only update personality traits and score, preserve manual edits to strengths/weaknesses/timeDistribution
+      const updates: any = {
         personalityTraits: { consistency, resilience, ambition, discipline },
-        strengths,
-        weaknesses,
-        timeDistribution,
         selfDiscoveryScore,
         lastAnalyzed: Date.now(),
-      });
+      };
+      
+      // Only set auto-calculated values if user hasn't manually added any
+      if (!existingProfile.strengths || existingProfile.strengths.length === 0) {
+        updates.strengths = strengths;
+      }
+      if (!existingProfile.weaknesses || existingProfile.weaknesses.length === 0) {
+        updates.weaknesses = weaknesses;
+      }
+      if (!existingProfile.timeDistribution || Object.keys(existingProfile.timeDistribution).length === 0) {
+        updates.timeDistribution = timeDistribution;
+      }
+      
+      await ctx.db.patch(existingProfile._id, updates);
     } else {
+      // First time initialization - use calculated values
       await ctx.db.insert("selfDiscovery", {
         userId: user._id,
         personalityTraits: { consistency, resilience, ambition, discipline },
@@ -146,7 +158,7 @@ export const analyzePatterns = mutation({
       });
     }
 
-    return { selfDiscoveryScore, strengths, weaknesses };
+    return { selfDiscoveryScore, strengths: existingProfile?.strengths || strengths, weaknesses: existingProfile?.weaknesses || weaknesses };
   },
 });
 
