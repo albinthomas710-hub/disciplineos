@@ -36,15 +36,18 @@ export const initializeTodayItems = mutation({
 
     if (existing) return existing._id;
 
-    // Get yesterday's items to carry over
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-    const yesterdayList = await ctx.db
+    // Get the most recent list to carry over items (not just yesterday)
+    const allLists = await ctx.db
       .query("notToDoList")
-      .withIndex("by_user_and_date", (q) => q.eq("userId", userId).eq("date", yesterday))
-      .first();
+      .withIndex("by_user_and_date", (q) => q.eq("userId", userId))
+      .collect();
+    
+    // Sort by date descending and get the most recent one
+    const sortedLists = allLists.sort((a, b) => b.date.localeCompare(a.date));
+    const mostRecentList = sortedLists[0];
 
     // Carry over items but reset their "successfullyAvoided" status for today
-    const carryOverItems = yesterdayList?.items.map(item => ({
+    const carryOverItems = mostRecentList?.items.map(item => ({
       ...item,
       successfullyAvoided: false,
       lastChecked: Date.now(),
