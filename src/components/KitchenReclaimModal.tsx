@@ -32,9 +32,9 @@ export default function KitchenReclaimModal({ open, onOpenChange }: KitchenRecla
   const [notes, setNotes] = useState("");
   const [breathCount, setBreathCount] = useState(0);
 
-  const startWaitingSession = useMutation(api.kitchenReclaim.startWaitingSession);
-  const completeWaitingSession = useMutation(api.kitchenReclaim.completeWaitingSession);
-  const logMindfulMeal = useMutation(api.kitchenReclaim.logMindfulMeal);
+  const startWaitingSession = useMutation((api as any).kitchenReclaim.startWaitingSession);
+  const completeWaitingSession = useMutation((api as any).kitchenReclaim.completeWaitingSession);
+  const logMindfulMeal = useMutation((api as any).kitchenReclaim.logMindfulMeal);
 
   useEffect(() => {
     if (phase === "waiting" && timeRemaining > 0) {

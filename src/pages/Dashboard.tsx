@@ -53,10 +53,10 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield" | "vectal" | "quotes" | "projects" | "manifest" | "future" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "recovery">("timer");
   const [showReflection, setShowReflection] = useState(false);
 
-  const activeTimetable = useQuery(api.timetables.getActive);
-  const todayLogs = useQuery(api.completionLogs.getToday);
-  const reflectionCheck = useQuery(api.reflectionTriggers.shouldShowReflection);
-  const vectalCheck = useQuery(api.vectal.checkDailyCompletion);
+  const activeTimetable = useQuery((api as any).timetables.getActive);
+  const todayLogs = useQuery((api as any).completionLogs.getToday);
+  const reflectionCheck = useQuery((api as any).reflectionTriggers.shouldShowReflection);
+  const vectalCheck = useQuery((api as any).vectal.checkDailyCompletion);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -106,7 +106,7 @@ export default function Dashboard() {
 
   const completionRate = todayLogs
     ? Math.round(
-        (todayLogs.filter((log) => log.completed).length / todayLogs.length) *
+        (todayLogs.filter((log: any) => log.completed).length / todayLogs.length) *
           100
       ) || 0
     : 0;

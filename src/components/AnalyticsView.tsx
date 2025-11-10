@@ -6,8 +6,8 @@ import { motion } from "framer-motion";
 import { Calendar, Flame, Loader2, Target, TrendingUp } from "lucide-react";
 
 export default function AnalyticsView() {
-  const todayLogs = useQuery(api.completionLogs.getToday);
-  const recentReflections = useQuery(api.reflections.getRecent, { limit: 7 });
+  const todayLogs = useQuery((api as any).completionLogs.getToday);
+  const recentReflections = useQuery((api as any).reflections.getRecent, { limit: 7 });
 
   // Calculate last 7 days data
   const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -18,7 +18,7 @@ export default function AnalyticsView() {
 
   const completionRate = todayLogs
     ? Math.round(
-        (todayLogs.filter((log) => log.completed).length / todayLogs.length) *
+        (todayLogs.filter((log: any) => log.completed).length / todayLogs.length) *
           100
       ) || 0
     : 0;
@@ -52,7 +52,7 @@ export default function AnalyticsView() {
                 <div className="text-3xl font-bold">{completionRate}%</div>
                 <Progress value={completionRate} />
                 <p className="text-sm text-muted-foreground">
-                  {todayLogs.filter((log) => log.completed).length} of{" "}
+                  {todayLogs.filter((log: any) => log.completed).length} of{" "}
                   {todayLogs.length} blocks completed
                 </p>
               </div>
@@ -124,7 +124,7 @@ export default function AnalyticsView() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentReflections.map((reflection, i) => (
+              {recentReflections.map((reflection: any, i: number) => (
                 <motion.div
                   key={reflection._id}
                   initial={{ x: -20, opacity: 0 }}

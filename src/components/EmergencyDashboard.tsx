@@ -54,10 +54,10 @@ export default function EmergencyDashboard({
   open,
   onOpenChange,
 }: EmergencyDashboardProps) {
-  const triggers = useQuery(api.emergencyTriggers.getUserTriggers);
-  const initializeTriggers = useMutation(api.emergencyTriggers.initializeDefaultTriggers);
-  const addTrigger = useMutation(api.emergencyTriggers.addTrigger);
-  const deleteTrigger = useMutation(api.emergencyTriggers.deleteTrigger);
+  const triggers = useQuery((api as any).emergencyTriggers.getUserTriggers);
+  const initializeTriggers = useMutation((api as any).emergencyTriggers.initializeDefaultTriggers);
+  const addTrigger = useMutation((api as any).emergencyTriggers.addTrigger);
+  const deleteTrigger = useMutation((api as any).emergencyTriggers.deleteTrigger);
   
   const [selectedTrigger, setSelectedTrigger] = useState<Id<"emergencyTriggers"> | null>(null);
   const [isAddingTrigger, setIsAddingTrigger] = useState(false);
@@ -303,7 +303,7 @@ export default function EmergencyDashboard({
                 
                 {triggers && triggers.length > 0 ? (
                   <div className="grid gap-3">
-                    {triggers.map((trigger) => (
+                    {triggers.map((trigger: any) => (
                       <motion.div
                         key={trigger._id}
                         initial={{ scale: 0.95, opacity: 0 }}

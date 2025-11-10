@@ -18,9 +18,9 @@ import { useAuth } from "@/hooks/use-auth";
 
 export default function DopamineShieldView() {
   const { user } = useAuth();
-  const shieldStatus = useQuery(api.dopamineShield.getStatus);
-  const initializeStatus = useMutation(api.dopamineShield.initializeStatus);
-  const triggers = useQuery(api.emergencyTriggers.getUserTriggers);
+  const shieldStatus = useQuery((api as any).dopamineShield.getStatus);
+  const initializeStatus = useMutation((api as any).dopamineShield.initializeStatus);
+  const triggers = useQuery((api as any).emergencyTriggers.getUserTriggers);
   const [showInterceptor, setShowInterceptor] = useState(false);
   const [showUrgeModal, setShowUrgeModal] = useState(false);
   const [showRealityAnchor, setShowRealityAnchor] = useState(false);

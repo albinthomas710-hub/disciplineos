@@ -109,6 +109,6 @@ async function updateUserStreak(ctx: any, userId: any) {
 export const triggerStreakUpdate = mutation({
   args: {},
   handler: async (ctx) => {
-    await ctx.scheduler.runAfter(0, internal.streaks.calculateDailyStreaks);
+    await ctx.scheduler.runAfter(0, (internal as any).streaks.calculateDailyStreaks);
   },
 });

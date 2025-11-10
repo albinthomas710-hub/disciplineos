@@ -24,8 +24,8 @@ export default function ReflectionDialog({
   open,
   onOpenChange,
 }: ReflectionDialogProps) {
-  const todayReflection = useQuery(api.reflections.getToday);
-  const saveReflection = useMutation(api.reflections.save);
+  const todayReflection = useQuery((api as any).reflections.getToday);
+  const saveReflection = useMutation((api as any).reflections.save);
 
   const [reflection, setReflection] = useState({
     didWell: "",

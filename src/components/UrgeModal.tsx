@@ -20,7 +20,7 @@ interface UrgeModalProps {
 }
 
 export default function UrgeModal({ open, onOpenChange }: UrgeModalProps) {
-  const completeMicroChallenge = useMutation(api.dopamineShield.completeMicroChallenge);
+  const completeMicroChallenge = useMutation((api as any).dopamineShield.completeMicroChallenge);
   const [summary, setSummary] = useState("");
   const [timeLeft, setTimeLeft] = useState(90);
   const [isActive, setIsActive] = useState(false);

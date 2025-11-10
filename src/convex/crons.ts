@@ -7,35 +7,35 @@ const crons = cronJobs();
 crons.daily(
   "calculate daily streaks",
   { hourUTC: 0, minuteUTC: 0 },
-  internal.streaks.calculateDailyStreaks
+  (internal as any).streaks.calculateDailyStreaks
 );
 
 // Reset dopamine shield bypass attempts daily
 crons.daily(
   "reset dopamine shield attempts",
   { hourUTC: 0, minuteUTC: 0 },
-  internal.dopamineShield.resetDailyAttempts
+  (internal as any).dopamineShield.resetDailyAttempts
 );
 
 // Reset reality anchor weekly counters
 crons.weekly(
   "reset reality anchor weekly",
   { hourUTC: 0, minuteUTC: 0, dayOfWeek: "monday" },
-  internal.realityAnchor.resetWeeklyCounter
+  (internal as any).realityAnchor.resetWeeklyCounter
 );
 
 // Reset kitchen reclaim weekly stats
 crons.weekly(
   "reset kitchen reclaim weekly",
   { hourUTC: 0, minuteUTC: 0, dayOfWeek: "monday" },
-  internal.kitchenReclaim.resetWeeklyStats
+  (internal as any).kitchenReclaim.resetWeeklyStats
 );
 
 // Process recurring vectal tasks daily
 crons.daily(
   "process recurring vectal tasks",
   { hourUTC: 0, minuteUTC: 5 },
-  internal.vectal.processRecurringTasks
+  (internal as any).vectal.processRecurringTasks
 );
 
 export default crons;

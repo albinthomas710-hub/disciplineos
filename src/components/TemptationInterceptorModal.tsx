@@ -21,8 +21,8 @@ export default function TemptationInterceptorModal({
   open,
   onOpenChange,
 }: TemptationInterceptorModalProps) {
-  const completeLearning = useMutation(api.dopamineShield.completeLearningSession);
-  const startMicroTask = useMutation(api.dopamineShield.startMicroTask);
+  const completeLearning = useMutation((api as any).dopamineShield.completeLearningSession);
+  const startMicroTask = useMutation((api as any).dopamineShield.startMicroTask);
 
   const handleContinueLearning = async () => {
     try {

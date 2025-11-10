@@ -28,11 +28,11 @@ import { toast } from "sonner";
 import TimeBlockEditor from "./TimeBlockEditor";
 
 export default function TimetableManager() {
-  const timetables = useQuery(api.timetables.list);
-  const activeTimetable = useQuery(api.timetables.getActive);
-  const createTimetable = useMutation(api.timetables.create);
-  const setActive = useMutation(api.timetables.setActive);
-  const removeTimetable = useMutation(api.timetables.remove);
+  const timetables = useQuery((api as any).timetables.list);
+  const activeTimetable = useQuery((api as any).timetables.getActive);
+  const createTimetable = useMutation((api as any).timetables.create);
+  const setActive = useMutation((api as any).timetables.setActive);
+  const removeTimetable = useMutation((api as any).timetables.remove);
 
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingTimetable, setEditingTimetable] = useState<Id<"timetables"> | null>(null);
@@ -104,7 +104,7 @@ export default function TimetableManager() {
 
       {/* Timetables Grid */}
       <div className="grid md:grid-cols-2 gap-4">
-        {timetables.map((timetable, i) => {
+        {timetables.map((timetable: any, i: number) => {
           const isActive = activeTimetable?._id === timetable._id;
 
           return (

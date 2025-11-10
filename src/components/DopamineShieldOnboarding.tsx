@@ -23,8 +23,8 @@ interface DopamineShieldOnboardingProps {
 }
 
 export default function DopamineShieldOnboarding({ onComplete }: DopamineShieldOnboardingProps) {
-  const addTrigger = useMutation(api.emergencyTriggers.addTrigger);
-  const completeOnboarding = useMutation(api.users.completeShieldOnboarding);
+  const addTrigger = useMutation((api as any).emergencyTriggers.addTrigger);
+  const completeOnboarding = useMutation((api as any).users.completeShieldOnboarding);
   
   const [step, setStep] = useState(1);
   const [triggers, setTriggers] = useState<TriggerInput[]>([

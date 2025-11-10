@@ -57,7 +57,7 @@ export const analyzeLimitingBeliefs = action({
       const beliefs = JSON.parse(response);
 
       // Store insights
-      await ctx.runMutation(internal.manifestations.addAIInsights, {
+      await ctx.runMutation((internal as any).manifestations.addAIInsights as any, {
         manifestationId: args.manifestationId,
         insights: beliefs.map((b: any) => ({
           insight: `Limiting belief: "${b.belief}" → Reframe: "${b.reframe}"`,
@@ -105,7 +105,7 @@ export const generateActionSuggestions = action({
       const actions = JSON.parse(response);
 
       // Store as AI insight
-      await ctx.runMutation(internal.manifestations.addAIInsights, {
+      await ctx.runMutation((internal as any).manifestations.addAIInsights, {
         manifestationId: args.manifestationId,
         insights: actions.map((action: string) => ({
           insight: action,
@@ -151,7 +151,7 @@ export const analyzeProgress = action({
 
       const insight = completion.choices[0].message.content || "";
 
-      await ctx.runMutation(internal.manifestations.addAIInsights, {
+      await ctx.runMutation((internal as any).manifestations.addAIInsights, {
         manifestationId: args.manifestationId,
         insights: [{
           insight,

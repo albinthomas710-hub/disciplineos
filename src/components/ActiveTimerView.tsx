@@ -50,14 +50,14 @@ const categoryStyles = {
 };
 
 export default function ActiveTimerView() {
-  const activeTimetable = useQuery(api.timetables.getActive);
+  const activeTimetable = useQuery((api as any).timetables.getActive);
   const timeBlocks = useQuery(
-    api.timeBlocks.listByTimetable,
+    (api as any).timeBlocks.listByTimetable,
     activeTimetable ? { timetableId: activeTimetable._id } : "skip"
   );
-  const todayLogs = useQuery(api.completionLogs.getToday);
-  const markComplete = useMutation(api.completionLogs.markComplete);
-  const categories = useQuery(api.categories.list);
+  const todayLogs = useQuery((api as any).completionLogs.getToday);
+  const markComplete = useMutation((api as any).completionLogs.markComplete);
+  const categories = useQuery((api as any).categories.list);
 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [currentBlock, setCurrentBlock] = useState<any>(null);
@@ -94,7 +94,7 @@ export default function ActiveTimerView() {
   }, [timeBlocks, currentTime]);
 
   const handleToggleComplete = async (blockId: Id<"timeBlocks">) => {
-    const log = todayLogs?.find((l) => l.timeBlockId === blockId);
+    const log = todayLogs?.find((l: any) => l.timeBlockId === blockId);
     const newState = !log?.completed;
 
     try {
@@ -109,7 +109,7 @@ export default function ActiveTimerView() {
   };
 
   const isBlockCompleted = (blockId: Id<"timeBlocks">) => {
-    return todayLogs?.find((l) => l.timeBlockId === blockId)?.completed || false;
+    return todayLogs?.find((l: any) => l.timeBlockId === blockId)?.completed || false;
   };
 
   const getCategoryStyle = (category: string) => {
@@ -139,7 +139,7 @@ export default function ActiveTimerView() {
     );
   }
 
-  const completedCount = todayLogs?.filter((l) => l.completed).length || 0;
+  const completedCount = todayLogs?.filter((l: any) => l.completed).length || 0;
   const totalCount = timeBlocks.length;
   const progressPercent = Math.round((completedCount / totalCount) * 100);
 
@@ -280,7 +280,7 @@ export default function ActiveTimerView() {
 
           {/* All Blocks List */}
           <div className="space-y-2 max-h-96 overflow-y-auto">
-            {timeBlocks.map((block) => {
+            {timeBlocks.map((block: any) => {
               const completed = isBlockCompleted(block._id);
               const isCurrent = currentBlock?._id === block._id;
               const style = getCategoryStyle(block.category || "General");

@@ -30,13 +30,13 @@ export default function RealityAnchorModal({ open, onOpenChange }: RealityAnchor
   const [countdown, setCountdown] = useState(60);
   const [currentPlan, setCurrentPlan] = useState<any>(null);
   
-  const captureVision = useMutation(api.realityAnchor.captureVision);
-  const recordAnchorEvent = useMutation(api.realityAnchor.recordAnchorEvent);
-  const completeMicroPlanStep = useMutation(api.realityAnchor.completeMicroPlanStep);
+  const captureVision = useMutation((api as any).realityAnchor.captureVision);
+  const recordAnchorEvent = useMutation((api as any).realityAnchor.recordAnchorEvent);
+  const completeMicroPlanStep = useMutation((api as any).realityAnchor.completeMicroPlanStep);
   
-  const actionQuote = useQuery(api.realityAnchor.getActionQuote);
-  const stats = useQuery(api.realityAnchor.getStats);
-  const wisdomJourney = useQuery(api.realityAnchor.getWisdomJourney);
+  const actionQuote = useQuery((api as any).realityAnchor.getActionQuote);
+  const stats = useQuery((api as any).realityAnchor.getStats);
+  const wisdomJourney = useQuery((api as any).realityAnchor.getWisdomJourney);
 
   const handleCaptureVision = () => {
     setMode("capture");
@@ -421,7 +421,7 @@ export default function RealityAnchorModal({ open, onOpenChange }: RealityAnchor
 
             <div className="space-y-4 py-4">
               {wisdomJourney && wisdomJourney.length > 0 ? (
-                wisdomJourney.map((entry, index) => (
+                wisdomJourney.map((entry: any, index: number) => (
                   <motion.div
                     key={index}
                     initial={{ x: -20, opacity: 0 }}

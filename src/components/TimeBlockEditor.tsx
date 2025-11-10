@@ -132,12 +132,12 @@ export default function TimeBlockEditor({
   onClose,
   onSave,
 }: TimeBlockEditorProps) {
-  const timetable = useQuery(api.timetables.getById, { id: timetableId });
-  const timeBlocks = useQuery(api.timeBlocks.listByTimetable, { timetableId });
-  const createBlock = useMutation(api.timeBlocks.create);
-  const updateBlock = useMutation(api.timeBlocks.update);
-  const removeBlock = useMutation(api.timeBlocks.remove);
-  const categories = useQuery(api.categories.list);
+  const timetable = useQuery((api as any).timetables.getById, { id: timetableId });
+  const timeBlocks = useQuery((api as any).timeBlocks.listByTimetable, { timetableId });
+  const createBlock = useMutation((api as any).timeBlocks.create);
+  const updateBlock = useMutation((api as any).timeBlocks.update);
+  const removeBlock = useMutation((api as any).timeBlocks.remove);
+  const categories = useQuery((api as any).categories.list);
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [showCategoryManager, setShowCategoryManager] = useState(false);
@@ -167,8 +167,8 @@ export default function TimeBlockEditor({
     if (!over || !timeBlocks) return;
 
     if (active.id !== over.id) {
-      const oldIndex = timeBlocks.findIndex((b) => b._id === active.id);
-      const newIndex = timeBlocks.findIndex((b) => b._id === over.id);
+      const oldIndex = timeBlocks.findIndex((b: any) => b._id === active.id);
+      const newIndex = timeBlocks.findIndex((b: any) => b._id === over.id);
 
       const reorderedBlocks = arrayMove(timeBlocks, oldIndex, newIndex);
 
@@ -176,7 +176,7 @@ export default function TimeBlockEditor({
         // Update all affected blocks with new order
         for (let i = 0; i < reorderedBlocks.length; i++) {
           await updateBlock({
-            id: reorderedBlocks[i]._id,
+            id: (reorderedBlocks[i] as any)._id,
             order: i + 1,
           });
         }
@@ -274,11 +274,11 @@ export default function TimeBlockEditor({
             onDragEnd={handleDragEnd}
           >
             <SortableContext
-              items={timeBlocks.map((b) => b._id)}
+              items={timeBlocks.map((b: any) => b._id)}
               strategy={verticalListSortingStrategy}
             >
               <div className="space-y-3">
-                {timeBlocks.map((block) => (
+                {timeBlocks.map((block: any) => (
                   <SortableTimeBlock
                     key={block._id}
                     block={block}

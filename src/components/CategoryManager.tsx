@@ -26,9 +26,9 @@ export default function CategoryManager({
   open,
   onOpenChange,
 }: CategoryManagerProps) {
-  const categories = useQuery(api.categories.list);
-  const createCategory = useMutation(api.categories.create);
-  const removeCategory = useMutation(api.categories.remove);
+  const categories = useQuery((api as any).categories.list);
+  const createCategory = useMutation((api as any).categories.create);
+  const removeCategory = useMutation((api as any).categories.remove);
 
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newCategory, setNewCategory] = useState({
