@@ -25,6 +25,7 @@ import {
   Video,
   Lightbulb,
   Ban,
+  AlertCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
@@ -44,11 +45,12 @@ import PrayerView from "@/components/PrayerView";
 import VideoLibraryView from "@/components/VideoLibraryView";
 import AdviceView from "@/components/AdviceView";
 import NotToDoListView from "@/components/NotToDoListView";
+import RecoveryView from "@/components/RecoveryView";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield" | "vectal" | "quotes" | "projects" | "manifest" | "future" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo">("timer");
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield" | "vectal" | "quotes" | "projects" | "manifest" | "future" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "recovery">("timer");
   const [showReflection, setShowReflection] = useState(false);
 
   const activeTimetable = useQuery(api.timetables.getActive);
@@ -332,6 +334,16 @@ export default function Dashboard() {
             <Ban className="h-4 w-4 mr-2" />
             Not To Do
           </Button>
+          {user?.isAnonymous && (
+            <Button
+              variant={activeTab === "recovery" ? "default" : "ghost"}
+              onClick={() => setActiveTab("recovery")}
+              className="cursor-pointer bg-gradient-to-r from-yellow-600 to-red-600 text-white hover:from-yellow-700 hover:to-red-700 animate-pulse"
+            >
+              <AlertCircle className="h-4 w-4 mr-2" />
+              Recover Account
+            </Button>
+          )}
         </div>
       </div>
 
@@ -351,6 +363,7 @@ export default function Dashboard() {
         {activeTab === "videos" && <VideoLibraryView />}
         {activeTab === "advice" && <AdviceView />}
         {activeTab === "nottodo" && <NotToDoListView />}
+        {activeTab === "recovery" && <RecoveryView />}
       </div>
 
       {/* Reflection Dialog */}
