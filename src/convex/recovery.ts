@@ -120,7 +120,24 @@ export const listAnonymousUsers = query({
           },
         };
         
-        console.log(`[Recovery Debug] User ${user._id}: ${totalVectalTasks} Vectal tasks, ${timetables.length} timetables, ${quotes.length} quotes`);
+        console.log(`[Recovery Debug] User ${user._id}:`, {
+          timetables: timetables.length,
+          manifestations: manifestations.length,
+          quotes: quotes.length,
+          prayers: prayers.length,
+          projects: projects.length,
+          vectalTasks: totalVectalTasks,
+          scriptures: scriptures.length,
+          holyVideos: holyVideos.length,
+          videoLibrary: videoLibrary.length,
+          adviceLibrary: adviceLibrary.length,
+          notToDoItems: totalNotToDoItems,
+          selfDiscovery: selfDiscovery.length,
+          legendProfiles: legendProfiles.length,
+          email: user.email || 'none',
+          isAnonymous: user.isAnonymous,
+          isCurrentUser: currentUserId === user._id,
+        });
         
         anonymousUsers.push(accountData);
       }
