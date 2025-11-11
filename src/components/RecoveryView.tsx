@@ -75,7 +75,15 @@ export default function RecoveryView() {
             account.dataCount.manifestations +
             account.dataCount.quotes +
             account.dataCount.prayers +
-            account.dataCount.projects;
+            account.dataCount.projects +
+            account.dataCount.vectalTasks +
+            account.dataCount.scriptures +
+            account.dataCount.holyVideos +
+            account.dataCount.videoLibrary +
+            account.dataCount.adviceLibrary +
+            account.dataCount.notToDoList +
+            account.dataCount.selfDiscovery +
+            account.dataCount.legendProfiles;
 
           const createdDate = new Date(account.createdAt).toLocaleString();
           const isSelected = selectedUserId === account.userId;
@@ -105,7 +113,7 @@ export default function RecoveryView() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                   <div className="flex items-center gap-2">
                     <Database className="h-4 w-4 text-blue-500" />
                     <span>{account.dataCount.timetables} Timetables</span>
@@ -125,6 +133,38 @@ export default function RecoveryView() {
                   <div className="flex items-center gap-2">
                     <Database className="h-4 w-4 text-cyan-500" />
                     <span>{account.dataCount.projects} Projects</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-green-500" />
+                    <span>{account.dataCount.vectalTasks} Vectal Tasks</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-indigo-500" />
+                    <span>{account.dataCount.scriptures} Scriptures</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-red-500" />
+                    <span>{account.dataCount.holyVideos} Holy Videos</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-teal-500" />
+                    <span>{account.dataCount.videoLibrary} Video Library</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-emerald-500" />
+                    <span>{account.dataCount.adviceLibrary} Advice</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-orange-500" />
+                    <span>{account.dataCount.notToDoList} Not-To-Do Items</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-violet-500" />
+                    <span>{account.dataCount.legendProfiles} Legends</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Database className="h-4 w-4 text-sky-500" />
+                    <span>{account.dataCount.selfDiscovery > 0 ? "✓" : "✗"} Know Yourself</span>
                   </div>
                 </div>
               </CardContent>
