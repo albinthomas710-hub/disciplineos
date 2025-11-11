@@ -87,6 +87,7 @@ export default function RecoveryView() {
 
           const createdDate = new Date(account.createdAt).toLocaleString();
           const isSelected = selectedUserId === account.userId;
+          const isCurrentUser = account.isCurrentUser;
 
           return (
             <Card
@@ -94,6 +95,8 @@ export default function RecoveryView() {
               className={`cursor-pointer transition-all ${
                 isSelected
                   ? "border-primary ring-2 ring-primary"
+                  : isCurrentUser
+                  ? "border-green-500 ring-2 ring-green-500 bg-green-50 dark:bg-green-950/20"
                   : "hover:border-primary/50"
               }`}
               onClick={() => setSelectedUserId(account.userId as Id<"users">)}
@@ -102,6 +105,11 @@ export default function RecoveryView() {
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">
                     Account #{index + 1}
+                    {isCurrentUser && (
+                      <span className="ml-2 text-xs font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900 px-2 py-1 rounded">
+                        YOUR CURRENT ACCOUNT
+                      </span>
+                    )}
                     {isSelected && (
                       <CheckCircle2 className="inline-block ml-2 h-5 w-5 text-primary" />
                     )}

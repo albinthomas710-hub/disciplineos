@@ -1,10 +1,14 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 // List all anonymous users with their data counts
 export const listAnonymousUsers = query({
   args: {},
   handler: async (ctx) => {
+    // Get current user to help identify which account is theirs
+    const currentUserId = await getAuthUserId(ctx);
+    
     const users = await ctx.db.query("users").collect();
     
     const anonymousUsers = [];
@@ -88,6 +92,7 @@ export const listAnonymousUsers = query({
 
         anonymousUsers.push({
           userId: user._id,
+          isCurrentUser: currentUserId === user._id, // Flag to identify current user
           createdAt: user._creationTime,
           currentStreak: user.currentStreak || 0,
           longestStreak: user.longestStreak || 0,
