@@ -61,7 +61,7 @@ export default function RecoveryView() {
             </CardTitle>
           </div>
           <CardDescription className="text-yellow-800 dark:text-yellow-200">
-            Your data is safe! All accounts are shown below (including those with emails). Find your account by matching the data counts, then convert it to a permanent email if needed.
+            Your data is safe! All {anonymousUsers?.length || 0} accounts are shown below. Find your account by matching the data counts with what you remember creating. The green-highlighted account is your CURRENT session (not necessarily your Comet browser account).
           </CardDescription>
         </CardHeader>
       </Card>
@@ -103,11 +103,16 @@ export default function RecoveryView() {
             >
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base">
-                    Account #{index + 1}
+                  <CardTitle className="text-base flex items-center gap-2 flex-wrap">
+                    <span>Account #{index + 1}</span>
+                    {account.email && (
+                      <span className="text-xs font-normal text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded">
+                        Email: {account.email}
+                      </span>
+                    )}
                     {isCurrentUser && (
-                      <span className="ml-2 text-xs font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900 px-2 py-1 rounded">
-                        YOUR CURRENT ACCOUNT
+                      <span className="text-xs font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900 px-2 py-1 rounded">
+                        CURRENT SESSION
                       </span>
                     )}
                     {isSelected && (

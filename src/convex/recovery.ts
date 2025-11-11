@@ -9,7 +9,11 @@ export const listAnonymousUsers = query({
     // Get current user to help identify which account is theirs
     const currentUserId = await getAuthUserId(ctx);
     
+    // Get ALL users from the database (no filtering)
     const users = await ctx.db.query("users").collect();
+    
+    console.log(`[Recovery Debug] Found ${users.length} total users in database`);
+    console.log(`[Recovery Debug] Current user ID: ${currentUserId}`);
     
     const anonymousUsers = [];
     
@@ -90,13 +94,15 @@ export const listAnonymousUsers = query({
         // Calculate total Not-To-Do items across all dates
         const totalNotToDoItems = notToDoList.reduce((sum, n) => sum + (n.items?.length || 0), 0);
 
-        anonymousUsers.push({
+        const accountData = {
           userId: user._id,
-          isCurrentUser: currentUserId === user._id, // Flag to identify current user
+          isCurrentUser: currentUserId === user._id,
           createdAt: user._creationTime,
           currentStreak: user.currentStreak || 0,
           longestStreak: user.longestStreak || 0,
           totalDaysCompleted: user.totalDaysCompleted || 0,
+          email: user.email || null,
+          isAnonymous: user.isAnonymous,
           dataCount: {
             timetables: timetables.length,
             manifestations: manifestations.length,
@@ -112,7 +118,11 @@ export const listAnonymousUsers = query({
             selfDiscovery: selfDiscovery.length,
             legendProfiles: legendProfiles.length,
           },
-        });
+        };
+        
+        console.log(`[Recovery Debug] User ${user._id}: ${totalVectalTasks} Vectal tasks, ${timetables.length} timetables, ${quotes.length} quotes`);
+        
+        anonymousUsers.push(accountData);
       }
     }
     
