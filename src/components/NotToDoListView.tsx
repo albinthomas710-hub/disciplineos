@@ -14,12 +14,12 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function NotToDoListView() {
-  const notToDoData = useQuery(api.notToDoList.getTodayItems);
-  const weeklyStats = useQuery(api.notToDoList.getWeeklyStats);
-  const initializeItems = useMutation(api.notToDoList.initializeTodayItems);
-  const markAvoided = useMutation(api.notToDoList.markAvoided);
-  const addItem = useMutation(api.notToDoList.addItem);
-  const deleteItem = useMutation(api.notToDoList.deleteItem);
+  const notToDoData = useQuery((api as any).notToDoList.getTodayItems);
+  const weeklyStats = useQuery((api as any).notToDoList.getWeeklyStats);
+  const initializeItems = useMutation((api as any).notToDoList.initializeTodayItems);
+  const markAvoided = useMutation((api as any).notToDoList.markAvoided);
+  const addItem = useMutation((api as any).notToDoList.addItem);
+  const deleteItem = useMutation((api as any).notToDoList.deleteItem);
   
   const [newItemTitle, setNewItemTitle] = useState("");
   const [newItemCategory, setNewItemCategory] = useState("distraction");

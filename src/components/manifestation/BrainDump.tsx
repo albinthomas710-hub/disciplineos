@@ -10,10 +10,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export function BrainDump() {
-  const ideas = useQuery(api.affirmationIdeas.getIncompleteIdeas);
-  const createIdea = useMutation(api.affirmationIdeas.createIdea);
-  const deleteIdea = useMutation(api.affirmationIdeas.deleteIdea);
-  const markCompleted = useMutation(api.affirmationIdeas.markIdeaCompleted);
+  const ideas = useQuery((api as any).affirmationIdeas.getIncompleteIdeas);
+  const createIdea = useMutation((api as any).affirmationIdeas.createIdea);
+  const deleteIdea = useMutation((api as any).affirmationIdeas.deleteIdea);
+  const markCompleted = useMutation((api as any).affirmationIdeas.markIdeaCompleted);
 
   const [newIdea, setNewIdea] = useState("");
 
@@ -82,7 +82,7 @@ export function BrainDump() {
 
         {/* Ideas List */}
         <div className="space-y-2 max-h-96 overflow-y-auto">
-          {ideas?.map((idea, index) => (
+          {ideas?.map((idea: any, index: number) => (
             <motion.div
               key={idea._id}
               initial={{ x: -10, opacity: 0 }}

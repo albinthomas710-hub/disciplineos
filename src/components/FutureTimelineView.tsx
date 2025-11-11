@@ -15,8 +15,8 @@ import {
 import { toast } from "sonner";
 
 export default function FutureTimelineView() {
-  const data = useQuery(api.futureTimelineQueries.getTimeline);
-  const resetTimeline = useMutation(api.futureTimelineQueries.resetTimeline);
+  const data = useQuery((api as any).futureTimelineQueries.getTimeline);
+  const resetTimeline = useMutation((api as any).futureTimelineQueries.resetTimeline);
 
   const handleReset = async () => {
     try {
@@ -36,7 +36,7 @@ export default function FutureTimelineView() {
   const timelineBVibrancy = timeline?.timelineBVibrancy || 50;
 
   // Generate personalized timeline entries based on user data
-  const goals = manifestations.map(m => m.title).join(", ") || "your goals";
+  const goals = manifestations.map((m: any) => m.title).join(", ") || "your goals";
   
   const timelineAEntry = `Day 90 - ${userName}'s Journal
 

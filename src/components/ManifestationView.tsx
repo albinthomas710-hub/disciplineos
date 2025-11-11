@@ -36,23 +36,23 @@ import { ManifestationDashboard } from "./manifestation/ManifestationDashboard";
 import { BrainDump } from "./manifestation/BrainDump";
 
 export default function ManifestationView() {
-  const manifestations = useQuery(api.manifestations.getUserManifestations);
+  const manifestations = useQuery((api as any).manifestations.getUserManifestations);
   
-  const createManifestation = useMutation(api.manifestations.createManifestation);
-  const updateManifestation = useMutation(api.manifestations.updateManifestation);
-  const deleteManifestation = useMutation(api.manifestations.deleteManifestation);
-  const toggleFavorite = useMutation(api.manifestations.toggleFavorite);
-  const toggleAchieved = useMutation(api.manifestations.toggleAchieved);
-  const calculateEnergyScore = useMutation(api.manifestations.calculateEnergyScore);
-  const logVisualization = useMutation(api.manifestations.logVisualization);
-  const updateFoundation = useMutation(api.manifestationActions.updateFoundation);
-  const logDailyActions = useMutation(api.manifestationActions.logDailyActions);
-  const logEvidence = useMutation(api.manifestationActions.logEvidence);
-  const logVisualizationSession = useMutation(api.manifestationActions.logVisualizationSession);
-  const logObstacle = useMutation(api.manifestationActions.logObstacle);
-  const addLimitingBelief = useMutation(api.manifestationActions.addLimitingBelief);
-  const resolveLimitingBelief = useMutation(api.manifestationActions.resolveLimitingBelief);
-  const analyzeLimitingBeliefs = useAction(api.manifestationAI.analyzeLimitingBeliefs);
+  const createManifestation = useMutation((api as any).manifestations.createManifestation);
+  const updateManifestation = useMutation((api as any).manifestations.updateManifestation);
+  const deleteManifestation = useMutation((api as any).manifestations.deleteManifestation);
+  const toggleFavorite = useMutation((api as any).manifestations.toggleFavorite);
+  const toggleAchieved = useMutation((api as any).manifestations.toggleAchieved);
+  const calculateEnergyScore = useMutation((api as any).manifestations.calculateEnergyScore);
+  const logVisualization = useMutation((api as any).manifestations.logVisualization);
+  const updateFoundation = useMutation((api as any).manifestationActions.updateFoundation);
+  const logDailyActions = useMutation((api as any).manifestationActions.logDailyActions);
+  const logEvidence = useMutation((api as any).manifestationActions.logEvidence);
+  const logVisualizationSession = useMutation((api as any).manifestationActions.logVisualizationSession);
+  const logObstacle = useMutation((api as any).manifestationActions.logObstacle);
+  const addLimitingBelief = useMutation((api as any).manifestationActions.addLimitingBelief);
+  const resolveLimitingBelief = useMutation((api as any).manifestationActions.resolveLimitingBelief);
+  const analyzeLimitingBeliefs = useAction((api as any).manifestationAI.analyzeLimitingBeliefs);
 
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "vision" | "affirmations" | "habits" | "mindset">("all");
@@ -225,16 +225,16 @@ export default function ManifestationView() {
 
   const filteredManifestations = activeTab === "all"
     ? manifestations
-    : manifestations.filter((m) => m.type === activeTab);
+    : manifestations.filter((m: any) => m.type === activeTab);
 
   let displayedManifestations = filteredManifestations;
   
   if (showAchievedOnly) {
-    displayedManifestations = displayedManifestations.filter((m) => m.isAchieved);
+    displayedManifestations = displayedManifestations.filter((m: any) => m.isAchieved);
   }
   
   if (showFavoritesOnly) {
-    displayedManifestations = displayedManifestations.filter((m) => m.isFavorite);
+    displayedManifestations = displayedManifestations.filter((m: any) => m.isFavorite);
   }
 
   const getTypeConfig = (type: string) => {
@@ -242,10 +242,10 @@ export default function ManifestationView() {
   };
 
   const stats = {
-    activeCount: manifestations.filter(m => !m.isAchieved).length,
-    achievedCount: manifestations.filter(m => m.isAchieved).length,
-    avgEnergy: Math.round(manifestations.reduce((acc, m) => acc + (m.energyScore || 0), 0) / manifestations.length) || 0,
-    maxStreak: Math.max(...manifestations.map(m => m.visualizationStreak || 0), 0),
+    activeCount: manifestations.filter((m: any) => !m.isAchieved).length,
+    achievedCount: manifestations.filter((m: any) => m.isAchieved).length,
+    avgEnergy: Math.round(manifestations.reduce((acc: number, m: any) => acc + (m.energyScore || 0), 0) / manifestations.length) || 0,
+    maxStreak: Math.max(...manifestations.map((m: any) => m.visualizationStreak || 0), 0),
   };
 
   return (
@@ -387,7 +387,7 @@ export default function ManifestationView() {
         {["all", "vision", "affirmations", "habits", "mindset"].includes(activeTab) && (
           <TabsContent value={activeTab} className="space-y-4 mt-6">
             <div className="grid gap-4">
-              {displayedManifestations.map((item, index) => (
+              {displayedManifestations.map((item: any, index: number) => (
                 <ManifestationCard
                   key={item._id}
                   item={item}
@@ -434,7 +434,7 @@ export default function ManifestationView() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-2">
-                    {manifestations.map((item) => (
+                    {manifestations.map((item: any) => (
                       <Button
                         key={item._id}
                         variant="outline"
@@ -452,7 +452,7 @@ export default function ManifestationView() {
                 </CardContent>
               </Card>
 
-              {manifestations.map((item) => (
+              {manifestations.map((item: any) => (
                 <Card key={item._id} id={`actions-${item._id}`} className="border-2 border-green-200 dark:border-green-800">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -498,7 +498,7 @@ export default function ManifestationView() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-2">
-                    {manifestations.map((item) => (
+                    {manifestations.map((item: any) => (
                       <Button
                         key={item._id}
                         variant="outline"
@@ -516,7 +516,7 @@ export default function ManifestationView() {
                 </CardContent>
               </Card>
 
-              {manifestations.map((item) => (
+              {manifestations.map((item: any) => (
                 <Card key={item._id} id={`evidence-${item._id}`} className="border-2 border-blue-200 dark:border-blue-800">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -562,7 +562,7 @@ export default function ManifestationView() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-2">
-                    {manifestations.map((item) => (
+                    {manifestations.map((item: any) => (
                       <Button
                         key={item._id}
                         variant="outline"
@@ -580,7 +580,7 @@ export default function ManifestationView() {
                 </CardContent>
               </Card>
 
-              {manifestations.map((item) => (
+              {manifestations.map((item: any) => (
                 <Card key={item._id} id={`visualize-${item._id}`} className="border-2 border-purple-200 dark:border-purple-800">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -625,7 +625,7 @@ export default function ManifestationView() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-2">
-                    {manifestations.map((item) => (
+                    {manifestations.map((item: any) => (
                       <Button
                         key={item._id}
                         variant="outline"
@@ -643,7 +643,7 @@ export default function ManifestationView() {
                 </CardContent>
               </Card>
 
-              {manifestations.map((item) => (
+              {manifestations.map((item: any) => (
                 <Card key={item._id} id={`obstacles-${item._id}`} className="border-2 border-orange-200 dark:border-orange-800">
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -689,7 +689,7 @@ export default function ManifestationView() {
                 </CardHeader>
                 <CardContent>
                   <div className="grid gap-2">
-                    {manifestations.map((item) => (
+                    {manifestations.map((item: any) => (
                       <Button
                         key={item._id}
                         variant="outline"
@@ -707,7 +707,7 @@ export default function ManifestationView() {
                 </CardContent>
               </Card>
 
-              {manifestations.map((item) => (
+              {manifestations.map((item: any) => (
                 <div key={item._id} id={`beliefs-${item._id}`} className="space-y-4">
                   <Card className="border-2 border-purple-200 dark:border-purple-800">
                     <CardHeader>

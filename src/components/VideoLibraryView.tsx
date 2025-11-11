@@ -15,16 +15,16 @@ import { VideoForm } from "@/components/videolibrary/VideoForm";
 import { VideoCard } from "@/components/videolibrary/VideoCard";
 
 export default function VideoLibraryView() {
-  const categories = useQuery(api.videoLibrary.getAllCategories);
-  const allVideos = useQuery(api.videoLibrary.getAllVideos);
+  const categories = useQuery((api as any).videoLibrary.getAllCategories);
+  const allVideos = useQuery((api as any).videoLibrary.getAllVideos);
 
-  const createCategory = useMutation(api.videoLibrary.createCategory);
-  const deleteCategory = useMutation(api.videoLibrary.deleteCategory);
-  const createVideo = useMutation(api.videoLibrary.createVideo);
-  const deleteVideo = useMutation(api.videoLibrary.deleteVideo);
-  const toggleFavorite = useMutation(api.videoLibrary.toggleFavorite);
-  const updateVideo = useMutation(api.videoLibrary.updateVideo);
-  const updateCategory = useMutation(api.videoLibrary.updateCategory);
+  const createCategory = useMutation((api as any).videoLibrary.createCategory);
+  const deleteCategory = useMutation((api as any).videoLibrary.deleteCategory);
+  const createVideo = useMutation((api as any).videoLibrary.createVideo);
+  const deleteVideo = useMutation((api as any).videoLibrary.deleteVideo);
+  const toggleFavorite = useMutation((api as any).videoLibrary.toggleFavorite);
+  const updateVideo = useMutation((api as any).videoLibrary.updateVideo);
+  const updateCategory = useMutation((api as any).videoLibrary.updateCategory);
 
   const [selectedCategory, setSelectedCategory] = useState<Id<"videoCategories"> | null>(null);
   const [showNewCategory, setShowNewCategory] = useState(false);
@@ -159,12 +159,12 @@ export default function VideoLibraryView() {
   }
 
   const filteredVideos = selectedCategory
-    ? allVideos.filter((v) => {
+    ? allVideos.filter((v: any) => {
         const matchesCategory = v.categoryId === selectedCategory;
         const matchesFavorite = showFavoritesOnly ? v.isFavorite : true;
         return matchesCategory && matchesFavorite;
       })
-    : allVideos.filter((v) => (showFavoritesOnly ? v.isFavorite : true));
+    : allVideos.filter((v: any) => (showFavoritesOnly ? v.isFavorite : true));
 
   return (
     <div className="space-y-6">
@@ -232,12 +232,12 @@ export default function VideoLibraryView() {
 
         {/* Category Grid */}
         <div className="grid md:grid-cols-3 gap-4">
-          {categories.map((category, i) => (
+          {categories.map((category: any, i: number) => (
             <VideoCategoryCard
               key={category._id}
               category={category}
               isSelected={selectedCategory === category._id}
-              videoCount={allVideos.filter((v) => v.categoryId === category._id).length}
+              videoCount={allVideos.filter((v: any) => v.categoryId === category._id).length}
               onSelect={() => setSelectedCategory(category._id)}
               onEdit={() => handleEditCategory(category)}
               onDelete={() => handleDeleteCategory(category._id)}
@@ -260,14 +260,14 @@ export default function VideoLibraryView() {
         <div className="space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <h3 className="text-xl font-bold">
-              Videos in {categories.find((c) => c._id === selectedCategory)?.name}
+              Videos in {categories.find((c: any) => c._id === selectedCategory)?.name}
             </h3>
             <div className="flex gap-2">
               <FavoriteFilterButton
                 showFavoritesOnly={showFavoritesOnly}
                 onToggle={() => setShowFavoritesOnly(!showFavoritesOnly)}
                 favoriteCount={filteredVideos.length}
-                totalCount={allVideos.filter((v) => v.categoryId === selectedCategory).length}
+                totalCount={allVideos.filter((v: any) => v.categoryId === selectedCategory).length}
               />
               <Button
                 onClick={() => {
@@ -309,7 +309,7 @@ export default function VideoLibraryView() {
 
           {/* Video List */}
           <div className="grid gap-4">
-            {filteredVideos.map((video, i) => (
+            {filteredVideos.map((video: any, i: number) => (
               <VideoCard
                 key={video._id}
                 video={video}

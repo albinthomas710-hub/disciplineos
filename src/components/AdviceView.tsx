@@ -15,15 +15,15 @@ import { AdviceForm } from "@/components/advice/AdviceForm";
 import { AdviceCard } from "@/components/advice/AdviceCard";
 
 export default function AdviceView() {
-  const categories = useQuery(api.advice.getAllCategories);
-  const allAdvice = useQuery(api.advice.getAllAdvice);
+  const categories = useQuery((api as any).advice.getAllCategories);
+  const allAdvice = useQuery((api as any).advice.getAllAdvice);
 
-  const createCategory = useMutation(api.advice.createCategory);
-  const deleteCategory = useMutation(api.advice.deleteCategory);
-  const createAdvice = useMutation(api.advice.createAdvice);
-  const updateAdvice = useMutation(api.advice.updateAdvice);
-  const deleteAdvice = useMutation(api.advice.deleteAdvice);
-  const toggleFavorite = useMutation(api.advice.toggleFavorite);
+  const createCategory = useMutation((api as any).advice.createCategory);
+  const deleteCategory = useMutation((api as any).advice.deleteCategory);
+  const createAdvice = useMutation((api as any).advice.createAdvice);
+  const updateAdvice = useMutation((api as any).advice.updateAdvice);
+  const deleteAdvice = useMutation((api as any).advice.deleteAdvice);
+  const toggleFavorite = useMutation((api as any).advice.toggleFavorite);
 
   const [selectedCategory, setSelectedCategory] = useState<Id<"adviceCategories"> | null>(null);
   const [showNewCategory, setShowNewCategory] = useState(false);
@@ -140,12 +140,12 @@ export default function AdviceView() {
   }
 
   const filteredAdvice = selectedCategory
-    ? allAdvice.filter((a) => {
+    ? allAdvice.filter((a: any) => {
         const matchesCategory = a.categoryId === selectedCategory;
         const matchesFavorite = showFavoritesOnly ? a.isFavorite === true : true;
         return matchesCategory && matchesFavorite;
       })
-    : allAdvice.filter((a) => (showFavoritesOnly ? a.isFavorite === true : true));
+    : allAdvice.filter((a: any) => (showFavoritesOnly ? a.isFavorite === true : true));
 
   return (
     <div className="space-y-6">
@@ -203,12 +203,12 @@ export default function AdviceView() {
 
         {/* Category Grid */}
         <div className="grid md:grid-cols-3 gap-4">
-          {categories.map((category, i) => (
+          {categories.map((category: any, i: number) => (
             <AdviceCategoryCard
               key={category._id}
               category={category}
               isSelected={selectedCategory === category._id}
-              videoCount={allAdvice.filter((a) => a.categoryId === category._id).length}
+              videoCount={allAdvice.filter((a: any) => a.categoryId === category._id).length}
               onSelect={() => setSelectedCategory(category._id)}
               onDelete={() => handleDeleteCategory(category._id)}
               index={i}
@@ -230,14 +230,14 @@ export default function AdviceView() {
         <div className="space-y-4">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <h3 className="text-xl font-bold">
-              Advice in {categories.find((c) => c._id === selectedCategory)?.name}
+              Advice in {categories.find((c: any) => c._id === selectedCategory)?.name}
             </h3>
             <div className="flex gap-2">
               <FavoriteFilterButton
                 showFavoritesOnly={showFavoritesOnly}
                 onToggle={() => setShowFavoritesOnly(!showFavoritesOnly)}
                 favoriteCount={filteredAdvice.length}
-                totalCount={allAdvice.filter((a) => a.categoryId === selectedCategory).length}
+                totalCount={allAdvice.filter((a: any) => a.categoryId === selectedCategory).length}
               />
               <Button
                 onClick={() => {
@@ -279,7 +279,7 @@ export default function AdviceView() {
 
           {/* Advice List */}
           <div className="grid gap-4">
-            {filteredAdvice.map((advice, i) => (
+            {filteredAdvice.map((advice: any, i: number) => (
               <AdviceCard
                 key={advice._id}
                 advice={advice}

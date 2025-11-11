@@ -17,23 +17,23 @@ import { HolyVideoForm } from "@/components/prayer/HolyVideoForm";
 import { HolyVideoCard } from "@/components/prayer/HolyVideoCard";
 
 export default function PrayerView() {
-  const prayers = useQuery(api.prayers.getAll);
-  const scriptures = useQuery(api.scriptures.getAll);
-  const holyVideos = useQuery(api.holyVideos.getAll);
-  const favoriteVideos = useQuery(api.holyVideos.getFavorites);
+  const prayers = useQuery((api as any).prayers.getAll);
+  const scriptures = useQuery((api as any).scriptures.getAll);
+  const holyVideos = useQuery((api as any).holyVideos.getAll);
+  const favoriteVideos = useQuery((api as any).holyVideos.getFavorites);
   
-  const createPrayer = useMutation(api.prayers.create);
-  const markAnswered = useMutation(api.prayers.markAnswered);
-  const togglePrayerFavorite = useMutation(api.prayers.toggleFavorite);
-  const removePrayer = useMutation(api.prayers.remove);
+  const createPrayer = useMutation((api as any).prayers.create);
+  const markAnswered = useMutation((api as any).prayers.markAnswered);
+  const togglePrayerFavorite = useMutation((api as any).prayers.toggleFavorite);
+  const removePrayer = useMutation((api as any).prayers.remove);
   
-  const createScripture = useMutation(api.scriptures.create);
-  const toggleScriptureFavorite = useMutation(api.scriptures.toggleFavorite);
-  const removeScripture = useMutation(api.scriptures.remove);
+  const createScripture = useMutation((api as any).scriptures.create);
+  const toggleScriptureFavorite = useMutation((api as any).scriptures.toggleFavorite);
+  const removeScripture = useMutation((api as any).scriptures.remove);
 
-  const createVideo = useMutation(api.holyVideos.create);
-  const toggleVideoFavorite = useMutation(api.holyVideos.toggleFavorite);
-  const removeVideo = useMutation(api.holyVideos.remove);
+  const createVideo = useMutation((api as any).holyVideos.create);
+  const toggleVideoFavorite = useMutation((api as any).holyVideos.toggleFavorite);
+  const removeVideo = useMutation((api as any).holyVideos.remove);
 
   const [activeTab, setActiveTab] = useState<"prayers" | "scriptures" | "videos">("prayers");
   const [showNewPrayer, setShowNewPrayer] = useState(false);
@@ -170,10 +170,10 @@ export default function PrayerView() {
 
   const displayedVideos = showFavoriteVideosOnly ? favoriteVideos : holyVideos;
   const displayedPrayers = showFavoritePrayersOnly 
-    ? prayers.filter(p => p.isFavorite) 
+    ? prayers.filter((p: any) => p.isFavorite) 
     : prayers;
   const displayedScriptures = showFavoriteScripturesOnly 
-    ? scriptures.filter(s => s.isFavorite) 
+    ? scriptures.filter((s: any) => s.isFavorite) 
     : scriptures;
 
   return (
@@ -267,7 +267,7 @@ export default function PrayerView() {
 
           {/* Prayer List */}
           <div className="grid gap-4">
-            {displayedPrayers.map((prayer, i) => {
+            {displayedPrayers.map((prayer: any, i: number) => {
               const category = categories.find((c) => c.value === prayer.category);
               return (
                 <PrayerCard
@@ -339,7 +339,7 @@ export default function PrayerView() {
 
           {/* Scripture List */}
           <div className="grid gap-4">
-            {displayedScriptures.map((scripture, i) => (
+            {displayedScriptures.map((scripture: any, i: number) => (
               <ScriptureCard
                 key={scripture._id}
                 scripture={scripture}
@@ -407,7 +407,7 @@ export default function PrayerView() {
 
           {/* Video List */}
           <div className="grid gap-4">
-            {displayedVideos.map((video, i) => (
+            {displayedVideos.map((video: any, i: number) => (
               <HolyVideoCard
                 key={video._id}
                 video={video}

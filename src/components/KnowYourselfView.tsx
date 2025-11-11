@@ -23,22 +23,22 @@ import StrengthsWeaknessesCards from "./knowyourself/StrengthsWeaknessesCards";
 import TimeDistributionCard from "./knowyourself/TimeDistributionCard";
 
 export default function KnowYourselfView() {
-  const profile = useQuery(api.selfDiscovery.getProfile);
-  const journalEntries = useQuery(api.selfDiscovery.getJournalEntries, { limit: 5 });
-  const insights = useQuery(api.selfDiscovery.getInsights);
+  const profile = useQuery((api as any).selfDiscovery.getProfile);
+  const journalEntries = useQuery((api as any).selfDiscovery.getJournalEntries, { limit: 5 });
+  const insights = useQuery((api as any).selfDiscovery.getInsights);
   
-  const initializeProfile = useMutation(api.selfDiscovery.initializeProfile);
-  const analyzePatterns = useMutation(api.selfDiscovery.analyzePatterns);
-  const addJournalEntry = useMutation(api.selfDiscovery.addJournalEntry);
-  const deleteJournalEntry = useMutation(api.selfDiscovery.deleteJournalEntry);
-  const addStrength = useMutation(api.selfDiscovery.addStrength);
-  const removeStrength = useMutation(api.selfDiscovery.removeStrength);
-  const addWeakness = useMutation(api.selfDiscovery.addWeakness);
-  const removeWeakness = useMutation(api.selfDiscovery.removeWeakness);
-  const markWeaknessFixed = useMutation(api.selfDiscovery.markWeaknessFixed);
-  const addTimeCategory = useMutation(api.selfDiscovery.addTimeCategory);
-  const updateTimeCategory = useMutation(api.selfDiscovery.updateTimeCategory);
-  const deleteTimeCategory = useMutation(api.selfDiscovery.deleteTimeCategory);
+  const initializeProfile = useMutation((api as any).selfDiscovery.initializeProfile);
+  const analyzePatterns = useMutation((api as any).selfDiscovery.analyzePatterns);
+  const addJournalEntry = useMutation((api as any).selfDiscovery.addJournalEntry);
+  const deleteJournalEntry = useMutation((api as any).selfDiscovery.deleteJournalEntry);
+  const addStrength = useMutation((api as any).selfDiscovery.addStrength);
+  const removeStrength = useMutation((api as any).selfDiscovery.removeStrength);
+  const addWeakness = useMutation((api as any).selfDiscovery.addWeakness);
+  const removeWeakness = useMutation((api as any).selfDiscovery.removeWeakness);
+  const markWeaknessFixed = useMutation((api as any).selfDiscovery.markWeaknessFixed);
+  const addTimeCategory = useMutation((api as any).selfDiscovery.addTimeCategory);
+  const updateTimeCategory = useMutation((api as any).selfDiscovery.updateTimeCategory);
+  const deleteTimeCategory = useMutation((api as any).selfDiscovery.deleteTimeCategory);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showJournal, setShowJournal] = useState(false);
@@ -426,7 +426,7 @@ export default function KnowYourselfView() {
               <div className="space-y-3">
                 <h4 className="font-bold text-sm text-purple-700 dark:text-purple-400">Recent Entries</h4>
                 <AnimatePresence>
-                  {journalEntries.map((entry, i) => (
+                  {journalEntries.map((entry: any, i: number) => (
                     <motion.div
                       key={entry._id}
                       initial={{ x: -20, opacity: 0 }}
@@ -486,7 +486,7 @@ export default function KnowYourselfView() {
             <CardContent>
               <div className="space-y-3">
                 <AnimatePresence>
-                  {insights.map((insight, i) => (
+                  {insights.map((insight: any, i: number) => (
                     <motion.div
                       key={i}
                       initial={{ x: -20, opacity: 0 }}

@@ -9,8 +9,8 @@ import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 
 export default function RecoveryView() {
-  const anonymousUsers = useQuery(api.recovery.listAnonymousUsers);
-  const convertToEmail = useMutation(api.recovery.convertAnonymousToEmail);
+  const anonymousUsers = useQuery((api as any).recovery.listAnonymousUsers);
+  const convertToEmail = useMutation((api as any).recovery.convertAnonymousToEmail);
   const [selectedUserId, setSelectedUserId] = useState<Id<"users"> | null>(null);
   const [email, setEmail] = useState("");
   const [isConverting, setIsConverting] = useState(false);
@@ -69,7 +69,7 @@ export default function RecoveryView() {
       <div className="grid gap-4">
         <h3 className="text-lg font-semibold">Found {anonymousUsers.length} Anonymous Accounts</h3>
         
-        {anonymousUsers.map((account, index) => {
+        {anonymousUsers.map((account: any, index: number) => {
           const totalItems = 
             account.dataCount.timetables +
             account.dataCount.manifestations +
