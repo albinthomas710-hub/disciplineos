@@ -61,13 +61,13 @@ export default function RecoveryView() {
             </CardTitle>
           </div>
           <CardDescription className="text-yellow-800 dark:text-yellow-200">
-            Your data is safe! Select your account below and convert it to a permanent email-based account.
+            Your data is safe! All accounts are shown below (including those with emails). Find your account by matching the data counts, then convert it to a permanent email if needed.
           </CardDescription>
         </CardHeader>
       </Card>
 
       <div className="grid gap-4">
-        <h3 className="text-lg font-semibold">Found {anonymousUsers.length} Anonymous Accounts</h3>
+        <h3 className="text-lg font-semibold">Found {anonymousUsers.length} Accounts</h3>
         
         {anonymousUsers.map((account: any, index: number) => {
           const totalItems = 

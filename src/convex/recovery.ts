@@ -14,9 +14,9 @@ export const listAnonymousUsers = query({
     const anonymousUsers = [];
     
     for (const user of users) {
-      // Include users where isAnonymous is true OR undefined (legacy accounts)
-      // Exclude users with email addresses (they're already converted)
-      if ((user.isAnonymous === true || user.isAnonymous === undefined) && !user.email) {
+      // Include ALL users (anonymous or with email) to help find the real account
+      // We'll show all accounts so the user can identify theirs by data
+      if (true) {
         // Count ALL data types for each anonymous user
         const timetables = await ctx.db
           .query("timetables")
