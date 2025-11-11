@@ -13,16 +13,16 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export default function QuotesView() {
-  const quotes = useQuery(api.quotes.getUserQuotes);
-  const authors = useQuery(api.quotes.getAuthors);
-  const chains = useQuery(api.quoteChains.getUserChains);
-  const profiles = useQuery(api.legendProfiles.getUserProfiles);
+  const quotes = useQuery((api as any).quotes.getUserQuotes);
+  const authors = useQuery((api as any).quotes.getAuthors);
+  const chains = useQuery((api as any).quoteChains.getUserChains);
+  const profiles = useQuery((api as any).legendProfiles.getUserProfiles);
   
-  const addQuote = useMutation(api.quotes.addQuote);
-  const toggleFavorite = useMutation(api.quotes.toggleFavorite);
-  const deleteQuote = useMutation(api.quotes.deleteQuote);
-  const createChain = useMutation(api.quoteChains.createChain);
-  const upsertProfile = useMutation(api.legendProfiles.upsertProfile);
+  const addQuote = useMutation((api as any).quotes.addQuote);
+  const toggleFavorite = useMutation((api as any).quotes.toggleFavorite);
+  const deleteQuote = useMutation((api as any).quotes.deleteQuote);
+  const createChain = useMutation((api as any).quoteChains.createChain);
+  const upsertProfile = useMutation((api as any).legendProfiles.upsertProfile);
 
   const [isAdding, setIsAdding] = useState(false);
   const [newQuote, setNewQuote] = useState({
@@ -128,9 +128,9 @@ export default function QuotesView() {
   }
 
   const displayedQuotes = showFavoritesOnly
-    ? quotes.filter((q) => q.isFavorite)
+    ? quotes.filter((q: any) => q.isFavorite)
     : selectedAuthor
-    ? quotes.filter((q) => q.author === selectedAuthor)
+    ? quotes.filter((q: any) => q.author === selectedAuthor)
     : quotes;
 
   return (
@@ -249,7 +249,7 @@ export default function QuotesView() {
         <TabsContent value="all" className="space-y-4 mt-6">
           {/* Quotes List */}
           <div className="grid gap-4">
-            {displayedQuotes.map((quote, index) => (
+            {displayedQuotes.map((quote: any, index: number) => (
               <motion.div
                 key={quote._id}
                 initial={{ x: -20, opacity: 0 }}
@@ -275,7 +275,7 @@ export default function QuotesView() {
                                   {quote.category}
                                 </Badge>
                               )}
-                              {quote.tags?.map((tag) => (
+                              {quote.tags?.map((tag: any) => (
                                 <Badge key={tag} variant="outline" className="text-xs">
                                   #{tag}
                                 </Badge>
@@ -375,7 +375,7 @@ export default function QuotesView() {
           )}
 
           <div className="grid md:grid-cols-2 gap-4">
-            {authors.map((author) => (
+            {authors.map((author: any) => (
               <Card
                 key={author.name}
                 className="cursor-pointer hover:shadow-lg transition-all"
@@ -450,7 +450,7 @@ export default function QuotesView() {
           )}
 
           <div className="grid gap-4">
-            {chains?.map((chain) => (
+            {chains?.map((chain: any) => (
               <Card key={chain._id} className="hover:shadow-lg transition-all">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">

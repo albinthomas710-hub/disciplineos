@@ -13,11 +13,11 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function VectalView() {
-  const vectalData = useQuery(api.vectal.getTodayTasks);
-  const initializeTasks = useMutation(api.vectal.initializeTodayTasks);
-  const toggleTask = useMutation(api.vectal.toggleTask);
-  const addTask = useMutation(api.vectal.addTask);
-  const deleteTask = useMutation(api.vectal.deleteTask);
+  const vectalData = useQuery((api as any).vectal.getTodayTasks);
+  const initializeTasks = useMutation((api as any).vectal.initializeTodayTasks);
+  const toggleTask = useMutation((api as any).vectal.toggleTask);
+  const addTask = useMutation((api as any).vectal.addTask);
+  const deleteTask = useMutation((api as any).vectal.deleteTask);
   
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskImportance, setNewTaskImportance] = useState(50);
@@ -335,7 +335,7 @@ export default function VectalView() {
           )}
 
           {/* Tasks */}
-          {vectalData.tasks.map((task: any, index: number) => (
+            {vectalData.tasks.map((task: any, index: number) => (
             <motion.div
               key={task.id}
               initial={{ x: -20, opacity: 0 }}

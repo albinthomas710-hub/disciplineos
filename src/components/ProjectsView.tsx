@@ -26,24 +26,24 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export default function ProjectsView() {
-  const projects = useQuery(api.projects.getUserProjects);
-  const notes = useQuery(api.notes.getUserNotes);
-  const ideas = useQuery(api.ideas.getUserIdeas);
+  const projects = useQuery((api as any).projects.getUserProjects);
+  const notes = useQuery((api as any).notes.getUserNotes);
+  const ideas = useQuery((api as any).ideas.getUserIdeas);
   
-  const createProject = useMutation(api.projects.createProject);
-  const updateProject = useMutation(api.projects.updateProject);
-  const deleteProject = useMutation(api.projects.deleteProject);
-  const toggleProjectFavorite = useMutation(api.projects.toggleFavorite);
+  const createProject = useMutation((api as any).projects.createProject);
+  const updateProject = useMutation((api as any).projects.updateProject);
+  const deleteProject = useMutation((api as any).projects.deleteProject);
+  const toggleProjectFavorite = useMutation((api as any).projects.toggleFavorite);
   
-  const createNote = useMutation(api.notes.createNote);
-  const updateNote = useMutation(api.notes.updateNote);
-  const deleteNote = useMutation(api.notes.deleteNote);
-  const toggleNoteFavorite = useMutation(api.notes.toggleFavorite);
-  const toggleNotePin = useMutation(api.notes.togglePin);
+  const createNote = useMutation((api as any).notes.createNote);
+  const updateNote = useMutation((api as any).notes.updateNote);
+  const deleteNote = useMutation((api as any).notes.deleteNote);
+  const toggleNoteFavorite = useMutation((api as any).notes.toggleFavorite);
+  const toggleNotePin = useMutation((api as any).notes.togglePin);
 
-  const createIdea = useMutation(api.ideas.createIdea);
-  const updateIdea = useMutation(api.ideas.updateIdea);
-  const deleteIdea = useMutation(api.ideas.deleteIdea);
+  const createIdea = useMutation((api as any).ideas.createIdea);
+  const updateIdea = useMutation((api as any).ideas.updateIdea);
+  const deleteIdea = useMutation((api as any).ideas.deleteIdea);
 
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [isCreatingNote, setIsCreatingNote] = useState(false);
@@ -308,11 +308,11 @@ export default function ProjectsView() {
   }
 
   const filteredNotes = selectedProject
-    ? notes.filter((n) => n.projectId === selectedProject)
+    ? notes.filter((n: any) => n.projectId === selectedProject)
     : notes;
 
   const searchedNotes = searchQuery
-    ? filteredNotes.filter((n) => 
+    ? filteredNotes.filter((n: any) => 
         n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         n.content.toLowerCase().includes(searchQuery.toLowerCase())
       )
@@ -326,7 +326,7 @@ export default function ProjectsView() {
   });
 
   const filteredIdeas = selectedProject
-    ? ideas.filter((i) => i.projectId === selectedProject)
+    ? ideas.filter((i: any) => i.projectId === selectedProject)
     : ideas;
 
   // Apply favorite filters
@@ -335,7 +335,7 @@ export default function ProjectsView() {
     : sortedNotes;
 
   const displayedProjects = showFavoriteProjectsOnly
-    ? projects.filter((p) => p.isFavorite)
+    ? projects.filter((p: any) => p.isFavorite)
     : projects;
 
   return (
@@ -529,7 +529,7 @@ export default function ProjectsView() {
                   className="w-full mt-1 px-3 py-2 border rounded-md bg-background text-sm"
                 >
                   <option value="">💡 No Project (General Idea)</option>
-                  {projects.map((project) => (
+                  {projects.map((project: any) => (
                     <option key={project._id} value={project._id}>
                       {project.icon} {project.name.length > 30 ? project.name.substring(0, 30) + '...' : project.name}
                     </option>
@@ -576,7 +576,7 @@ export default function ProjectsView() {
         {selectedProject && (
           <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950 border-2 border-blue-200 dark:border-blue-800 rounded-lg">
             <span className="text-sm font-medium">
-              Viewing: {projects.find(p => p._id === selectedProject)?.name}
+              Viewing: {projects.find((p: any) => p._id === selectedProject)?.name}
             </span>
             <Button
               size="sm"
@@ -634,7 +634,7 @@ export default function ProjectsView() {
           Projects ({displayedProjects.length}{showFavoriteProjectsOnly ? " favorites" : ""})
         </h3>
         <div className="grid md:grid-cols-3 gap-4">
-          {displayedProjects.map((project, index) => (
+          {displayedProjects.map((project: any, index: number) => (
             <motion.div
               key={project._id}
               initial={{ x: -20, opacity: 0 }}
@@ -695,10 +695,10 @@ export default function ProjectsView() {
                   )}
                   <div className="mt-3 flex items-center gap-2 flex-wrap">
                     <Badge variant="secondary" className="shadow-lg shadow-purple-400/40 hover:shadow-purple-400/60 transition-shadow duration-300">
-                      {notes.filter((n) => n.projectId === project._id).length} notes
+                      {notes.filter((n: any) => n.projectId === project._id).length} notes
                     </Badge>
                     <Badge variant="outline" className="shadow-lg shadow-yellow-400/40 hover:shadow-yellow-400/60 transition-shadow duration-300 border-yellow-400/50">
-                      {ideas.filter((i) => i.projectId === project._id).length} ideas
+                      {ideas.filter((i: any) => i.projectId === project._id).length} ideas
                     </Badge>
                     <Badge variant="outline" className="shadow-lg shadow-green-400/40 hover:shadow-green-400/60 transition-shadow duration-300 border-green-400/50">
                       {project.status}
@@ -831,7 +831,7 @@ export default function ProjectsView() {
             </span>
           </h3>
           <div className="grid gap-4 mb-8">
-            {filteredIdeas.map((idea, index) => (
+            {filteredIdeas.map((idea: any, index: number) => (
               <motion.div
                 key={idea._id}
                 initial={{ x: -20, opacity: 0 }}
@@ -863,7 +863,7 @@ export default function ProjectsView() {
                               }}
                             >
                               <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(59,130,246,0.7)]">
-                                {projects.find((p) => p._id === idea.projectId)?.name}
+                                {projects.find((p: any) => p._id === idea.projectId)?.name}
                               </span>
                             </Badge>
                           )}
@@ -940,7 +940,7 @@ export default function ProjectsView() {
                             }}
                           >
                             <span className="bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent drop-shadow-[0_0_10px_rgba(59,130,246,0.7)]">
-                              {projects.find((p) => p._id === note.projectId)?.name}
+                              {projects.find((p: any) => p._id === note.projectId)?.name}
                             </span>
                           </Badge>
                         )}
