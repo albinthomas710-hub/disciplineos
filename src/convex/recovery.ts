@@ -10,7 +10,9 @@ export const listAnonymousUsers = query({
     const anonymousUsers = [];
     
     for (const user of users) {
-      if (user.isAnonymous) {
+      // Include users where isAnonymous is true OR undefined (legacy accounts)
+      // Exclude users with email addresses (they're already converted)
+      if ((user.isAnonymous === true || user.isAnonymous === undefined) && !user.email) {
         // Count data for each anonymous user
         const timetables = await ctx.db
           .query("timetables")
@@ -67,8 +69,13 @@ export const convertAnonymousToEmail = mutation({
   handler: async (ctx, args) => {
     const anonymousUser = await ctx.db.get(args.anonymousUserId);
     
-    if (!anonymousUser || !anonymousUser.isAnonymous) {
-      throw new Error("User not found or not anonymous");
+    if (!anonymousUser) {
+      throw new Error("User not found");
+    }
+    
+    // Check if user is actually anonymous (no email or isAnonymous flag)
+    if (anonymousUser.email && !anonymousUser.isAnonymous) {
+      throw new Error("User already has an email account");
     }
     
     // Update the user to have an email and remove anonymous flag
