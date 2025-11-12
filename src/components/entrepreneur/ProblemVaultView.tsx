@@ -16,6 +16,7 @@ import { ProblemDetailsDialog } from "./ProblemDetailsDialog";
 import { FailureDetailsDialog } from "./FailureDetailsDialog";
 import { LearningDetailsDialog } from "./LearningDetailsDialog";
 import { PivotDetailsDialog } from "./PivotDetailsDialog";
+import { SolutionDetailsDialog } from "./SolutionDetailsDialog";
 import { 
   useAllProblems,
   useProblemStats,
@@ -75,6 +76,9 @@ export function ProblemVaultView() {
   
   const [selectedPivotForDetails, setSelectedPivotForDetails] = useState<any | null>(null);
   const [showPivotDetails, setShowPivotDetails] = useState(false);
+  
+  const [selectedSolutionForDetails, setSelectedSolutionForDetails] = useState<any | null>(null);
+  const [showSolutionDetails, setShowSolutionDetails] = useState(false);
   
   // Problem form state
   const [problemTitle, setProblemTitle] = useState("");
@@ -541,7 +545,14 @@ export function ProblemVaultView() {
               allSolutions.map((solution: any) => {
                 const problem = allProblems?.find((p: any) => p._id === solution.problemId);
                 return (
-                  <Card key={solution._id} className="border-2 border-green-200 dark:border-green-800">
+                  <Card 
+                    key={solution._id} 
+                    className="border-2 border-green-200 dark:border-green-800 cursor-pointer hover:shadow-lg transition-all"
+                    onClick={() => {
+                      setSelectedSolutionForDetails(solution);
+                      setShowSolutionDetails(true);
+                    }}
+                  >
                     <CardContent className="p-6 space-y-4">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -565,7 +576,10 @@ export function ProblemVaultView() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleDeleteSolution(solution._id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteSolution(solution._id);
+                            }}
                             className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -585,8 +599,9 @@ export function ProblemVaultView() {
                       </div>
                       <div className="flex gap-4 text-sm">
                         <span>Complexity: {solution.buildComplexity}/10</span>
-                        {solution.timeToBuild && <span>Time: {solution.timeToBuild} days</span>}
+                        {solution.timeToBuild && <span>Time: {solution.timeToBuild} hours</span>}
                       </div>
+                      <p className="text-xs text-muted-foreground italic">Click to view full details...</p>
                     </CardContent>
                   </Card>
                 );
@@ -987,6 +1002,16 @@ export function ProblemVaultView() {
           open={showPivotDetails}
           onOpenChange={setShowPivotDetails}
           pivot={selectedPivotForDetails}
+        />
+      )}
+
+      {/* NEW: Solution Details Dialog */}
+      {selectedSolutionForDetails && (
+        <SolutionDetailsDialog
+          open={showSolutionDetails}
+          onOpenChange={setShowSolutionDetails}
+          solution={selectedSolutionForDetails}
+          problemTitle={allProblems?.find((p: any) => p._id === selectedSolutionForDetails.problemId)?.problemTitle}
         />
       )}
     </div>
