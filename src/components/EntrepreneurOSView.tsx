@@ -45,10 +45,14 @@ export default function EntrepreneurOSView() {
   const createIteration = useMutation((api as any).entrepreneurOS.createIteration);
   const updateFeedbackStatus = useMutation((api as any).entrepreneurOS.updateFeedbackStatus);
   const deleteFeedback = useMutation((api as any).entrepreneurOS.deleteFeedback);
+  const updateIteration = useMutation((api as any).entrepreneurOS.updateIteration);
+  const createValidation = useMutation((api as any).impactValidation.createValidation);
   
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [showIterationForm, setShowIterationForm] = useState(false);
   const [selectedFeedbackIds, setSelectedFeedbackIds] = useState<string[]>([]);
+  const [showValidationForm, setShowValidationForm] = useState<string | null>(null);
+  const [editingIteration, setEditingIteration] = useState<string | null>(null);
   
   // Feedback form state
   const [clientName, setClientName] = useState("");
@@ -73,6 +77,15 @@ export default function EntrepreneurOSView() {
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [targetShipDate, setTargetShipDate] = useState("");
   const [complexity, setComplexity] = useState(5);
+
+  // Impact Validation form state
+  const [problemSolved, setProblemSolved] = useState<"yes_confirmed" | "no_still_issues" | "not_tested_yet">("not_tested_yet");
+  const [postSatisfaction, setPostSatisfaction] = useState(5);
+  const [timeSaved, setTimeSaved] = useState<number>(0);
+  const [revenueGained, setRevenueGained] = useState<number>(0);
+  const [iterationFailed, setIterationFailed] = useState(false);
+  const [customerQuote, setCustomerQuote] = useState("");
+  const [nextAction, setNextAction] = useState<"mark_resolved" | "needs_additional_iteration" | "request_case_study">("mark_resolved");
 
   const handleAddFeedback = async () => {
     if (!clientName.trim() || !feedbackText.trim()) {
@@ -144,6 +157,66 @@ export default function EntrepreneurOSView() {
       toast.success("Iteration created! 🚀");
     } catch (error) {
       toast.error("Failed to create iteration");
+    }
+  };
+
+  const handleMarkAsShipped = async (iterationId: string) => {
+    try {
+      const actualShipDate = new Date().toISOString().split('T')[0];
+      await updateIteration({
+        iterationId: iterationId as any,
+        status: "shipped",
+        actualShipDate,
+      });
+      toast.success("Iteration marked as shipped! 🚀");
+      
+      // Show validation form after 7 days (for demo, show immediately)
+      setTimeout(() => {
+        setShowValidationForm(iterationId);
+      }, 1000);
+    } catch (error) {
+      toast.error("Failed to mark as shipped");
+    }
+  };
+
+  const handleUpdateIterationStatus = async (iterationId: string, status: string) => {
+    try {
+      await updateIteration({
+        iterationId: iterationId as any,
+        status: status as any,
+      });
+      toast.success(`Status updated to ${status}`);
+    } catch (error) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handleSubmitValidation = async (iterationId: string, feedbackId: string) => {
+    try {
+      await createValidation({
+        iterationId: iterationId as any,
+        feedbackId: feedbackId as any,
+        problemSolved,
+        postSatisfaction,
+        timeSaved: timeSaved > 0 ? timeSaved : undefined,
+        revenueGained: revenueGained > 0 ? revenueGained : undefined,
+        iterationFailed,
+        customerQuote: customerQuote || undefined,
+        nextAction,
+      });
+      
+      setShowValidationForm(null);
+      setProblemSolved("not_tested_yet");
+      setPostSatisfaction(5);
+      setTimeSaved(0);
+      setRevenueGained(0);
+      setIterationFailed(false);
+      setCustomerQuote("");
+      setNextAction("mark_resolved");
+      
+      toast.success("Impact validation recorded! 📊");
+    } catch (error) {
+      toast.error("Failed to submit validation");
     }
   };
 
@@ -849,7 +922,7 @@ export default function EntrepreneurOSView() {
                       className="p-5 border-2 border-blue-200 dark:border-blue-800 rounded-xl bg-white dark:bg-gray-900 shadow-md"
                     >
                       <div className="flex items-start justify-between mb-3">
-                        <div>
+                        <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <Badge className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
                               v{iteration.iterationNumber}
@@ -858,10 +931,44 @@ export default function EntrepreneurOSView() {
                           </div>
                           <p className="text-sm text-muted-foreground">{iteration.description}</p>
                         </div>
-                        <Badge variant="outline" className="capitalize">
-                          {iteration.status}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="capitalize">
+                            {iteration.status}
+                          </Badge>
+                          {iteration.complexity && (
+                            <Badge variant="secondary">
+                              Complexity: {iteration.complexity}/10
+                            </Badge>
+                          )}
+                        </div>
                       </div>
+
+                      {/* Velocity Tracking Info */}
+                      {(iteration.startDate || iteration.targetShipDate || iteration.actualShipDate) && (
+                        <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg grid grid-cols-3 gap-2 text-xs">
+                          {iteration.startDate && (
+                            <div>
+                              <p className="font-semibold text-blue-600 dark:text-blue-400">START</p>
+                              <p>{iteration.startDate}</p>
+                            </div>
+                          )}
+                          {iteration.targetShipDate && (
+                            <div>
+                              <p className="font-semibold text-blue-600 dark:text-blue-400">TARGET</p>
+                              <p>{iteration.targetShipDate}</p>
+                            </div>
+                          )}
+                          {iteration.actualShipDate && (
+                            <div>
+                              <p className="font-semibold text-green-600 dark:text-green-400">SHIPPED</p>
+                              <p>{iteration.actualShipDate}</p>
+                              {iteration.daysToShip && (
+                                <p className="text-muted-foreground">({iteration.daysToShip} days)</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       {iteration.hypothesis && (
                         <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
@@ -882,7 +989,191 @@ export default function EntrepreneurOSView() {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      {/* Status Management Buttons */}
+                      <div className="flex items-center gap-2 flex-wrap mb-3">
+                        {iteration.status === "planning" && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleUpdateIterationStatus(iteration._id, "building")}
+                            className="cursor-pointer bg-blue-600 hover:bg-blue-700"
+                          >
+                            Start Building
+                          </Button>
+                        )}
+                        {iteration.status === "building" && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleUpdateIterationStatus(iteration._id, "testing")}
+                            className="cursor-pointer bg-purple-600 hover:bg-purple-700"
+                          >
+                            Move to Testing
+                          </Button>
+                        )}
+                        {iteration.status === "testing" && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleUpdateIterationStatus(iteration._id, "launched")}
+                            className="cursor-pointer bg-orange-600 hover:bg-orange-700"
+                          >
+                            Launch
+                          </Button>
+                        )}
+                        {iteration.status === "launched" && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleMarkAsShipped(iteration._id)}
+                            className="cursor-pointer bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                          >
+                            <CheckCircle2 className="h-4 w-4 mr-1" />
+                            Mark as Shipped
+                          </Button>
+                        )}
+                        {iteration.status === "shipped" && (
+                          <Button
+                            size="sm"
+                            onClick={() => setShowValidationForm(iteration._id)}
+                            className="cursor-pointer bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                          >
+                            <Target className="h-4 w-4 mr-1" />
+                            Add Impact Validation
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* Impact Validation Form */}
+                      <AnimatePresence>
+                        {showValidationForm === iteration._id && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="mt-4 p-6 border-2 border-purple-200 dark:border-purple-800 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 space-y-4"
+                          >
+                            <div className="flex items-center gap-2 mb-4">
+                              <Target className="h-5 w-5 text-purple-600" />
+                              <h4 className="font-bold text-lg">Impact Validation</h4>
+                            </div>
+
+                            <div>
+                              <Label className="font-semibold">Problem Solved?</Label>
+                              <Select value={problemSolved} onValueChange={(v: any) => setProblemSolved(v)}>
+                                <SelectTrigger className="mt-1">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="yes_confirmed">✅ Yes, customer confirmed fixed</SelectItem>
+                                  <SelectItem value="no_still_issues">❌ No, customer still experiencing issues</SelectItem>
+                                  <SelectItem value="not_tested_yet">⏳ Customer hasn't tested yet</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div>
+                              <Label className="font-semibold">Post-Ship Satisfaction: {postSatisfaction}/10</Label>
+                              <div className="flex items-center gap-2 mt-2">
+                                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
+                                  <motion.button
+                                    key={score}
+                                    whileHover={{ scale: 1.1 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setPostSatisfaction(score)}
+                                    className={`w-10 h-10 rounded-lg font-bold transition-all cursor-pointer ${
+                                      postSatisfaction >= score
+                                        ? "bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg"
+                                        : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                                    }`}
+                                  >
+                                    {score}
+                                  </motion.button>
+                                ))}
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                              <div>
+                                <Label className="font-semibold">Time Saved (hours/week)</Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="0.5"
+                                  placeholder="0"
+                                  value={timeSaved || ""}
+                                  onChange={(e) => setTimeSaved(parseFloat(e.target.value) || 0)}
+                                  className="mt-1"
+                                />
+                              </div>
+                              <div>
+                                <Label className="font-semibold">Revenue Gained ($)</Label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  step="100"
+                                  placeholder="0"
+                                  value={revenueGained || ""}
+                                  onChange={(e) => setRevenueGained(parseFloat(e.target.value) || 0)}
+                                  className="mt-1"
+                                />
+                              </div>
+                            </div>
+
+                            <div className="p-4 bg-red-50 dark:bg-red-950/30 rounded-lg border-2 border-red-200 dark:border-red-800">
+                              <Label className="font-semibold flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={iterationFailed}
+                                  onChange={(e) => setIterationFailed(e.target.checked)}
+                                  className="w-5 h-5 cursor-pointer"
+                                />
+                                Iteration Failed (didn't solve the problem)
+                              </Label>
+                            </div>
+
+                            <div>
+                              <Label className="font-semibold">Customer Quote (optional)</Label>
+                              <Textarea
+                                placeholder="What did the customer say about the fix?"
+                                value={customerQuote}
+                                onChange={(e) => setCustomerQuote(e.target.value)}
+                                rows={3}
+                                className="mt-1"
+                              />
+                            </div>
+
+                            <div>
+                              <Label className="font-semibold">Next Action</Label>
+                              <Select value={nextAction} onValueChange={(v: any) => setNextAction(v)}>
+                                <SelectTrigger className="mt-1">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="mark_resolved">✅ Mark Resolved</SelectItem>
+                                  <SelectItem value="needs_additional_iteration">🔄 Needs Additional Iteration</SelectItem>
+                                  <SelectItem value="request_case_study">📝 Request Case Study</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => handleSubmitValidation(iteration._id, iteration.feedbackIds[0])}
+                                className="cursor-pointer flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                              >
+                                <CheckCircle2 className="h-4 w-4 mr-2" />
+                                Submit Validation
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() => setShowValidationForm(null)}
+                                className="cursor-pointer"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         <LinkIcon className="h-3 w-3" />
                         <span>{iteration.feedbackIds.length} feedback items</span>
                         <span>•</span>
