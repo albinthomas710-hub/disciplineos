@@ -1,4 +1,4 @@
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 // Wrapper hooks to avoid TypeScript's deep type instantiation issues
@@ -33,3 +33,27 @@ export function useAllFailures(): any {
   return query(apiModule.problemVault.getAllFailures);
 }
 
+// Mutation wrappers
+export function useCreateProblem(): any {
+  const mutation: any = useMutation;
+  const apiModule: any = api;
+  return mutation(apiModule.problemVault.createProblem);
+}
+
+export function useCreateLearning(): any {
+  const mutation: any = useMutation;
+  const apiModule: any = api;
+  return mutation(apiModule.problemVault.createCustomerLearning);
+}
+
+export function useCreatePivot(): any {
+  const mutation: any = useMutation;
+  const apiModule: any = api;
+  return mutation(apiModule.problemVault.createPivot);
+}
+
+export function useCreateFailure(): any {
+  const mutation: any = useMutation;
+  const apiModule: any = api;
+  return mutation(apiModule.problemVault.createFailure);
+}

@@ -2,8 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Plus, Loader2, MessageSquare, TrendingUp, XCircle, Calendar } from "lucide-react";
@@ -18,7 +16,11 @@ import {
   useProblemStats,
   useAllCustomerLearnings,
   useAllPivots,
-  useAllFailures
+  useAllFailures,
+  useCreateProblem,
+  useCreateLearning,
+  useCreatePivot,
+  useCreateFailure
 } from "@/hooks/use-problem-vault-queries";
 
 export function ProblemVaultView() {
@@ -29,10 +31,10 @@ export function ProblemVaultView() {
   const allPivots = useAllPivots();
   const allFailures = useAllFailures();
   
-  const createProblem = useMutation(api.problemVault.createProblem);
-  const createLearning = useMutation(api.problemVault.createCustomerLearning);
-  const createPivot = useMutation(api.problemVault.createPivot);
-  const createFailure = useMutation(api.problemVault.createFailure);
+  const createProblem = useCreateProblem();
+  const createLearning = useCreateLearning();
+  const createPivot = useCreatePivot();
+  const createFailure = useCreateFailure();
   
   const [activeTab, setActiveTab] = useState("problems");
   const [showProblemForm, setShowProblemForm] = useState(false);
