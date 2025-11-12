@@ -597,6 +597,50 @@ const schema = defineSchema(
     }).index("by_user_and_date", ["userId", "date"]),
 
     // ============================================
+    // HARD DEADLINES - Personal Accountability System
+    // ============================================
+
+    // Hard Deadlines - Independent deadline tracking for any goal
+    hardDeadlines: defineTable({
+      userId: v.id("users"),
+      title: v.string(),
+      description: v.optional(v.string()),
+      deadline: v.string(), // Date string
+      category: v.union(
+        v.literal("problem_validation"),
+        v.literal("solution_ship"),
+        v.literal("customer_conversation"),
+        v.literal("revenue_goal"),
+        v.literal("learning_goal"),
+        v.literal("personal_goal"),
+        v.literal("other")
+      ),
+      linkedProblemId: v.optional(v.id("problems")),
+      linkedSolutionId: v.optional(v.id("solutions")),
+      status: v.union(
+        v.literal("active"),
+        v.literal("completed"),
+        v.literal("missed"),
+        v.literal("extended")
+      ),
+      completedAt: v.optional(v.number()),
+      missedReason: v.optional(v.string()), // Why did you miss it? No lying.
+      extensionReason: v.optional(v.string()), // Why extend? Be honest.
+      originalDeadline: v.optional(v.string()), // Track if extended
+      consequenceIfMissed: v.optional(v.string()), // What happens if you miss this?
+      priority: v.union(
+        v.literal("critical"),
+        v.literal("high"),
+        v.literal("medium"),
+        v.literal("low")
+      ),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_status", ["userId", "status"])
+      .index("by_user_and_deadline", ["userId", "deadline"]),
+
+    // ============================================
     // ENTREPRENEUR OS - Elite Feedback & Iteration System
     // ============================================
 

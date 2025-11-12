@@ -20,6 +20,7 @@ import type * as emergencyTriggers from "../emergencyTriggers.js";
 import type * as entrepreneurActions from "../entrepreneurActions.js";
 import type * as entrepreneurOS from "../entrepreneurOS.js";
 import type * as futureTimelineQueries from "../futureTimelineQueries.js";
+import type * as hardDeadlines from "../hardDeadlines.js";
 import type * as holyVideos from "../holyVideos.js";
 import type * as http from "../http.js";
 import type * as ideas from "../ideas.js";
@@ -71,6 +72,7 @@ declare const fullApi: ApiFromModules<{
   entrepreneurActions: typeof entrepreneurActions;
   entrepreneurOS: typeof entrepreneurOS;
   futureTimelineQueries: typeof futureTimelineQueries;
+  hardDeadlines: typeof hardDeadlines;
   holyVideos: typeof holyVideos;
   http: typeof http;
   ideas: typeof ideas;

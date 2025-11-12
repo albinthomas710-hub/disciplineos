@@ -47,6 +47,7 @@ import { IterationWithValidations } from "./entrepreneur/IterationWithValidation
 import CustomerJourneyTimeline from "./CustomerJourneyTimeline";
 import { ActionTracker } from "./entrepreneur/ActionTracker";
 import { ProblemVaultView } from "./entrepreneur/ProblemVaultView";
+import { HardDeadlinesView } from "./entrepreneur/HardDeadlinesView";
 
 export function EntrepreneurOSView() {
   const allFeedback = useQuery((api as any).entrepreneurOS.getAllFeedback);
@@ -324,7 +325,8 @@ export function EntrepreneurOSView() {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="deadlines">Deadlines</TabsTrigger>
           <TabsTrigger value="action">Action</TabsTrigger>
           <TabsTrigger value="feedback">Feedback Loop</TabsTrigger>
           <TabsTrigger value="iterations">Iterations</TabsTrigger>
@@ -332,6 +334,11 @@ export function EntrepreneurOSView() {
           <TabsTrigger value="journey">Customer Journey</TabsTrigger>
           <TabsTrigger value="problems">Problem Vault</TabsTrigger>
         </TabsList>
+
+        {/* HARD DEADLINES TAB */}
+        <TabsContent value="deadlines" className="space-y-6">
+          <HardDeadlinesView />
+        </TabsContent>
 
         {/* ACTION TAB */}
         <TabsContent value="action" className="space-y-6">
