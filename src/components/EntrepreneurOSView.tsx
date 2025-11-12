@@ -47,6 +47,7 @@ import { IterationWithValidations } from "./entrepreneur/IterationWithValidation
 import CustomerJourneyTimeline from "./CustomerJourneyTimeline";
 import { ActionTracker } from "./entrepreneur/ActionTracker";
 import { ProblemVaultView } from "./entrepreneur/ProblemVaultView";
+import { WeeklyReviewView } from "./entrepreneur/WeeklyReviewView";
 import { HardDeadlinesView } from "./entrepreneur/HardDeadlinesView";
 import { EightyTwentyView } from "./entrepreneur/EightyTwentyView";
 
