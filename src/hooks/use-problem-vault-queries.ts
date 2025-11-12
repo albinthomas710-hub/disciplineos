@@ -33,6 +33,25 @@ export function useAllFailures(): any {
   return query(apiModule.problemVault.getAllFailures);
 }
 
+// Solution wrappers
+export function useAllSolutions(): any {
+  const query: any = useQuery;
+  const apiModule: any = api;
+  return query(apiModule.problemVault.getAllSolutions);
+}
+
+export function useSolutionsForProblem(problemId: string | null): any {
+  const query: any = useQuery;
+  const apiModule: any = api;
+  return problemId ? query(apiModule.problemVault.getSolutionsForProblem, { problemId }) : undefined;
+}
+
+export function useCreateSolution(): any {
+  const mutation: any = useMutation;
+  const apiModule: any = api;
+  return mutation(apiModule.problemVault.createSolution);
+}
+
 // Mutation wrappers
 export function useCreateProblem(): any {
   const mutation: any = useMutation;

@@ -4,13 +4,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Loader2, MessageSquare, TrendingUp, XCircle, Calendar } from "lucide-react";
+import { Plus, Loader2, MessageSquare, TrendingUp, XCircle, Calendar, Lightbulb } from "lucide-react";
 import { ProblemStatsCards } from "./ProblemStatsCards";
 import { ProblemColumn } from "./ProblemColumn";
 import { ProblemFormDialog } from "./ProblemFormDialog";
 import { LearningFormDialog } from "./LearningFormDialog";
 import { PivotFormDialog } from "./PivotFormDialog";
 import { FailureFormDialog } from "./FailureFormDialog";
+import { SolutionFormDialog } from "./SolutionFormDialog";
 import { 
   useAllProblems,
   useProblemStats,
@@ -20,7 +21,9 @@ import {
   useCreateProblem,
   useCreateLearning,
   useCreatePivot,
-  useCreateFailure
+  useCreateFailure,
+  useAllSolutions,
+  useCreateSolution
 } from "@/hooks/use-problem-vault-queries";
 
 export function ProblemVaultView() {
@@ -30,17 +33,20 @@ export function ProblemVaultView() {
   const allLearnings = useAllCustomerLearnings();
   const allPivots = useAllPivots();
   const allFailures = useAllFailures();
+  const allSolutions = useAllSolutions();
   
   const createProblem = useCreateProblem();
   const createLearning = useCreateLearning();
   const createPivot = useCreatePivot();
   const createFailure = useCreateFailure();
+  const createSolution = useCreateSolution();
   
   const [activeTab, setActiveTab] = useState("problems");
   const [showProblemForm, setShowProblemForm] = useState(false);
   const [showLearningForm, setShowLearningForm] = useState(false);
   const [showPivotForm, setShowPivotForm] = useState(false);
   const [showFailureForm, setShowFailureForm] = useState(false);
+  const [showSolutionForm, setShowSolutionForm] = useState(false);
   
   // Problem form state
   const [problemTitle, setProblemTitle] = useState("");
@@ -84,6 +90,16 @@ export function ProblemVaultView() {
   const [lessonLearned, setLessonLearned] = useState("");
   const [whatToDoDifferently, setWhatToDoDifferently] = useState("");
   const [patternCategory, setPatternCategory] = useState("wrong_problem");
+
+  // Solution form state
+  const [selectedProblemId, setSelectedProblemId] = useState("");
+  const [solutionTitle, setSolutionTitle] = useState("");
+  const [solutionDescription, setSolutionDescription] = useState("");
+  const [hypothesis, setHypothesis] = useState("");
+  const [expectedOutcome, setExpectedOutcome] = useState("");
+  const [buildComplexity, setBuildComplexity] = useState(5);
+  const [timeToBuild, setTimeToBuild] = useState(0);
+  const [solutionStatus, setSolutionStatus] = useState("idea");
 
   const handleAddProblem = async () => {
     if (!problemTitle.trim() || !problemDescription.trim()) {
@@ -192,6 +208,33 @@ export function ProblemVaultView() {
     }
   };
 
+  const handleAddSolution = async () => {
+    if (!selectedProblemId || !solutionTitle.trim() || !solutionDescription.trim() || !hypothesis.trim() || !expectedOutcome.trim()) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    try {
+      await createSolution({
+        problemId: selectedProblemId as any,
+        solutionTitle,
+        solutionDescription,
+        hypothesis,
+        expectedOutcome,
+        buildComplexity,
+        timeToBuild: timeToBuild > 0 ? timeToBuild : undefined,
+        dateStarted: solutionStatus !== "idea" ? new Date().toISOString().split('T')[0] : undefined,
+        status: solutionStatus as any,
+      });
+      
+      resetSolutionForm();
+      setShowSolutionForm(false);
+      toast.success("Solution added! 💡");
+    } catch (error) {
+      toast.error("Failed to add solution");
+    }
+  };
+
   const resetProblemForm = () => {
     setProblemTitle("");
     setProblemDescription("");
@@ -239,6 +282,17 @@ export function ProblemVaultView() {
     setPatternCategory("wrong_problem");
   };
 
+  const resetSolutionForm = () => {
+    setSelectedProblemId("");
+    setSolutionTitle("");
+    setSolutionDescription("");
+    setHypothesis("");
+    setExpectedOutcome("");
+    setBuildComplexity(5);
+    setTimeToBuild(0);
+    setSolutionStatus("idea");
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "validated": return "bg-green-600";
@@ -265,8 +319,9 @@ export function ProblemVaultView() {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="problems">Problems</TabsTrigger>
+          <TabsTrigger value="solutions">Solutions</TabsTrigger>
           <TabsTrigger value="learnings">Customer Learnings</TabsTrigger>
           <TabsTrigger value="pivots">Pivots</TabsTrigger>
           <TabsTrigger value="failures">Failures</TabsTrigger>
@@ -316,6 +371,76 @@ export function ProblemVaultView() {
               borderColor="border-yellow-200 dark:border-yellow-800"
               getStatusColor={getStatusColor}
             />
+          </div>
+        </TabsContent>
+
+        {/* SOLUTIONS TAB */}
+        <TabsContent value="solutions" className="space-y-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-2xl font-bold">Solutions</h3>
+              <p className="text-sm text-muted-foreground">Track solution ideas and their outcomes</p>
+            </div>
+            <Button
+              onClick={() => setShowSolutionForm(true)}
+              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Solution
+            </Button>
+          </div>
+
+          <div className="space-y-4">
+            {allSolutions && allSolutions.length > 0 ? (
+              allSolutions.map((solution: any) => {
+                const problem = allProblems?.find((p: any) => p._id === solution.problemId);
+                return (
+                  <Card key={solution._id} className="border-2 border-green-200 dark:border-green-800">
+                    <CardContent className="p-6 space-y-4">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-bold text-lg">{solution.solutionTitle}</h4>
+                          {problem && (
+                            <p className="text-sm text-muted-foreground">
+                              Solving: {problem.problemTitle}
+                            </p>
+                          )}
+                        </div>
+                        <Badge className={
+                          solution.status === "validated" ? "bg-green-600" :
+                          solution.status === "shipped" ? "bg-blue-600" :
+                          solution.status === "testing" ? "bg-yellow-600" :
+                          solution.status === "building" ? "bg-orange-600" :
+                          solution.status === "failed" ? "bg-red-600" : "bg-gray-600"
+                        }>
+                          {solution.status}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{solution.solutionDescription}</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                          <p className="text-xs font-semibold mb-1">Hypothesis:</p>
+                          <p className="text-sm">{solution.hypothesis}</p>
+                        </div>
+                        <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                          <p className="text-xs font-semibold mb-1">Expected Outcome:</p>
+                          <p className="text-sm">{solution.expectedOutcome}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-4 text-sm">
+                        <span>Complexity: {solution.buildComplexity}/10</span>
+                        {solution.timeToBuild && <span>Time: {solution.timeToBuild} days</span>}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })
+            ) : (
+              <Card className="p-12 text-center">
+                <Lightbulb className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                <p className="text-muted-foreground">No solutions yet. Start adding solution ideas for your problems!</p>
+              </Card>
+            )}
           </div>
         </TabsContent>
 
@@ -556,6 +681,29 @@ export function ProblemVaultView() {
         setWhatToDoDifferently={setWhatToDoDifferently}
         patternCategory={patternCategory}
         setPatternCategory={setPatternCategory}
+      />
+
+      <SolutionFormDialog
+        open={showSolutionForm}
+        onOpenChange={setShowSolutionForm}
+        onSubmit={handleAddSolution}
+        allProblems={allProblems || []}
+        selectedProblemId={selectedProblemId}
+        setSelectedProblemId={setSelectedProblemId}
+        solutionTitle={solutionTitle}
+        setSolutionTitle={setSolutionTitle}
+        solutionDescription={solutionDescription}
+        setSolutionDescription={setSolutionDescription}
+        hypothesis={hypothesis}
+        setHypothesis={setHypothesis}
+        expectedOutcome={expectedOutcome}
+        setExpectedOutcome={setExpectedOutcome}
+        buildComplexity={buildComplexity}
+        setBuildComplexity={setBuildComplexity}
+        timeToBuild={timeToBuild}
+        setTimeToBuild={setTimeToBuild}
+        status={solutionStatus}
+        setStatus={setSolutionStatus}
       />
     </div>
   );

@@ -279,6 +279,21 @@ export const getSolutionsForProblem = query({
   },
 });
 
+export const getAllSolutions = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    const solutions = await ctx.db
+      .query("solutions")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    return solutions.sort((a, b) => b.createdAt - a.createdAt);
+  },
+});
+
 // ============================================
 // CUSTOMER LEARNINGS
 // ============================================
