@@ -12,6 +12,7 @@ import { LearningFormDialog } from "./LearningFormDialog";
 import { PivotFormDialog } from "./PivotFormDialog";
 import { FailureFormDialog } from "./FailureFormDialog";
 import { SolutionFormDialog } from "./SolutionFormDialog";
+import { ProblemDetailsDialog } from "./ProblemDetailsDialog";
 import { 
   useAllProblems,
   useProblemStats,
@@ -58,6 +59,10 @@ export function ProblemVaultView() {
   const [showPivotForm, setShowPivotForm] = useState(false);
   const [showFailureForm, setShowFailureForm] = useState(false);
   const [showSolutionForm, setShowSolutionForm] = useState(false);
+  
+  // NEW: Detail view states
+  const [selectedProblemForDetails, setSelectedProblemForDetails] = useState<any | null>(null);
+  const [showProblemDetails, setShowProblemDetails] = useState(false);
   
   // Problem form state
   const [problemTitle, setProblemTitle] = useState("");
@@ -447,6 +452,13 @@ export function ProblemVaultView() {
               borderColor="border-purple-200 dark:border-purple-800"
               getStatusColor={getStatusColor}
               onDelete={handleDeleteProblem}
+              onViewDetails={(problemId) => {
+                const problem = allProblems?.find((p: any) => p._id === problemId);
+                if (problem) {
+                  setSelectedProblemForDetails(problem);
+                  setShowProblemDetails(true);
+                }
+              }}
             />
             <ProblemColumn
               title="ROI Focus"
@@ -455,6 +467,13 @@ export function ProblemVaultView() {
               borderColor="border-green-200 dark:border-green-800"
               getStatusColor={getStatusColor}
               onDelete={handleDeleteProblem}
+              onViewDetails={(problemId) => {
+                const problem = allProblems?.find((p: any) => p._id === problemId);
+                if (problem) {
+                  setSelectedProblemForDetails(problem);
+                  setShowProblemDetails(true);
+                }
+              }}
             />
             <ProblemColumn
               title="Small Wins"
@@ -463,6 +482,13 @@ export function ProblemVaultView() {
               borderColor="border-blue-200 dark:border-blue-800"
               getStatusColor={getStatusColor}
               onDelete={handleDeleteProblem}
+              onViewDetails={(problemId) => {
+                const problem = allProblems?.find((p: any) => p._id === problemId);
+                if (problem) {
+                  setSelectedProblemForDetails(problem);
+                  setShowProblemDetails(true);
+                }
+              }}
             />
             <ProblemColumn
               title="People Pay For"
@@ -471,6 +497,13 @@ export function ProblemVaultView() {
               borderColor="border-yellow-200 dark:border-yellow-800"
               getStatusColor={getStatusColor}
               onDelete={handleDeleteProblem}
+              onViewDetails={(problemId) => {
+                const problem = allProblems?.find((p: any) => p._id === problemId);
+                if (problem) {
+                  setSelectedProblemForDetails(problem);
+                  setShowProblemDetails(true);
+                }
+              }}
             />
           </div>
         </TabsContent>
@@ -917,6 +950,16 @@ export function ProblemVaultView() {
         status={solutionStatus}
         setStatus={setSolutionStatus}
       />
+
+      {/* NEW: Problem Details Dialog */}
+      {selectedProblemForDetails && (
+        <ProblemDetailsDialog
+          open={showProblemDetails}
+          onOpenChange={setShowProblemDetails}
+          problem={selectedProblemForDetails}
+          getStatusColor={getStatusColor}
+        />
+      )}
     </div>
   );
 }
