@@ -343,6 +343,21 @@ export const getAllSolutions = query({
   },
 });
 
+export const deleteSolution = mutation({
+  args: { solutionId: v.id("solutions") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const solution = await ctx.db.get(args.solutionId);
+    if (!solution || solution.userId !== user._id) {
+      throw new Error("Solution not found");
+    }
+
+    await ctx.db.delete(args.solutionId);
+  },
+});
+
 // ============================================
 // CUSTOMER LEARNINGS
 // ============================================
@@ -399,6 +414,21 @@ export const getAllCustomerLearnings = query({
       .collect();
 
     return learnings.sort((a, b) => b.createdAt - a.createdAt);
+  },
+});
+
+export const deleteCustomerLearning = mutation({
+  args: { learningId: v.id("customerLearnings") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const learning = await ctx.db.get(args.learningId);
+    if (!learning || learning.userId !== user._id) {
+      throw new Error("Learning not found");
+    }
+
+    await ctx.db.delete(args.learningId);
   },
 });
 
@@ -464,6 +494,21 @@ export const getAllPivots = query({
   },
 });
 
+export const deletePivot = mutation({
+  args: { pivotId: v.id("pivotLog") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const pivot = await ctx.db.get(args.pivotId);
+    if (!pivot || pivot.userId !== user._id) {
+      throw new Error("Pivot not found");
+    }
+
+    await ctx.db.delete(args.pivotId);
+  },
+});
+
 // ============================================
 // FAILURES VAULT
 // ============================================
@@ -519,5 +564,20 @@ export const getAllFailures = query({
       .collect();
 
     return failures.sort((a, b) => b.createdAt - a.createdAt);
+  },
+});
+
+export const deleteFailure = mutation({
+  args: { failureId: v.id("failuresVault") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const failure = await ctx.db.get(args.failureId);
+    if (!failure || failure.userId !== user._id) {
+      throw new Error("Failure not found");
+    }
+
+    await ctx.db.delete(args.failureId);
   },
 });

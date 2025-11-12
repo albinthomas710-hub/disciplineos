@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Plus, Loader2, MessageSquare, TrendingUp, XCircle, Calendar, Lightbulb } from "lucide-react";
+import { Plus, Loader2, MessageSquare, TrendingUp, XCircle, Calendar, Lightbulb, Trash2 } from "lucide-react";
 import { ProblemStatsCards } from "./ProblemStatsCards";
 import { ProblemColumn } from "./ProblemColumn";
 import { ProblemFormDialog } from "./ProblemFormDialog";
@@ -23,7 +23,12 @@ import {
   useCreatePivot,
   useCreateFailure,
   useAllSolutions,
-  useCreateSolution
+  useCreateSolution,
+  useDeleteProblem,
+  useDeleteSolution,
+  useDeleteLearning,
+  useDeletePivot,
+  useDeleteFailure
 } from "@/hooks/use-problem-vault-queries";
 
 export function ProblemVaultView() {
@@ -40,6 +45,12 @@ export function ProblemVaultView() {
   const createPivot = useCreatePivot();
   const createFailure = useCreateFailure();
   const createSolution = useCreateSolution();
+  
+  const deleteProblem = useDeleteProblem();
+  const deleteSolution = useDeleteSolution();
+  const deleteLearning = useDeleteLearning();
+  const deletePivot = useDeletePivot();
+  const deleteFailure = useDeleteFailure();
   
   const [activeTab, setActiveTab] = useState("problems");
   const [showProblemForm, setShowProblemForm] = useState(false);
@@ -261,6 +272,56 @@ export function ProblemVaultView() {
     }
   };
 
+  const handleDeleteProblem = async (problemId: string) => {
+    if (!confirm("Are you sure you want to delete this problem?")) return;
+    try {
+      await deleteProblem({ problemId: problemId as any });
+      toast.success("Problem deleted");
+    } catch (error) {
+      toast.error("Failed to delete problem");
+    }
+  };
+
+  const handleDeleteSolution = async (solutionId: string) => {
+    if (!confirm("Are you sure you want to delete this solution?")) return;
+    try {
+      await deleteSolution({ solutionId: solutionId as any });
+      toast.success("Solution deleted");
+    } catch (error) {
+      toast.error("Failed to delete solution");
+    }
+  };
+
+  const handleDeleteLearning = async (learningId: string) => {
+    if (!confirm("Are you sure you want to delete this learning?")) return;
+    try {
+      await deleteLearning({ learningId: learningId as any });
+      toast.success("Learning deleted");
+    } catch (error) {
+      toast.error("Failed to delete learning");
+    }
+  };
+
+  const handleDeletePivot = async (pivotId: string) => {
+    if (!confirm("Are you sure you want to delete this pivot?")) return;
+    try {
+      await deletePivot({ pivotId: pivotId as any });
+      toast.success("Pivot deleted");
+    } catch (error) {
+      toast.error("Failed to delete pivot");
+    }
+  };
+
+  const handleDeleteFailure = async (failureId: string) => {
+    if (!confirm("Are you sure you want to delete this failure?")) return;
+    try {
+      await deleteFailure({ failureId: failureId as any });
+      toast.success("Failure deleted");
+    } catch (error) {
+      toast.error("Failed to delete failure");
+    }
+  };
+
   const resetProblemForm = () => {
     setProblemTitle("");
     setProblemDescription("");
@@ -385,6 +446,7 @@ export function ProblemVaultView() {
               gradientColor="from-purple-600 to-purple-800"
               borderColor="border-purple-200 dark:border-purple-800"
               getStatusColor={getStatusColor}
+              onDelete={handleDeleteProblem}
             />
             <ProblemColumn
               title="ROI Focus"
@@ -392,6 +454,7 @@ export function ProblemVaultView() {
               gradientColor="from-green-600 to-green-800"
               borderColor="border-green-200 dark:border-green-800"
               getStatusColor={getStatusColor}
+              onDelete={handleDeleteProblem}
             />
             <ProblemColumn
               title="Small Wins"
@@ -399,6 +462,7 @@ export function ProblemVaultView() {
               gradientColor="from-blue-600 to-blue-800"
               borderColor="border-blue-200 dark:border-blue-800"
               getStatusColor={getStatusColor}
+              onDelete={handleDeleteProblem}
             />
             <ProblemColumn
               title="People Pay For"
@@ -406,6 +470,7 @@ export function ProblemVaultView() {
               gradientColor="from-yellow-600 to-yellow-800"
               borderColor="border-yellow-200 dark:border-yellow-800"
               getStatusColor={getStatusColor}
+              onDelete={handleDeleteProblem}
             />
           </div>
         </TabsContent>
@@ -442,15 +507,25 @@ export function ProblemVaultView() {
                             </p>
                           )}
                         </div>
-                        <Badge className={
-                          solution.status === "validated" ? "bg-green-600" :
-                          solution.status === "shipped" ? "bg-blue-600" :
-                          solution.status === "testing" ? "bg-yellow-600" :
-                          solution.status === "building" ? "bg-orange-600" :
-                          solution.status === "failed" ? "bg-red-600" : "bg-gray-600"
-                        }>
-                          {solution.status}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge className={
+                            solution.status === "validated" ? "bg-green-600" :
+                            solution.status === "shipped" ? "bg-blue-600" :
+                            solution.status === "testing" ? "bg-yellow-600" :
+                            solution.status === "building" ? "bg-orange-600" :
+                            solution.status === "failed" ? "bg-red-600" : "bg-gray-600"
+                          }>
+                            {solution.status}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteSolution(solution._id)}
+                            className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                       <p className="text-sm text-muted-foreground">{solution.solutionDescription}</p>
                       <div className="grid grid-cols-2 gap-4">
@@ -502,11 +577,25 @@ export function ProblemVaultView() {
                 <Card key={learning._id} className="border-2 border-blue-200 dark:border-blue-800">
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-bold text-lg">{learning.customerName}</h4>
-                        <p className="text-sm text-muted-foreground">{new Date(learning.date).toLocaleDateString()}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-lg">{learning.customerName}</h4>
+                            <p className="text-sm text-muted-foreground">{new Date(learning.date).toLocaleDateString()}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-blue-600">{learning.conversationType}</Badge>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteLearning(learning._id)}
+                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                      <Badge className="bg-blue-600">{learning.conversationType}</Badge>
                     </div>
                     
                     <div className="space-y-3">
@@ -580,11 +669,25 @@ export function ProblemVaultView() {
                 <Card key={pivot._id} className="border-2 border-orange-200 dark:border-orange-800">
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-start justify-between">
-                      <div>
-                        <Badge className="bg-orange-600 mb-2">{pivot.pivotType}</Badge>
-                        <p className="text-sm text-muted-foreground">{new Date(pivot.pivotDate).toLocaleDateString()}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <div>
+                            <Badge className="bg-orange-600 mb-2">{pivot.pivotType}</Badge>
+                            <p className="text-sm text-muted-foreground">{new Date(pivot.pivotDate).toLocaleDateString()}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">{pivot.trigger}</Badge>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeletePivot(pivot._id)}
+                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                      <Badge variant="outline">{pivot.trigger}</Badge>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-lg">
@@ -630,11 +733,25 @@ export function ProblemVaultView() {
                 <Card key={failure._id} className="border-2 border-red-200 dark:border-red-800">
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-bold text-lg">{failure.whatFailed}</h4>
-                        <p className="text-sm text-muted-foreground">{new Date(failure.failureDate).toLocaleDateString()}</p>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h4 className="font-bold text-lg">{failure.whatFailed}</h4>
+                            <p className="text-sm text-muted-foreground">{new Date(failure.failureDate).toLocaleDateString()}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge className="bg-red-600">{failure.patternCategory}</Badge>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleDeleteFailure(failure._id)}
+                              className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
                       </div>
-                      <Badge className="bg-red-600">{failure.patternCategory}</Badge>
                     </div>
                     <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border-l-4 border-green-600">
                       <p className="font-semibold text-sm mb-1">Lesson Learned:</p>

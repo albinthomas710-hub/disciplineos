@@ -77,6 +77,31 @@ export function useCreateFailure(): any {
   return mutation(apiModule.problemVault.createFailure);
 }
 
+export function useDeleteProblem() {
+  const apiRef = (api as any).problemVault.deleteProblem;
+  return useMutation(apiRef);
+}
+
+export function useDeleteSolution() {
+  const apiRef = (api as any).problemVault.deleteSolution;
+  return useMutation(apiRef);
+}
+
+export function useDeleteLearning() {
+  const apiRef = (api as any).problemVault.deleteCustomerLearning;
+  return useMutation(apiRef);
+}
+
+export function useDeletePivot() {
+  const apiRef = (api as any).problemVault.deletePivot;
+  return useMutation(apiRef);
+}
+
+export function useDeleteFailure() {
+  const apiRef = (api as any).problemVault.deleteFailure;
+  return useMutation(apiRef);
+}
+
 // Hard Deadlines Wrappers
 export function useAllDeadlines() {
   const apiRef = (api as any).hardDeadlines.getAllDeadlines;
