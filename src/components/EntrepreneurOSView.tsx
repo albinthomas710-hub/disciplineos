@@ -30,7 +30,10 @@ import {
   ArrowRight,
   Edit,
   Trash2,
-  Link as LinkIcon
+  Link as LinkIcon,
+  TrendingDown,
+  Award,
+  BarChart3
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -40,6 +43,12 @@ export default function EntrepreneurOSView() {
   const allIterations = useQuery((api as any).entrepreneurOS.getAllIterations);
   const metrics = useQuery((api as any).entrepreneurOS.getSatisfactionMetrics);
   const insights = useQuery((api as any).entrepreneurOS.getProductInsights);
+  
+  // NEW: Insights queries
+  const topProblems = useQuery((api as any).entrepreneurOS.getTopProblems);
+  const churnRisk = useQuery((api as any).entrepreneurOS.getChurnRiskAlerts);
+  const testimonialOps = useQuery((api as any).entrepreneurOS.getTestimonialOpportunities);
+  const iterationEffectiveness = useQuery((api as any).entrepreneurOS.getIterationEffectiveness);
   
   const createFeedback = useMutation((api as any).entrepreneurOS.createFeedback);
   const createIteration = useMutation((api as any).entrepreneurOS.createIteration);
@@ -235,6 +244,12 @@ export default function EntrepreneurOSView() {
         ? prev.filter(id => id !== feedbackId)
         : [...prev, feedbackId]
     );
+  };
+
+  const handleCreateIterationFromProblem = (feedbackIds: string[]) => {
+    setSelectedFeedbackIds(feedbackIds);
+    setShowIterationForm(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   if (!allFeedback) {
@@ -1189,20 +1204,244 @@ export default function EntrepreneurOSView() {
         </TabsContent>
 
         {/* Insights Tab */}
-        <TabsContent value="insights">
+        <TabsContent value="insights" className="space-y-6">
+          {/* Churn Risk Alerts */}
+          {churnRisk && (churnRisk.criticalCount > 0 || churnRisk.lowSatisfactionCount > 0) && (
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+            >
+              <Card className="border-2 border-red-500 bg-red-50 dark:bg-red-950/30 shadow-xl">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-red-700 dark:text-red-300">
+                    <AlertTriangle className="h-6 w-6" />
+                    🚨 Churn Risk Alerts
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {churnRisk.criticalCount > 0 && (
+                    <div className="p-4 bg-red-100 dark:bg-red-900/50 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-bold text-red-900 dark:text-red-100">
+                          {churnRisk.criticalCount} Critical Renewals Without Action
+                        </h4>
+                        <Badge className="bg-red-600 text-white">URGENT</Badge>
+                      </div>
+                      <p className="text-sm text-red-800 dark:text-red-200 mb-3">
+                        These customers marked issues as "Critical for renewal" but no iteration has been created
+                      </p>
+                      <div className="space-y-2">
+                        {churnRisk.criticalFeedback.slice(0, 3).map((feedback: any) => (
+                          <div key={feedback._id} className="p-3 bg-white dark:bg-gray-900 rounded-lg">
+                            <p className="font-semibold">{feedback.clientName}</p>
+                            <p className="text-sm text-muted-foreground">{feedback.feedbackText.slice(0, 100)}...</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {churnRisk.lowSatisfactionCount > 0 && (
+                    <div className="p-4 bg-orange-100 dark:bg-orange-900/50 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-bold text-orange-900 dark:text-orange-100">
+                          {churnRisk.lowSatisfactionCount} Customers Unhappy for 30+ Days
+                        </h4>
+                        <Badge className="bg-orange-600 text-white">WARNING</Badge>
+                      </div>
+                      <p className="text-sm text-orange-800 dark:text-orange-200">
+                        Long-standing dissatisfaction increases churn risk
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
+
+          {/* Top Problems Section */}
           <Card className="shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950 dark:to-yellow-950">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
               <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5" />
-                Product Insights
+                <BarChart3 className="h-5 w-5" />
+                Top Problems by Impact
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Ranked by frequency × pain level × revenue at risk
+              </p>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {!topProblems || topProblems.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <BarChart3 className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                  <p>No problem patterns detected yet</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {topProblems.map((problem: any, index: number) => (
+                    <motion.div
+                      key={problem.problemKey}
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="p-5 border-2 border-purple-200 dark:border-purple-800 rounded-xl bg-white dark:bg-gray-900 shadow-md"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-lg px-3 py-1">
+                              #{index + 1}
+                            </Badge>
+                            <h4 className="font-bold text-lg">{problem.sampleText.slice(0, 60)}...</h4>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm">
+                            <span className="flex items-center gap-1">
+                              <Users className="h-4 w-4 text-purple-600" />
+                              <strong>{problem.frequency}</strong> customers
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-4 w-4 text-orange-600" />
+                              <strong>{problem.avgPainHours}h/week</strong> wasted
+                            </span>
+                            {problem.totalRevenue > 0 && (
+                              <span className="flex items-center gap-1">
+                                <TrendingDown className="h-4 w-4 text-red-600" />
+                                <strong>${problem.totalRevenue.toLocaleString()}</strong> at risk
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => handleCreateIterationFromProblem(problem.feedbackIds)}
+                          className="cursor-pointer bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                        >
+                          <Zap className="h-4 w-4 mr-2" />
+                          Create Iteration
+                        </Button>
+                      </div>
+                      <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <p className="text-xs text-muted-foreground">
+                          Impact Score: <strong>{Math.round(problem.score)}</strong>
+                        </p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Iteration Effectiveness */}
+          <Card className="shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950">
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Iteration Effectiveness
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-6">
-              <div className="text-center py-12 text-muted-foreground">
-                <Lightbulb className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-medium">AI-powered insights coming soon</p>
-                <p className="text-sm">Pattern recognition and opportunity identification</p>
-              </div>
+              {!iterationEffectiveness || iterationEffectiveness.totalIterations === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Target className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                  <p>No validated iterations yet</p>
+                  <p className="text-sm">Ship iterations and collect impact data to see effectiveness</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-4">
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-xl text-center shadow-md"
+                  >
+                    <CheckCircle2 className="h-8 w-8 mx-auto mb-2 text-green-600" />
+                    <p className="text-3xl font-bold text-green-700 dark:text-green-300">
+                      {iterationEffectiveness.successRate}%
+                    </p>
+                    <p className="text-sm text-muted-foreground">Success Rate</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {iterationEffectiveness.successfulIterations} of {iterationEffectiveness.totalIterations} improved by 2+ points
+                    </p>
+                  </motion.div>
+                  
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 rounded-xl text-center shadow-md"
+                  >
+                    <TrendingUp className="h-8 w-8 mx-auto mb-2 text-blue-600" />
+                    <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">
+                      +{iterationEffectiveness.avgImprovement}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Avg Improvement</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Satisfaction points gained
+                    </p>
+                  </motion.div>
+                  
+                  <motion.div
+                    whileHover={{ scale: 1.05 }}
+                    className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 rounded-xl text-center shadow-md"
+                  >
+                    <Zap className="h-8 w-8 mx-auto mb-2 text-purple-600" />
+                    <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">
+                      {iterationEffectiveness.totalIterations}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Total Validated</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Iterations measured
+                    </p>
+                  </motion.div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Testimonial Opportunities */}
+          <Card className="shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-950 dark:to-orange-950">
+              <CardTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5" />
+                Testimonial Opportunities
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              {!testimonialOps || testimonialOps.totalOpportunities === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Award className="h-12 w-12 mx-auto mb-3 opacity-30" />
+                  <p>No testimonial opportunities yet</p>
+                  <p className="text-sm">Ship iterations and collect high satisfaction ratings</p>
+                </div>
+              ) : (
+                <div>
+                  <div className="grid grid-cols-3 gap-4 mb-6">
+                    <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg text-center">
+                      <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+                        {testimonialOps.postIterationWins}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Post-Iteration Wins</p>
+                    </div>
+                    <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg text-center">
+                      <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">
+                        {testimonialOps.praiseFeedback}
+                      </p>
+                      <p className="text-xs text-muted-foreground">Praise Feedback</p>
+                    </div>
+                    <div className="p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg text-center">
+                      <p className="text-2xl font-bold text-purple-700 dark:text-purple-300">
+                        {testimonialOps.highSatisfaction}
+                      </p>
+                      <p className="text-xs text-muted-foreground">High Satisfaction</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center justify-center">
+                    <Button
+                      className="cursor-pointer bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-700 hover:to-orange-700"
+                    >
+                      <Award className="h-4 w-4 mr-2" />
+                      Request Case Studies ({testimonialOps.totalOpportunities})
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

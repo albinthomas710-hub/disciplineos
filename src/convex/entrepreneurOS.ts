@@ -310,6 +310,190 @@ export const getSatisfactionMetrics = query({
   },
 });
 
+export const getTopProblems = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    const allFeedback = await ctx.db
+      .query("clientFeedback")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    // Group by similar pain points (simple keyword matching)
+    const problemGroups = new Map<string, Array<any>>();
+    
+    for (const feedback of allFeedback) {
+      const text = feedback.feedbackText.toLowerCase();
+      let matched = false;
+      
+      // Try to match with existing groups
+      for (const [key, group] of problemGroups.entries()) {
+        const keywords = key.split(" ");
+        if (keywords.some(kw => text.includes(kw))) {
+          group.push(feedback);
+          matched = true;
+          break;
+        }
+      }
+      
+      // Create new group if no match
+      if (!matched) {
+        const firstWords = text.split(" ").slice(0, 3).join(" ");
+        problemGroups.set(firstWords, [feedback]);
+      }
+    }
+
+    // Calculate metrics for each group
+    const problems = Array.from(problemGroups.entries()).map(([key, feedbacks]) => {
+      const frequency = feedbacks.length;
+      const avgPainHours = feedbacks.reduce((sum, f) => sum + (f.painHours || 0), 0) / frequency;
+      const totalRevenue = feedbacks.reduce((sum, f) => sum + (f.revenueAmount || 0), 0);
+      const score = frequency * avgPainHours * (totalRevenue > 0 ? totalRevenue / 1000 : 1);
+      
+      return {
+        problemKey: key,
+        frequency,
+        avgPainHours: Math.round(avgPainHours * 10) / 10,
+        totalRevenue,
+        score,
+        feedbackIds: feedbacks.map(f => f._id),
+        sampleText: feedbacks[0].feedbackText,
+      };
+    });
+
+    return problems.sort((a, b) => b.score - a.score).slice(0, 5);
+  },
+});
+
+export const getChurnRiskAlerts = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return null;
+
+    const allFeedback = await ctx.db
+      .query("clientFeedback")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const allIterations = await ctx.db
+      .query("iterations")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    // Critical renewals without iterations
+    const criticalWithoutIteration = allFeedback.filter(f => 
+      f.urgencyLevel === "critical_for_renewal" && 
+      !allIterations.some(i => i.feedbackIds.includes(f._id))
+    );
+
+    // Low satisfaction for >30 days
+    const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+    const lowSatisfactionOld = allFeedback.filter(f => 
+      f.satisfactionScore < 5 && 
+      f.createdAt < thirtyDaysAgo
+    );
+
+    return {
+      criticalCount: criticalWithoutIteration.length,
+      lowSatisfactionCount: lowSatisfactionOld.length,
+      criticalFeedback: criticalWithoutIteration,
+      lowSatisfactionFeedback: lowSatisfactionOld,
+    };
+  },
+});
+
+export const getTestimonialOpportunities = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return null;
+
+    const allFeedback = await ctx.db
+      .query("clientFeedback")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const allValidations = await ctx.db
+      .query("impactValidations")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    // High ratings after validation
+    const postIterationWins = allValidations.filter(v => v.postSatisfaction >= 8);
+    
+    // Praise feedback
+    const praiseFeedback = allFeedback.filter(f => 
+      f.feedbackType === "praise" || f.feedbackType === "testimonial"
+    );
+
+    // High satisfaction feedback
+    const highSatisfaction = allFeedback.filter(f => f.satisfactionScore >= 8);
+
+    return {
+      postIterationWins: postIterationWins.length,
+      praiseFeedback: praiseFeedback.length,
+      highSatisfaction: highSatisfaction.length,
+      totalOpportunities: postIterationWins.length + praiseFeedback.length,
+      opportunities: [
+        ...postIterationWins.map(v => ({ type: "post_iteration", data: v })),
+        ...praiseFeedback.map(f => ({ type: "praise", data: f })),
+      ],
+    };
+  },
+});
+
+export const getIterationEffectiveness = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return null;
+
+    const allValidations = await ctx.db
+      .query("impactValidations")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const allFeedback = await ctx.db
+      .query("clientFeedback")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    if (allValidations.length === 0) {
+      return {
+        totalIterations: 0,
+        successfulIterations: 0,
+        successRate: 0,
+        avgImprovement: 0,
+      };
+    }
+
+    let successfulCount = 0;
+    let totalImprovement = 0;
+
+    for (const validation of allValidations) {
+      const originalFeedback = allFeedback.find(f => f._id === validation.feedbackId);
+      if (originalFeedback) {
+        const improvement = validation.postSatisfaction - originalFeedback.satisfactionScore;
+        totalImprovement += improvement;
+        
+        if (improvement >= 2) {
+          successfulCount++;
+        }
+      }
+    }
+
+    return {
+      totalIterations: allValidations.length,
+      successfulIterations: successfulCount,
+      successRate: Math.round((successfulCount / allValidations.length) * 100),
+      avgImprovement: Math.round((totalImprovement / allValidations.length) * 10) / 10,
+    };
+  },
+});
+
 export const createProductInsight = mutation({
   args: {
     projectId: v.optional(v.id("projects")),
