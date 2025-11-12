@@ -577,7 +577,7 @@ export function EntrepreneurOSView() {
                 <IterationWithValidations
                   key={iteration._id}
                   iteration={iteration}
-                  allFeedback={allFeedback}
+                  allFeedback={allFeedback || []}
                   onAddValidation={() => {
                     setSelectedIteration(iteration);
                     setShowValidationForm(true);
