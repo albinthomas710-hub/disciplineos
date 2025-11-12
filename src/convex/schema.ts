@@ -750,6 +750,27 @@ const schema = defineSchema(
     }).index("by_user_and_date", ["userId", "date"])
       .index("by_project_and_date", ["projectId", "date"]),
 
+    // Entrepreneur Action Tracking - Daily accountability and goals
+    entrepreneurActions: defineTable({
+      userId: v.id("users"),
+      date: v.string(), // "2025-01-11"
+      builtSomething: v.boolean(),
+      builtSomethingNote: v.optional(v.string()),
+      talkedToCustomers: v.boolean(),
+      customersCount: v.optional(v.number()),
+      learnedNewSkill: v.boolean(),
+      skillLearned: v.optional(v.string()),
+      betterThanYesterday: v.boolean(),
+      lessonLearned: v.optional(v.string()),
+      hoursWorked: v.optional(v.number()),
+      action24hrs: v.optional(v.string()),
+      goal7days: v.optional(v.string()),
+      goal30days: v.optional(v.string()),
+      goal90days: v.optional(v.string()),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }).index("by_user_and_date", ["userId", "date"]),
+
     // Building Something People Love - Core insights and patterns
     productInsights: defineTable({
       userId: v.id("users"),

@@ -45,6 +45,7 @@ import { IterationDetails } from "./entrepreneur/IterationDetails";
 import { ValidationDisplay } from "./entrepreneur/ValidationDisplay";
 import { IterationWithValidations } from "./entrepreneur/IterationWithValidations";
 import CustomerJourneyTimeline from "./CustomerJourneyTimeline";
+import { ActionTracker } from "./entrepreneur/ActionTracker";
 
 export function EntrepreneurOSView() {
   const allFeedback = useQuery((api as any).entrepreneurOS.getAllFeedback);
@@ -322,12 +323,18 @@ export function EntrepreneurOSView() {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="action">Action</TabsTrigger>
           <TabsTrigger value="feedback">Feedback Loop</TabsTrigger>
           <TabsTrigger value="iterations">Iterations</TabsTrigger>
           <TabsTrigger value="insights">Insights</TabsTrigger>
           <TabsTrigger value="journey">Customer Journey</TabsTrigger>
         </TabsList>
+
+        {/* ACTION TAB */}
+        <TabsContent value="action" className="space-y-6">
+          <ActionTracker />
+        </TabsContent>
 
         {/* FEEDBACK LOOP TAB */}
         <TabsContent value="feedback" className="space-y-6">
