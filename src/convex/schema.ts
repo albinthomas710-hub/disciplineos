@@ -834,6 +834,158 @@ const schema = defineSchema(
       .index("by_project", ["projectId"])
       .index("by_user_and_type", ["userId", "insightType"]),
 
+    // ============================================
+    // PROBLEM VAULT - Problem Discovery & Solution Tracking
+    // ============================================
+
+    // Problems - Core problem tracking
+    problems: defineTable({
+      userId: v.id("users"),
+      projectId: v.optional(v.id("projects")),
+      problemTitle: v.string(),
+      problemDescription: v.string(),
+      problemCategory: v.union(
+        v.literal("big_10m_plus"),
+        v.literal("roi_focus"),
+        v.literal("small_win"),
+        v.literal("people_pay_for")
+      ),
+      dollarValue: v.number(), // Estimated $ impact per month
+      painLevel: v.number(), // 1-10 scale
+      discoverySource: v.union(
+        v.literal("customer_interview"),
+        v.literal("market_research"),
+        v.literal("personal_experience"),
+        v.literal("competitor_analysis"),
+        v.literal("industry_report")
+      ),
+      discoveredDate: v.string(),
+      customerName: v.optional(v.string()),
+      industry: v.optional(v.string()),
+      status: v.union(
+        v.literal("discovered"),
+        v.literal("researching"),
+        v.literal("building_solution"),
+        v.literal("testing"),
+        v.literal("validated"),
+        v.literal("shelved")
+      ),
+      peopleWhoHaveThis: v.number(), // Market size estimate
+      priorityScore: v.number(), // Auto-calculated: dollarValue × painLevel × peopleWhoHaveThis
+      notes: v.optional(v.string()),
+      tags: v.optional(v.array(v.string())),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_category", ["userId", "problemCategory"])
+      .index("by_user_and_status", ["userId", "status"]),
+
+    // Solutions - Track solutions to problems
+    solutions: defineTable({
+      userId: v.id("users"),
+      problemId: v.id("problems"),
+      solutionTitle: v.string(),
+      solutionDescription: v.string(),
+      hypothesis: v.string(), // "If we build X, then Y will happen"
+      expectedOutcome: v.string(),
+      actualOutcome: v.optional(v.string()),
+      buildComplexity: v.number(), // 1-10 scale
+      timeToBuild: v.optional(v.number()), // hours
+      dateStarted: v.optional(v.string()),
+      dateShipped: v.optional(v.string()),
+      status: v.union(
+        v.literal("idea"),
+        v.literal("building"),
+        v.literal("testing"),
+        v.literal("shipped"),
+        v.literal("validated"),
+        v.literal("failed")
+      ),
+      validationMetrics: v.optional(v.string()),
+      lessonsLearned: v.optional(v.string()),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_problem", ["problemId"])
+      .index("by_user_and_status", ["userId", "status"]),
+
+    // Customer Learnings - Track insights from customer conversations
+    customerLearnings: defineTable({
+      userId: v.id("users"),
+      date: v.string(),
+      customerName: v.string(),
+      conversationType: v.union(
+        v.literal("discovery_call"),
+        v.literal("interview"),
+        v.literal("feedback_session"),
+        v.literal("support"),
+        v.literal("casual")
+      ),
+      problemsDiscovered: v.string(),
+      exactQuotes: v.optional(v.string()), // Their exact words
+      painPoints: v.array(v.string()),
+      dollarImpact: v.optional(v.number()),
+      industryInsights: v.optional(v.string()),
+      marketInsights: v.optional(v.string()),
+      linkedProblemIds: v.optional(v.array(v.id("problems"))),
+      createdAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_date", ["userId", "date"]),
+
+    // Pivot Log - Track major strategic changes
+    pivotLog: defineTable({
+      userId: v.id("users"),
+      pivotDate: v.string(),
+      pivotType: v.union(
+        v.literal("niche_change"),
+        v.literal("industry_change"),
+        v.literal("product_change"),
+        v.literal("business_model_change"),
+        v.literal("target_customer_change")
+      ),
+      fromWhat: v.string(), // What we were doing
+      toWhat: v.string(), // What we're pivoting to
+      whyPivoting: v.string(),
+      trigger: v.union(
+        v.literal("customer_insight"),
+        v.literal("market_research"),
+        v.literal("technology_wave"),
+        v.literal("opportunity"),
+        v.literal("failed_hypothesis"),
+        v.literal("competition")
+      ),
+      evidence: v.string(), // Data that led to pivot
+      expectedImpact: v.string(),
+      actualImpact: v.optional(v.string()), // Fill after 30 days
+      lessonsLearned: v.optional(v.string()),
+      createdAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_date", ["userId", "pivotDate"]),
+
+    // Failures Vault - Learn from what didn't work
+    failuresVault: defineTable({
+      userId: v.id("users"),
+      failureDate: v.string(),
+      whatFailed: v.string(),
+      problemId: v.optional(v.id("problems")),
+      solutionId: v.optional(v.id("solutions")),
+      whyItFailed: v.string(),
+      costOfFailure: v.optional(v.number()), // Time/money lost
+      lessonLearned: v.string(),
+      whatToDoDifferently: v.string(),
+      patternCategory: v.union(
+        v.literal("wrong_problem"),
+        v.literal("wrong_solution"),
+        v.literal("wrong_timing"),
+        v.literal("wrong_customer"),
+        v.literal("wrong_niche"),
+        v.literal("poor_execution")
+      ),
+      createdAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_problem", ["problemId"])
+      .index("by_solution", ["solutionId"]),
+
   },
   {
     schemaValidation: false,

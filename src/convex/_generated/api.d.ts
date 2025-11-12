@@ -32,6 +32,7 @@ import type * as manifestations from "../manifestations.js";
 import type * as notToDoList from "../notToDoList.js";
 import type * as notes from "../notes.js";
 import type * as prayers from "../prayers.js";
+import type * as problemVault from "../problemVault.js";
 import type * as projects from "../projects.js";
 import type * as quoteChains from "../quoteChains.js";
 import type * as quotes from "../quotes.js";
@@ -82,6 +83,7 @@ declare const fullApi: ApiFromModules<{
   notToDoList: typeof notToDoList;
   notes: typeof notes;
   prayers: typeof prayers;
+  problemVault: typeof problemVault;
   projects: typeof projects;
   quoteChains: typeof quoteChains;
   quotes: typeof quotes;
