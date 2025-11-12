@@ -634,6 +634,21 @@ const schema = defineSchema(
       ),
       isPublicTestimonial: v.boolean(), // Can this be used publicly?
       notes: v.optional(v.string()), // Internal notes about this feedback
+      // NEW: Pain Level & Business Impact Fields
+      painHours: v.optional(v.number()), // Time wasted per week in hours
+      revenueImpactType: v.optional(v.union(
+        v.literal("losing_revenue"),
+        v.literal("missing_opportunity"),
+        v.literal("no_impact")
+      )),
+      revenueAmount: v.optional(v.number()), // Dollar amount of revenue impact
+      urgencyLevel: v.optional(v.union(
+        v.literal("blocking"),
+        v.literal("major_friction"),
+        v.literal("nice_to_have"),
+        v.literal("critical_for_renewal")
+      )),
+      willTestFix: v.optional(v.boolean()), // Will customer test within 48 hours?
       createdAt: v.number(),
       updatedAt: v.number(),
     }).index("by_user", ["userId"])

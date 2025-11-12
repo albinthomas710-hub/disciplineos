@@ -58,6 +58,12 @@ export default function EntrepreneurOSView() {
   const [satisfactionScore, setSatisfactionScore] = useState(5);
   const [priority, setPriority] = useState("medium");
   const [actionTaken, setActionTaken] = useState("");
+  // NEW: Pain Level & Business Impact State
+  const [painHours, setPainHours] = useState<number>(0);
+  const [revenueImpactType, setRevenueImpactType] = useState("no_impact");
+  const [revenueAmount, setRevenueAmount] = useState<number>(0);
+  const [urgencyLevel, setUrgencyLevel] = useState("nice_to_have");
+  const [willTestFix, setWillTestFix] = useState(false);
 
   // Iteration form state
   const [iterationTitle, setIterationTitle] = useState("");
@@ -79,6 +85,11 @@ export default function EntrepreneurOSView() {
         feedbackText,
         satisfactionScore,
         priority: priority as any,
+        painHours: painHours > 0 ? painHours : undefined,
+        revenueImpactType: revenueImpactType !== "no_impact" ? revenueImpactType as any : undefined,
+        revenueAmount: revenueAmount > 0 ? revenueAmount : undefined,
+        urgencyLevel: urgencyLevel as any,
+        willTestFix,
       });
       
       setClientName("");
@@ -86,6 +97,11 @@ export default function EntrepreneurOSView() {
       setFeedbackText("");
       setSatisfactionScore(5);
       setPriority("medium");
+      setPainHours(0);
+      setRevenueImpactType("no_impact");
+      setRevenueAmount(0);
+      setUrgencyLevel("nice_to_have");
+      setWillTestFix(false);
       setShowFeedbackForm(false);
       toast.success("Feedback captured! 🎯");
     } catch (error) {
@@ -381,6 +397,91 @@ export default function EntrepreneurOSView() {
                       />
                     </div>
 
+                    {/* NEW: Pain Level Section */}
+                    <div className="space-y-4 p-4 bg-orange-50 dark:bg-orange-950/30 rounded-lg border-2 border-orange-200 dark:border-orange-800">
+                      <h4 className="font-bold text-sm text-orange-900 dark:text-orange-100">💰 Pain Level & Business Impact</h4>
+                      
+                      <div>
+                        <Label className="font-semibold">How much does this problem cost them?</Label>
+                        <div className="mt-2">
+                          <Label className="text-xs text-muted-foreground">Time wasted per week (hours)</Label>
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.5"
+                            placeholder="0"
+                            value={painHours || ""}
+                            onChange={(e) => setPainHours(parseFloat(e.target.value) || 0)}
+                            className="mt-1"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="font-semibold">Revenue Impact</Label>
+                        <Select value={revenueImpactType} onValueChange={setRevenueImpactType}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="no_impact">No revenue impact</SelectItem>
+                            <SelectItem value="losing_revenue">💸 Losing revenue</SelectItem>
+                            <SelectItem value="missing_opportunity">📈 Missing revenue opportunity</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {revenueImpactType !== "no_impact" && (
+                        <div>
+                          <Label className="font-semibold">Dollar Amount</Label>
+                          <div className="relative mt-1">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="100"
+                              placeholder="0"
+                              value={revenueAmount || ""}
+                              onChange={(e) => setRevenueAmount(parseFloat(e.target.value) || 0)}
+                              className="pl-7"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* NEW: Urgency Level */}
+                    <div>
+                      <Label className="font-semibold">Urgency Level</Label>
+                      <Select value={urgencyLevel} onValueChange={setUrgencyLevel}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="nice_to_have">Nice to have</SelectItem>
+                          <SelectItem value="major_friction">⚠️ Major friction (using workarounds)</SelectItem>
+                          <SelectItem value="blocking">🚫 Blocking completely (can't use product)</SelectItem>
+                          <SelectItem value="critical_for_renewal">🔥 Critical for renewal (will churn)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {/* NEW: Customer Commitment */}
+                    <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                      <Label className="font-semibold flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={willTestFix}
+                          onChange={(e) => setWillTestFix(e.target.checked)}
+                          className="w-5 h-5 cursor-pointer"
+                        />
+                        If we build this, will customer test within 48 hours?
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-1 ml-7">
+                        Customer commitment is a strong signal of real pain
+                      </p>
+                    </div>
+
                     <div className="flex gap-2">
                       <Button onClick={handleAddFeedback} className="cursor-pointer flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
                         <CheckCircle2 className="h-4 w-4 mr-2" />
@@ -461,6 +562,41 @@ export default function EntrepreneurOSView() {
                       </div>
                       
                       <p className="text-sm mb-3 pl-7 leading-relaxed">{feedback.feedbackText}</p>
+                      
+                      {/* NEW: Display Pain Level & Business Impact */}
+                      {(feedback.painHours || feedback.revenueImpactType || feedback.urgencyLevel || feedback.willTestFix) && (
+                        <div className="pl-7 mb-3 space-y-2">
+                          {feedback.painHours && feedback.painHours > 0 && (
+                            <div className="text-xs bg-orange-100 dark:bg-orange-900/30 px-2 py-1 rounded inline-block mr-2">
+                              ⏰ {feedback.painHours}h/week wasted
+                            </div>
+                          )}
+                          {feedback.revenueImpactType && feedback.revenueImpactType !== "no_impact" && (
+                            <div className="text-xs bg-red-100 dark:bg-red-900/30 px-2 py-1 rounded inline-block mr-2">
+                              💸 {feedback.revenueImpactType === "losing_revenue" ? "Losing" : "Missing"} ${feedback.revenueAmount?.toLocaleString() || "?"}
+                            </div>
+                          )}
+                          {feedback.urgencyLevel && (
+                            <div className={`text-xs px-2 py-1 rounded inline-block mr-2 ${
+                              feedback.urgencyLevel === "blocking" || feedback.urgencyLevel === "critical_for_renewal"
+                                ? "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200"
+                                : feedback.urgencyLevel === "major_friction"
+                                ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200"
+                                : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                            }`}>
+                              {feedback.urgencyLevel === "blocking" && "🚫 Blocking"}
+                              {feedback.urgencyLevel === "major_friction" && "⚠️ Major Friction"}
+                              {feedback.urgencyLevel === "critical_for_renewal" && "🔥 Critical for Renewal"}
+                              {feedback.urgencyLevel === "nice_to_have" && "Nice to Have"}
+                            </div>
+                          )}
+                          {feedback.willTestFix && (
+                            <div className="text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 px-2 py-1 rounded inline-block">
+                              ✅ Will test in 48h
+                            </div>
+                          )}
+                        </div>
+                      )}
                       
                       <div className="flex items-center gap-3 text-xs text-muted-foreground pl-7">
                         <span className="flex items-center gap-1">

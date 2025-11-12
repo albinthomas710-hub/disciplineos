@@ -60,6 +60,21 @@ export const createFeedback = mutation({
       v.literal("critical")
     ),
     isPublicTestimonial: v.optional(v.boolean()),
+    // NEW: Pain Level & Business Impact Fields
+    painHours: v.optional(v.number()),
+    revenueImpactType: v.optional(v.union(
+      v.literal("losing_revenue"),
+      v.literal("missing_opportunity"),
+      v.literal("no_impact")
+    )),
+    revenueAmount: v.optional(v.number()),
+    urgencyLevel: v.optional(v.union(
+      v.literal("blocking"),
+      v.literal("major_friction"),
+      v.literal("nice_to_have"),
+      v.literal("critical_for_renewal")
+    )),
+    willTestFix: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -78,6 +93,11 @@ export const createFeedback = mutation({
       status: "new",
       priority: args.priority,
       isPublicTestimonial: args.isPublicTestimonial || false,
+      painHours: args.painHours,
+      revenueImpactType: args.revenueImpactType,
+      revenueAmount: args.revenueAmount,
+      urgencyLevel: args.urgencyLevel,
+      willTestFix: args.willTestFix,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
