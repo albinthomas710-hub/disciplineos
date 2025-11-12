@@ -77,13 +77,26 @@ export default function EntrepreneurOSView() {
     }
   };
 
-  if (!allFeedback || !metrics) {
+  if (!allFeedback) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
+
+  // Handle empty metrics (no feedback yet)
+  const displayMetrics = metrics || {
+    totalFeedback: 0,
+    averageSatisfaction: 0,
+    positiveCount: 0,
+    neutralCount: 0,
+    negativeCount: 0,
+    testimonialCount: 0,
+    featureRequestCount: 0,
+    bugReportCount: 0,
+    positivePercentage: 0,
+  };
 
   return (
     <div className="space-y-6">
@@ -112,17 +125,17 @@ export default function EntrepreneurOSView() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-4 bg-white/50 dark:bg-gray-900/50 rounded-lg text-center">
                 <Users className="h-6 w-6 mx-auto mb-2 text-purple-600" />
-                <p className="text-2xl font-bold">{metrics.totalFeedback}</p>
+                <p className="text-2xl font-bold">{displayMetrics.totalFeedback}</p>
                 <p className="text-xs text-muted-foreground">Total Feedback</p>
               </div>
               <div className="p-4 bg-white/50 dark:bg-gray-900/50 rounded-lg text-center">
                 <Star className="h-6 w-6 mx-auto mb-2 text-yellow-600" />
-                <p className="text-2xl font-bold">{metrics.averageSatisfaction}/10</p>
+                <p className="text-2xl font-bold">{displayMetrics.averageSatisfaction}/10</p>
                 <p className="text-xs text-muted-foreground">Avg Satisfaction</p>
               </div>
               <div className="p-4 bg-white/50 dark:bg-gray-900/50 rounded-lg text-center">
                 <ThumbsUp className="h-6 w-6 mx-auto mb-2 text-green-600" />
-                <p className="text-2xl font-bold">{metrics.positivePercentage}%</p>
+                <p className="text-2xl font-bold">{displayMetrics.positivePercentage}%</p>
                 <p className="text-xs text-muted-foreground">Positive Rate</p>
               </div>
               <div className="p-4 bg-white/50 dark:bg-gray-900/50 rounded-lg text-center">
