@@ -596,6 +596,130 @@ const schema = defineSchema(
       lastChecked: v.number(),
     }).index("by_user_and_date", ["userId", "date"]),
 
+    // ============================================
+    // ENTREPRENEUR OS - Elite Feedback & Iteration System
+    // ============================================
+
+    // Client Feedback - The core feedback loop
+    clientFeedback: defineTable({
+      userId: v.id("users"),
+      projectId: v.optional(v.id("projects")), // Link to project if applicable
+      clientName: v.string(),
+      clientEmail: v.optional(v.string()),
+      feedbackType: v.union(
+        v.literal("testimonial"),
+        v.literal("feature_request"),
+        v.literal("bug_report"),
+        v.literal("general"),
+        v.literal("complaint"),
+        v.literal("praise")
+      ),
+      feedbackText: v.string(),
+      satisfactionScore: v.number(), // 1-10 rating
+      category: v.optional(v.string()), // "product", "service", "support", etc.
+      tags: v.optional(v.array(v.string())),
+      status: v.union(
+        v.literal("new"),
+        v.literal("reviewing"),
+        v.literal("planned"),
+        v.literal("in_progress"),
+        v.literal("completed"),
+        v.literal("archived")
+      ),
+      priority: v.union(
+        v.literal("low"),
+        v.literal("medium"),
+        v.literal("high"),
+        v.literal("critical")
+      ),
+      isPublicTestimonial: v.boolean(), // Can this be used publicly?
+      notes: v.optional(v.string()), // Internal notes about this feedback
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_project", ["projectId"])
+      .index("by_user_and_status", ["userId", "status"])
+      .index("by_user_and_type", ["userId", "feedbackType"]),
+
+    // Iterations - Track product iterations based on feedback
+    iterations: defineTable({
+      userId: v.id("users"),
+      projectId: v.optional(v.id("projects")),
+      feedbackIds: v.array(v.id("clientFeedback")), // Which feedback inspired this iteration
+      iterationNumber: v.number(), // v1.0, v1.1, v2.0, etc.
+      title: v.string(),
+      description: v.string(),
+      hypothesis: v.string(), // What you're testing/improving
+      changes: v.array(v.object({
+        change: v.string(),
+        reason: v.string(),
+        expectedImpact: v.string(),
+      })),
+      status: v.union(
+        v.literal("planning"),
+        v.literal("building"),
+        v.literal("testing"),
+        v.literal("launched"),
+        v.literal("measuring")
+      ),
+      metrics: v.optional(v.object({
+        beforeSatisfaction: v.optional(v.number()),
+        afterSatisfaction: v.optional(v.number()),
+        feedbackCount: v.optional(v.number()),
+        positiveResponses: v.optional(v.number()),
+        negativeResponses: v.optional(v.number()),
+      })),
+      launchedAt: v.optional(v.number()),
+      completedAt: v.optional(v.number()),
+      learnings: v.optional(v.string()), // What did you learn from this iteration?
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_project", ["projectId"])
+      .index("by_user_and_status", ["userId", "status"]),
+
+    // Customer Satisfaction Tracking - Aggregate metrics over time
+    satisfactionMetrics: defineTable({
+      userId: v.id("users"),
+      projectId: v.optional(v.id("projects")),
+      date: v.string(), // "2025-01-11"
+      averageSatisfaction: v.number(), // Average of all scores that day
+      totalFeedback: v.number(),
+      positiveCount: v.number(), // Scores 8-10
+      neutralCount: v.number(), // Scores 5-7
+      negativeCount: v.number(), // Scores 1-4
+      nps: v.optional(v.number()), // Net Promoter Score
+      testimonialCount: v.number(),
+      featureRequestCount: v.number(),
+      bugReportCount: v.number(),
+    }).index("by_user_and_date", ["userId", "date"])
+      .index("by_project_and_date", ["projectId", "date"]),
+
+    // Building Something People Love - Core insights and patterns
+    productInsights: defineTable({
+      userId: v.id("users"),
+      projectId: v.optional(v.id("projects")),
+      insightType: v.union(
+        v.literal("pattern"), // Recurring feedback pattern
+        v.literal("opportunity"), // Opportunity identified
+        v.literal("risk"), // Risk or concern
+        v.literal("win"), // Success story
+        v.literal("learning") // Key learning
+      ),
+      title: v.string(),
+      description: v.string(),
+      relatedFeedbackIds: v.array(v.id("clientFeedback")),
+      relatedIterationIds: v.optional(v.array(v.id("iterations"))),
+      actionTaken: v.optional(v.string()),
+      impact: v.optional(v.string()),
+      confidence: v.number(), // 1-10 how confident are you in this insight
+      isArchived: v.boolean(),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_project", ["projectId"])
+      .index("by_user_and_type", ["userId", "insightType"]),
+
   },
   {
     schemaValidation: false,

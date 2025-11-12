@@ -25,6 +25,7 @@ import {
   Video,
   Lightbulb,
   Ban,
+  Rocket,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
@@ -44,11 +45,12 @@ import PrayerView from "@/components/PrayerView";
 import VideoLibraryView from "@/components/VideoLibraryView";
 import AdviceView from "@/components/AdviceView";
 import NotToDoListView from "@/components/NotToDoListView";
+import EntrepreneurOSView from "@/components/EntrepreneurOSView";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield" | "vectal" | "quotes" | "projects" | "manifest" | "future" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo">("timer");
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield" | "vectal" | "quotes" | "projects" | "manifest" | "future" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur">("timer");
   const [showReflection, setShowReflection] = useState(false);
 
   const activeTimetable = useQuery((api as any).timetables.getActive);
@@ -332,6 +334,14 @@ export default function Dashboard() {
             <Ban className="h-4 w-4 mr-2" />
             Not To Do
           </Button>
+          <Button
+            variant={activeTab === "entrepreneur" ? "default" : "ghost"}
+            onClick={() => setActiveTab("entrepreneur")}
+            className="cursor-pointer bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white hover:from-purple-700 hover:via-pink-700 hover:to-orange-700"
+          >
+            <Rocket className="h-4 w-4 mr-2" />
+            Entrepreneur OS
+          </Button>
         </div>
       </div>
 
@@ -351,6 +361,7 @@ export default function Dashboard() {
         {activeTab === "videos" && <VideoLibraryView />}
         {activeTab === "advice" && <AdviceView />}
         {activeTab === "nottodo" && <NotToDoListView />}
+        {activeTab === "entrepreneur" && <EntrepreneurOSView />}
       </div>
 
       {/* Reflection Dialog */}
