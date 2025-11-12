@@ -61,6 +61,22 @@ export function ProblemVaultView() {
   const [status, setStatus] = useState("discovered");
   const [peopleWhoHaveThis, setPeopleWhoHaveThis] = useState(1);
   const [notes, setNotes] = useState("");
+  
+  // NEW: Pain/Urgency/Cost Framework state
+  const [isPainful, setIsPainful] = useState(false);
+  const [isUrgent, setIsUrgent] = useState(false);
+  const [isCostly, setIsCostly] = useState(false);
+  const [is8020Focus, setIs8020Focus] = useState(false);
+  
+  // NEW: Deadline Tracking state
+  const [validationDeadline, setValidationDeadline] = useState("");
+  const [solutionDeadline, setSolutionDeadline] = useState("");
+  const [deadlineNotes, setDeadlineNotes] = useState("");
+  
+  // NEW: Pain Point Mining state
+  const [sourceUrl, setSourceUrl] = useState("");
+  const [sourceType, setSourceType] = useState("");
+  const [miningNotes, setMiningNotes] = useState("");
 
   // Learning form state
   const [learningDate, setLearningDate] = useState(new Date().toISOString().split('T')[0]);
@@ -121,6 +137,16 @@ export function ProblemVaultView() {
         status: status as any,
         peopleWhoHaveThis,
         notes: notes || undefined,
+        isPainful: isPainful || undefined,
+        isUrgent: isUrgent || undefined,
+        isCostly: isCostly || undefined,
+        is8020Focus: is8020Focus || undefined,
+        validationDeadline: validationDeadline || undefined,
+        solutionDeadline: solutionDeadline || undefined,
+        deadlineNotes: deadlineNotes || undefined,
+        sourceUrl: sourceUrl || undefined,
+        sourceType: sourceType || undefined,
+        miningNotes: miningNotes || undefined,
       });
       
       resetProblemForm();
@@ -248,6 +274,16 @@ export function ProblemVaultView() {
     setStatus("discovered");
     setPeopleWhoHaveThis(1);
     setNotes("");
+    setIsPainful(false);
+    setIsUrgent(false);
+    setIsCostly(false);
+    setIs8020Focus(false);
+    setValidationDeadline("");
+    setSolutionDeadline("");
+    setDeadlineNotes("");
+    setSourceUrl("");
+    setSourceType("");
+    setMiningNotes("");
   };
 
   const resetLearningForm = () => {
@@ -656,6 +692,26 @@ export function ProblemVaultView() {
         setPeopleWhoHaveThis={setPeopleWhoHaveThis}
         notes={notes}
         setNotes={setNotes}
+        isPainful={isPainful}
+        setIsPainful={setIsPainful}
+        isUrgent={isUrgent}
+        setIsUrgent={setIsUrgent}
+        isCostly={isCostly}
+        setIsCostly={setIsCostly}
+        is8020Focus={is8020Focus}
+        setIs8020Focus={setIs8020Focus}
+        validationDeadline={validationDeadline}
+        setValidationDeadline={setValidationDeadline}
+        solutionDeadline={solutionDeadline}
+        setSolutionDeadline={setSolutionDeadline}
+        deadlineNotes={deadlineNotes}
+        setDeadlineNotes={setDeadlineNotes}
+        sourceUrl={sourceUrl}
+        setSourceUrl={setSourceUrl}
+        sourceType={sourceType}
+        setSourceType={setSourceType}
+        miningNotes={miningNotes}
+        setMiningNotes={setMiningNotes}
       />
 
       <LearningFormDialog

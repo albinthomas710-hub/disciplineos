@@ -857,7 +857,12 @@ const schema = defineSchema(
         v.literal("market_research"),
         v.literal("personal_experience"),
         v.literal("competitor_analysis"),
-        v.literal("industry_report")
+        v.literal("industry_report"),
+        v.literal("reddit"),
+        v.literal("g2_reviews"),
+        v.literal("facebook_groups"),
+        v.literal("trustpilot"),
+        v.literal("forum_mining")
       ),
       discoveredDate: v.string(),
       customerName: v.optional(v.string()),
@@ -872,13 +877,27 @@ const schema = defineSchema(
       ),
       peopleWhoHaveThis: v.number(), // Market size estimate
       priorityScore: v.number(), // Auto-calculated: dollarValue × painLevel × peopleWhoHaveThis
+      // NEW: Pain/Urgency/Cost Framework
+      isPainful: v.optional(v.boolean()), // Does this cause significant pain?
+      isUrgent: v.optional(v.boolean()), // Does this need immediate attention?
+      isCostly: v.optional(v.boolean()), // Does this cost significant money/time?
+      is8020Focus: v.optional(v.boolean()), // Is this a high-leverage problem?
+      // NEW: Deadline Tracking
+      validationDeadline: v.optional(v.string()), // Deadline to validate this problem
+      solutionDeadline: v.optional(v.string()), // Deadline to ship solution
+      deadlineNotes: v.optional(v.string()),
+      // NEW: Pain Point Mining
+      sourceUrl: v.optional(v.string()), // URL where this was found (Reddit, G2, etc.)
+      sourceType: v.optional(v.string()), // "reddit", "g2", "facebook", "trustpilot"
+      miningNotes: v.optional(v.string()), // Notes from forum/review mining
       notes: v.optional(v.string()),
       tags: v.optional(v.array(v.string())),
       createdAt: v.number(),
       updatedAt: v.number(),
     }).index("by_user", ["userId"])
       .index("by_user_and_category", ["userId", "problemCategory"])
-      .index("by_user_and_status", ["userId", "status"]),
+      .index("by_user_and_status", ["userId", "status"])
+      .index("by_user_and_8020", ["userId", "is8020Focus"]),
 
     // Solutions - Track solutions to problems
     solutions: defineTable({

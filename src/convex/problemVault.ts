@@ -23,7 +23,12 @@ export const createProblem = mutation({
       v.literal("market_research"),
       v.literal("personal_experience"),
       v.literal("competitor_analysis"),
-      v.literal("industry_report")
+      v.literal("industry_report"),
+      v.literal("reddit"),
+      v.literal("g2_reviews"),
+      v.literal("facebook_groups"),
+      v.literal("trustpilot"),
+      v.literal("forum_mining")
     ),
     discoveredDate: v.string(),
     customerName: v.optional(v.string()),
@@ -40,6 +45,19 @@ export const createProblem = mutation({
     notes: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     projectId: v.optional(v.id("projects")),
+    // NEW: Pain/Urgency/Cost Framework
+    isPainful: v.optional(v.boolean()),
+    isUrgent: v.optional(v.boolean()),
+    isCostly: v.optional(v.boolean()),
+    is8020Focus: v.optional(v.boolean()),
+    // NEW: Deadline Tracking
+    validationDeadline: v.optional(v.string()),
+    solutionDeadline: v.optional(v.string()),
+    deadlineNotes: v.optional(v.string()),
+    // NEW: Pain Point Mining
+    sourceUrl: v.optional(v.string()),
+    sourceType: v.optional(v.string()),
+    miningNotes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -64,6 +82,16 @@ export const createProblem = mutation({
       priorityScore,
       notes: args.notes,
       tags: args.tags,
+      isPainful: args.isPainful,
+      isUrgent: args.isUrgent,
+      isCostly: args.isCostly,
+      is8020Focus: args.is8020Focus,
+      validationDeadline: args.validationDeadline,
+      solutionDeadline: args.solutionDeadline,
+      deadlineNotes: args.deadlineNotes,
+      sourceUrl: args.sourceUrl,
+      sourceType: args.sourceType,
+      miningNotes: args.miningNotes,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -218,7 +246,28 @@ export const getProblemStats = query({
       roiFocusProblems: problems.filter(p => p.problemCategory === "roi_focus").length,
       problemsValidated: problems.filter(p => p.status === "validated").length,
       solutionsShipped: solutions.filter(s => s.status === "shipped" || s.status === "validated").length,
+      // NEW: 80/20 Focus Stats
+      focus8020Problems: problems.filter(p => p.is8020Focus === true).length,
+      painfulUrgentCostly: problems.filter(p => p.isPainful && p.isUrgent && p.isCostly).length,
+      problemsWithDeadlines: problems.filter(p => p.validationDeadline || p.solutionDeadline).length,
+      minedProblems: problems.filter(p => p.sourceUrl).length,
     };
+  },
+});
+
+// NEW: Get 80/20 Focus Problems
+export const get8020FocusProblems = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    const problems = await ctx.db
+      .query("problems")
+      .withIndex("by_user_and_8020", (q) => q.eq("userId", user._id).eq("is8020Focus", true))
+      .collect();
+
+    return problems.sort((a, b) => b.priorityScore - a.priorityScore);
   },
 });
 
