@@ -159,6 +159,21 @@ export const deleteFeedback = mutation({
   },
 });
 
+export const deleteIteration = mutation({
+  args: { iterationId: v.id("iterations") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const iteration = await ctx.db.get(args.iterationId);
+    if (!iteration || iteration.userId !== user._id) {
+      throw new Error("Iteration not found or unauthorized");
+    }
+
+    await ctx.db.delete(args.iterationId);
+  },
+});
+
 // ============================================
 // ITERATION FUNCTIONS
 // ============================================

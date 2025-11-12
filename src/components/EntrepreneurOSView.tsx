@@ -67,6 +67,7 @@ export function EntrepreneurOSView() {
   const createIteration = useMutation((api as any).entrepreneurOS.createIteration);
   const updateFeedbackStatus = useMutation((api as any).entrepreneurOS.updateFeedbackStatus);
   const deleteFeedback = useMutation((api as any).entrepreneurOS.deleteFeedback);
+  const deleteIteration = useMutation((api as any).entrepreneurOS.deleteIteration);
   const updateIteration = useMutation((api as any).entrepreneurOS.updateIteration);
   const createValidation = useMutation((api as any).impactValidation.createValidation);
   
@@ -253,11 +254,28 @@ export function EntrepreneurOSView() {
   };
 
   const handleDeleteFeedback = async (feedbackId: string) => {
+    if (!confirm("Are you sure you want to delete this feedback? This action cannot be undone.")) {
+      return;
+    }
+    
     try {
       await deleteFeedback({ feedbackId: feedbackId as any });
       toast.success("Feedback deleted");
     } catch (error) {
       toast.error("Failed to delete feedback");
+    }
+  };
+
+  const handleDeleteIteration = async (iterationId: string) => {
+    if (!confirm("Are you sure you want to delete this iteration? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      await deleteIteration({ iterationId: iterationId as any });
+      toast.success("Iteration deleted");
+    } catch (error) {
+      toast.error("Failed to delete iteration");
     }
   };
 
@@ -398,6 +416,17 @@ export function EntrepreneurOSView() {
                         {selectedFeedbackIds.includes(feedback._id) ? "Selected for iteration" : "Click to select"}
                       </span>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteFeedback(feedback._id);
+                      }}
+                      className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">
@@ -614,6 +643,7 @@ export function EntrepreneurOSView() {
                       actualShipDate: status === "shipped" ? new Date().toISOString().split("T")[0] : undefined,
                     });
                   }}
+                  onDelete={handleDeleteIteration}
                 />
               ))
             ) : (
