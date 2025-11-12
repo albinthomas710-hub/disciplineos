@@ -472,15 +472,44 @@ export function ProblemVaultView() {
                       </div>
                       <Badge className="bg-blue-600">{learning.conversationType}</Badge>
                     </div>
-                    <div>
-                      <p className="font-semibold text-sm mb-1">Problems Discovered:</p>
-                      <p className="text-sm text-muted-foreground">{learning.problemsDiscovered}</p>
-                    </div>
-                    {learning.exactQuotes && (
-                      <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border-l-4 border-yellow-600">
-                        <p className="text-sm italic">"{learning.exactQuotes}"</p>
+                    
+                    <div className="space-y-3">
+                      <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-lg border-l-4 border-red-600">
+                        <p className="font-semibold text-sm mb-1">📋 Problems Discovered:</p>
+                        <p className="text-sm">{learning.problemsDiscovered}</p>
                       </div>
-                    )}
+
+                      {learning.exactQuotes && (
+                        <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border-l-4 border-yellow-600">
+                          <p className="font-semibold text-sm mb-1">💬 Customer Quote:</p>
+                          <p className="text-sm italic">"{learning.exactQuotes}"</p>
+                        </div>
+                      )}
+
+                      {learning.painPoints && learning.painPoints.length > 0 && (
+                        <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg border-l-4 border-orange-600">
+                          <p className="font-semibold text-sm mb-1">😫 Pain Points:</p>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {learning.painPoints.map((point: string, idx: number) => (
+                              <Badge key={idx} variant="outline">{point}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {learning.industryInsights && (
+                        <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg border-l-4 border-purple-600">
+                          <p className="font-semibold text-sm mb-1">🏭 Industry Insights:</p>
+                          <p className="text-sm">{learning.industryInsights}</p>
+                        </div>
+                      )}
+
+                      {learning.dollarImpact && (
+                        <div className="flex items-center gap-2 text-sm font-semibold text-green-600">
+                          💰 Dollar Impact: ${learning.dollarImpact.toLocaleString()}
+                        </div>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ))
@@ -637,8 +666,18 @@ export function ProblemVaultView() {
         setLearningDate={setLearningDate}
         learningCustomer={learningCustomer}
         setLearningCustomer={setLearningCustomer}
+        conversationType={conversationType}
+        setConversationType={setConversationType}
         problemsDiscovered={problemsDiscovered}
         setProblemsDiscovered={setProblemsDiscovered}
+        exactQuotes={exactQuotes}
+        setExactQuotes={setExactQuotes}
+        painPoints={painPoints}
+        setPainPoints={setPainPoints}
+        dollarImpact={dollarImpact}
+        setDollarImpact={setDollarImpact}
+        industryInsights={industryInsights}
+        setIndustryInsights={setIndustryInsights}
       />
 
       <PivotFormDialog
