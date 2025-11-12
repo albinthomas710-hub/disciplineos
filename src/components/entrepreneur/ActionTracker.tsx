@@ -535,6 +535,18 @@ export function ActionTracker() {
               "Your network is your networth"
             </p>
           </div>
+          <div className="flex items-start gap-3">
+            <Quote className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-1" />
+            <p className="text-lg font-semibold italic">
+              "Focus is the art of saying no to great opportunities"
+            </p>
+          </div>
+          <div className="flex items-start gap-3">
+            <Quote className="h-6 w-6 text-yellow-600 flex-shrink-0 mt-1" />
+            <p className="text-lg font-semibold italic">
+              "If you chase 4 rabbits, you end up catching none"
+            </p>
+          </div>
         </CardContent>
       </Card>
 
