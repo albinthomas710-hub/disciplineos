@@ -758,18 +758,56 @@ const schema = defineSchema(
       builtSomethingNote: v.optional(v.string()),
       talkedToCustomers: v.boolean(),
       customersCount: v.optional(v.number()),
+      customerInsights: v.optional(v.string()), // What did you learn from customers?
+      qualityFlags: v.optional(v.array(v.string())), // ["pain_point", "roi_impact", "next_step", "closed_deal", "testimonial"]
       learnedNewSkill: v.boolean(),
       skillLearned: v.optional(v.string()),
       betterThanYesterday: v.boolean(),
       lessonLearned: v.optional(v.string()),
       hoursWorked: v.optional(v.number()),
+      // NEW: Revenue tracking
+      revenueClosed: v.optional(v.number()),
+      pipelineAdded: v.optional(v.number()),
+      outreachCount: v.optional(v.number()),
+      dealsClosed: v.optional(v.number()),
+      // Goals
       action24hrs: v.optional(v.string()),
       goal7days: v.optional(v.string()),
       goal30days: v.optional(v.string()),
       goal90days: v.optional(v.string()),
+      // NEW: Streaks
+      streaks: v.optional(v.object({
+        builtStreak: v.number(),
+        customerStreak: v.number(),
+        learningStreak: v.number(),
+        eightyHourWeeks: v.number(),
+      })),
       createdAt: v.number(),
       updatedAt: v.number(),
     }).index("by_user_and_date", ["userId", "date"]),
+
+    // Weekly Reviews - End of week reflection
+    weeklyReviews: defineTable({
+      userId: v.id("users"),
+      weekStartDate: v.string(), // "2025-01-06" (Monday)
+      weekEndDate: v.string(), // "2025-01-12" (Sunday)
+      // Metrics summary
+      totalConversations: v.number(),
+      thingsBuilt: v.number(),
+      skillsLearned: v.array(v.string()),
+      totalRevenue: v.number(),
+      totalHours: v.number(),
+      avgHoursPerDay: v.number(),
+      // Reflection
+      whatWorked: v.string(),
+      whatDidntWork: v.string(),
+      topPriority: v.string(),
+      // Comparison to last week
+      conversationsChange: v.optional(v.number()),
+      revenueChange: v.optional(v.number()),
+      hoursChange: v.optional(v.number()),
+      createdAt: v.number(),
+    }).index("by_user_and_week", ["userId", "weekStartDate"]),
 
     // Building Something People Love - Core insights and patterns
     productInsights: defineTable({

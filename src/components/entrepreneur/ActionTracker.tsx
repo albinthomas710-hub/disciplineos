@@ -24,17 +24,24 @@ import {
 export function ActionTracker() {
   const todayAction = useQuery((api as any).entrepreneurActions.getTodayAction);
   const weeklyStats = useQuery((api as any).entrepreneurActions.getWeeklyStats);
+  const currentStreaks = useQuery((api as any).entrepreneurActions.getCurrentStreaks);
   const upsertAction = useMutation((api as any).entrepreneurActions.upsertTodayAction);
 
   const [builtSomething, setBuiltSomething] = useState(false);
   const [builtNote, setBuiltNote] = useState("");
   const [talkedToCustomers, setTalkedToCustomers] = useState(false);
   const [customersCount, setCustomersCount] = useState(0);
+  const [customerInsights, setCustomerInsights] = useState("");
+  const [qualityFlags, setQualityFlags] = useState<string[]>([]);
   const [learnedSkill, setLearnedSkill] = useState(false);
   const [skillLearned, setSkillLearned] = useState("");
   const [betterThanYesterday, setBetterThanYesterday] = useState(false);
   const [lessonLearned, setLessonLearned] = useState("");
   const [hoursWorked, setHoursWorked] = useState(0);
+  const [revenueClosed, setRevenueClosed] = useState(0);
+  const [pipelineAdded, setPipelineAdded] = useState(0);
+  const [outreachCount, setOutreachCount] = useState(0);
+  const [dealsClosed, setDealsClosed] = useState(0);
   const [action24hrs, setAction24hrs] = useState("");
   const [goal7days, setGoal7days] = useState("");
   const [goal30days, setGoal30days] = useState("");
@@ -46,11 +53,17 @@ export function ActionTracker() {
       setBuiltNote(todayAction.builtSomethingNote || "");
       setTalkedToCustomers(todayAction.talkedToCustomers);
       setCustomersCount(todayAction.customersCount || 0);
+      setCustomerInsights(todayAction.customerInsights || "");
+      setQualityFlags(todayAction.qualityFlags || []);
       setLearnedSkill(todayAction.learnedNewSkill);
       setSkillLearned(todayAction.skillLearned || "");
       setBetterThanYesterday(todayAction.betterThanYesterday);
       setLessonLearned(todayAction.lessonLearned || "");
       setHoursWorked(todayAction.hoursWorked || 0);
+      setRevenueClosed(todayAction.revenueClosed || 0);
+      setPipelineAdded(todayAction.pipelineAdded || 0);
+      setOutreachCount(todayAction.outreachCount || 0);
+      setDealsClosed(todayAction.dealsClosed || 0);
       setAction24hrs(todayAction.action24hrs || "");
       setGoal7days(todayAction.goal7days || "");
       setGoal30days(todayAction.goal30days || "");
@@ -65,11 +78,17 @@ export function ActionTracker() {
         builtSomethingNote: builtNote || undefined,
         talkedToCustomers,
         customersCount: customersCount > 0 ? customersCount : undefined,
+        customerInsights: customerInsights || undefined,
+        qualityFlags: qualityFlags.length > 0 ? qualityFlags : undefined,
         learnedNewSkill: learnedSkill,
         skillLearned: skillLearned || undefined,
         betterThanYesterday,
         lessonLearned: lessonLearned || undefined,
         hoursWorked: hoursWorked > 0 ? hoursWorked : undefined,
+        revenueClosed: revenueClosed > 0 ? revenueClosed : undefined,
+        pipelineAdded: pipelineAdded > 0 ? pipelineAdded : undefined,
+        outreachCount: outreachCount > 0 ? outreachCount : undefined,
+        dealsClosed: dealsClosed > 0 ? dealsClosed : undefined,
         action24hrs: action24hrs || undefined,
         goal7days: goal7days || undefined,
         goal30days: goal30days || undefined,
@@ -81,11 +100,61 @@ export function ActionTracker() {
     }
   };
 
+  const toggleQualityFlag = (flag: string) => {
+    setQualityFlags(prev => 
+      prev.includes(flag) ? prev.filter(f => f !== flag) : [...prev, flag]
+    );
+  };
+
   return (
     <div className="space-y-6">
+      {/* Current Streaks */}
+      {currentStreaks && (
+        <Card className="border-2 border-orange-200 dark:border-orange-800 bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-orange-600" />
+              Current Streaks 🔥
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="p-4 bg-white dark:bg-gray-900 rounded-xl text-center shadow-md"
+              >
+                <p className="text-3xl font-bold text-orange-600">{currentStreaks.builtStreak}</p>
+                <p className="text-xs text-muted-foreground">🔥 Built Streak</p>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="p-4 bg-white dark:bg-gray-900 rounded-xl text-center shadow-md"
+              >
+                <p className="text-3xl font-bold text-purple-600">{currentStreaks.customerStreak}</p>
+                <p className="text-xs text-muted-foreground">🔥 Customer Streak</p>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="p-4 bg-white dark:bg-gray-900 rounded-xl text-center shadow-md"
+              >
+                <p className="text-3xl font-bold text-blue-600">{currentStreaks.learningStreak}</p>
+                <p className="text-xs text-muted-foreground">🔥 Learning Streak</p>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="p-4 bg-white dark:bg-gray-900 rounded-xl text-center shadow-md"
+              >
+                <p className="text-3xl font-bold text-green-600">{currentStreaks.eightyHourWeeks}</p>
+                <p className="text-xs text-muted-foreground">🔥 80+ Hr Weeks</p>
+              </motion.div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Weekly Stats */}
       {weeklyStats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -124,6 +193,16 @@ export function ActionTracker() {
             <Lightbulb className="h-6 w-6 text-orange-600 mb-2" />
             <p className="text-2xl font-bold">{weeklyStats.daysLearned}/7</p>
             <p className="text-xs text-muted-foreground">Days Learned</p>
+          </motion.div>
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+            className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-xl border-2 border-green-200 dark:border-green-800"
+          >
+            <TrendingUp className="h-6 w-6 text-green-600 mb-2" />
+            <p className="text-2xl font-bold">${weeklyStats.totalRevenue}</p>
+            <p className="text-xs text-muted-foreground">Revenue This Week</p>
           </motion.div>
         </div>
       )}
@@ -193,13 +272,47 @@ export function ActionTracker() {
               💬 Talk to 5+ customers per week
             </p>
             {talkedToCustomers && (
-              <Input
-                type="number"
-                placeholder="How many customers?"
-                value={customersCount || ""}
-                onChange={(e) => setCustomersCount(parseInt(e.target.value) || 0)}
-                className="ml-9"
-              />
+              <div className="ml-9 space-y-3">
+                <Input
+                  type="number"
+                  placeholder="How many customers?"
+                  value={customersCount || ""}
+                  onChange={(e) => setCustomersCount(parseInt(e.target.value) || 0)}
+                />
+                <Textarea
+                  placeholder="What did you learn from these conversations?"
+                  value={customerInsights}
+                  onChange={(e) => setCustomerInsights(e.target.value)}
+                  rows={2}
+                />
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold">Quality Indicators:</p>
+                  <div className="space-y-1">
+                    {[
+                      { id: "pain_point", label: "Discovered new pain point (worth documenting)" },
+                      { id: "roi_impact", label: "Got specific ROI/$ impact" },
+                      { id: "next_step", label: "Booked next step (demo/proposal)" },
+                      { id: "closed_deal", label: "Closed a deal" },
+                      { id: "testimonial", label: "Got testimonial/referral" },
+                    ].map((flag) => (
+                      <label key={flag.id} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={qualityFlags.includes(flag.id)}
+                          onChange={() => toggleQualityFlag(flag.id)}
+                          className="w-4 h-4"
+                        />
+                        <span className="text-sm">{flag.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {qualityFlags.length > 0 && (
+                    <p className="text-xs text-purple-600 font-semibold mt-2">
+                      💡 Document details in Feedback Loop tab
+                    </p>
+                  )}
+                </div>
+              </div>
             )}
           </div>
 
@@ -281,6 +394,74 @@ export function ActionTracker() {
               <p className="font-bold text-lg">Build - Sell - Deliver - Repeat - Productize</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Today's Business Metrics */}
+      <Card className="border-2 shadow-lg">
+        <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950">
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Today's Business Metrics
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-6 space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="font-semibold">Revenue Closed Today ($)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="100"
+                placeholder="0"
+                value={revenueClosed || ""}
+                onChange={(e) => setRevenueClosed(parseFloat(e.target.value) || 0)}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label className="font-semibold">Pipeline Added Today ($)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="100"
+                placeholder="0"
+                value={pipelineAdded || ""}
+                onChange={(e) => setPipelineAdded(parseFloat(e.target.value) || 0)}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label className="font-semibold">Outreach Sent (Target: 50)</Label>
+              <Input
+                type="number"
+                min="0"
+                placeholder="0"
+                value={outreachCount || ""}
+                onChange={(e) => setOutreachCount(parseInt(e.target.value) || 0)}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label className="font-semibold">Deals Closed</Label>
+              <Input
+                type="number"
+                min="0"
+                placeholder="0"
+                value={dealsClosed || ""}
+                onChange={(e) => setDealsClosed(parseInt(e.target.value) || 0)}
+                className="mt-1"
+              />
+            </div>
+          </div>
+
+          {weeklyStats && (
+            <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950 rounded-lg">
+              <p className="font-bold text-center">
+                This Week: ${weeklyStats.totalRevenue} revenue, ${weeklyStats.totalPipeline} pipeline, {weeklyStats.totalDeals} deals closed
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
