@@ -43,7 +43,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { FeedbackForm } from "./entrepreneur/FeedbackForm";
 import { IterationDetails } from "./entrepreneur/IterationDetails";
 import { ValidationDisplay } from "./entrepreneur/ValidationDisplay";
-import { IterationWithValidations } from "./entrepreneur/IterationWithValidations";
 import CustomerJourneyTimeline from "./CustomerJourneyTimeline";
 
 export function EntrepreneurOSView() {
@@ -57,6 +56,9 @@ export function EntrepreneurOSView() {
   const churnRisk = useQuery((api as any).entrepreneurOS.getChurnRiskAlerts);
   const testimonialOps = useQuery((api as any).entrepreneurOS.getTestimonialOpportunities);
   const iterationEffectiveness = useQuery((api as any).entrepreneurOS.getIterationEffectiveness);
+  
+  // FIXED: Fetch all validations at the top level to avoid hooks in loops
+  const allValidations = useQuery((api as any).impactValidation.getAllValidations);
   
   const createFeedback = useMutation((api as any).entrepreneurOS.createFeedback);
   const createIteration = useMutation((api as any).entrepreneurOS.createIteration);
@@ -573,24 +575,51 @@ export function EntrepreneurOSView() {
 
           <div className="space-y-4">
             {allIterations && allIterations.length > 0 ? (
-              allIterations.map((iteration: any) => (
-                <IterationWithValidations
-                  key={iteration._id}
-                  iteration={iteration}
-                  allFeedback={allFeedback || []}
-                  onAddValidation={() => {
-                    setSelectedIteration(iteration);
-                    setShowValidationForm(true);
-                  }}
-                  onUpdateStatus={(status) => {
-                    updateIteration({
-                      iterationId: iteration._id,
-                      status: status as any,
-                      actualShipDate: status === "shipped" ? new Date().toISOString().split("T")[0] : undefined,
-                    });
-                  }}
-                />
-              ))
+              allIterations.map((iteration: any) => {
+                // FIXED: Filter validations from the top-level query instead of calling useQuery in the loop
+                const iterationValidations = allValidations?.filter(
+                  (v: any) => v.iterationId === iteration._id
+                ) || [];
+
+                return (
+                  <div key={iteration._id} className="space-y-4">
+                    <IterationDetails
+                      iteration={iteration}
+                      onAddValidation={() => {
+                        setSelectedIteration(iteration);
+                        setShowValidationForm(true);
+                      }}
+                      onUpdateStatus={(status) => {
+                        updateIteration({
+                          iterationId: iteration._id,
+                          status: status as any,
+                          actualShipDate: status === "shipped" ? new Date().toISOString().split("T")[0] : undefined,
+                        });
+                      }}
+                    />
+
+                    {/* Display Validations */}
+                    {iterationValidations.length > 0 && (
+                      <div className="ml-8 space-y-3">
+                        <h4 className="text-lg font-bold flex items-center gap-2">
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          Impact Validations ({iterationValidations.length})
+                        </h4>
+                        {iterationValidations.map((validation: any) => {
+                          const originalFeedback = allFeedback?.find((f: any) => f._id === validation.feedbackId);
+                          return (
+                            <ValidationDisplay
+                              key={validation._id}
+                              validation={validation}
+                              originalFeedback={originalFeedback}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             ) : (
               <Card className="p-12 text-center">
                 <p className="text-muted-foreground">No iterations yet. Create your first iteration from feedback!</p>
