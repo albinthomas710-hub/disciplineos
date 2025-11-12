@@ -43,6 +43,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { FeedbackForm } from "./entrepreneur/FeedbackForm";
 import { IterationDetails } from "./entrepreneur/IterationDetails";
 import { ValidationDisplay } from "./entrepreneur/ValidationDisplay";
+import { IterationWithValidations } from "./entrepreneur/IterationWithValidations";
 import CustomerJourneyTimeline from "./CustomerJourneyTimeline";
 
 export function EntrepreneurOSView() {
@@ -572,51 +573,24 @@ export function EntrepreneurOSView() {
 
           <div className="space-y-4">
             {allIterations && allIterations.length > 0 ? (
-              allIterations.map((iteration: any) => {
-                const validations = useQuery(
-                  (api as any).impactValidation.getValidationsByIteration,
-                  { iterationId: iteration._id }
-                );
-
-                return (
-                  <div key={iteration._id} className="space-y-4">
-                    <IterationDetails
-                      iteration={iteration}
-                      onAddValidation={() => {
-                        setSelectedIteration(iteration);
-                        setShowValidationForm(true);
-                      }}
-                      onUpdateStatus={(status) => {
-                        updateIteration({
-                          iterationId: iteration._id,
-                          status: status as any,
-                          actualShipDate: status === "shipped" ? new Date().toISOString().split("T")[0] : undefined,
-                        });
-                      }}
-                    />
-
-                    {/* Display Validations */}
-                    {validations && validations.length > 0 && (
-                      <div className="ml-8 space-y-3">
-                        <h4 className="text-lg font-bold flex items-center gap-2">
-                          <CheckCircle2 className="h-5 w-5 text-green-600" />
-                          Impact Validations ({validations.length})
-                        </h4>
-                        {validations.map((validation: any) => {
-                          const originalFeedback = allFeedback?.find((f: any) => f._id === validation.feedbackId);
-                          return (
-                            <ValidationDisplay
-                              key={validation._id}
-                              validation={validation}
-                              originalFeedback={originalFeedback}
-                            />
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })
+              allIterations.map((iteration: any) => (
+                <IterationWithValidations
+                  key={iteration._id}
+                  iteration={iteration}
+                  allFeedback={allFeedback}
+                  onAddValidation={() => {
+                    setSelectedIteration(iteration);
+                    setShowValidationForm(true);
+                  }}
+                  onUpdateStatus={(status) => {
+                    updateIteration({
+                      iterationId: iteration._id,
+                      status: status as any,
+                      actualShipDate: status === "shipped" ? new Date().toISOString().split("T")[0] : undefined,
+                    });
+                  }}
+                />
+              ))
             ) : (
               <Card className="p-12 text-center">
                 <p className="text-muted-foreground">No iterations yet. Create your first iteration from feedback!</p>
