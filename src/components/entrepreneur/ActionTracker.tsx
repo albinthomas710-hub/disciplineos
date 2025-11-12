@@ -547,6 +547,19 @@ export function ActionTracker() {
               "If you chase 4 rabbits, you end up catching none"
             </p>
           </div>
+          <div className="p-4 bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-900 dark:to-red-900 rounded-lg border-2 border-orange-300 dark:border-orange-700">
+            <div className="flex items-start gap-3">
+              <Quote className="h-7 w-7 text-orange-700 dark:text-orange-300 flex-shrink-0 mt-1" />
+              <div className="space-y-2">
+                <p className="text-lg font-bold italic text-orange-900 dark:text-orange-100">
+                  "Master by building, not by consuming courses. The ratio should be 1:1 - execution matters more than information"
+                </p>
+                <p className="text-lg font-bold italic text-orange-900 dark:text-orange-100">
+                  "Start building, love execution, hate consumption and information"
+                </p>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
