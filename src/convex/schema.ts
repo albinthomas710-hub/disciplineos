@@ -606,6 +606,13 @@ const schema = defineSchema(
       projectId: v.optional(v.id("projects")), // Link to project if applicable
       clientName: v.string(),
       clientEmail: v.optional(v.string()),
+      clientPhone: v.optional(v.string()),
+      companyName: v.optional(v.string()),
+      socialLinks: v.optional(v.object({
+        linkedin: v.optional(v.string()),
+        twitter: v.optional(v.string()),
+        website: v.optional(v.string()),
+      })),
       feedbackType: v.union(
         v.literal("testimonial"),
         v.literal("feature_request"),

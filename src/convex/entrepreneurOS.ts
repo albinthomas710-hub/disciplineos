@@ -41,6 +41,13 @@ export const createFeedback = mutation({
     projectId: v.optional(v.id("projects")),
     clientName: v.string(),
     clientEmail: v.optional(v.string()),
+    clientPhone: v.optional(v.string()),
+    companyName: v.optional(v.string()),
+    socialLinks: v.optional(v.object({
+      linkedin: v.optional(v.string()),
+      twitter: v.optional(v.string()),
+      website: v.optional(v.string()),
+    })),
     feedbackType: v.union(
       v.literal("testimonial"),
       v.literal("feature_request"),
@@ -85,6 +92,9 @@ export const createFeedback = mutation({
       projectId: args.projectId,
       clientName: args.clientName,
       clientEmail: args.clientEmail,
+      clientPhone: args.clientPhone,
+      companyName: args.companyName,
+      socialLinks: args.socialLinks,
       feedbackType: args.feedbackType,
       feedbackText: args.feedbackText,
       satisfactionScore: args.satisfactionScore,

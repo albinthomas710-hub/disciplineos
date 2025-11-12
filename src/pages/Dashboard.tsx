@@ -45,7 +45,7 @@ import PrayerView from "@/components/PrayerView";
 import VideoLibraryView from "@/components/VideoLibraryView";
 import AdviceView from "@/components/AdviceView";
 import NotToDoListView from "@/components/NotToDoListView";
-import EntrepreneurOSView from "@/components/EntrepreneurOSView";
+import { EntrepreneurOSView } from "@/components/EntrepreneurOSView";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
