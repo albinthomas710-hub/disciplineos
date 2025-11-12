@@ -544,3 +544,170 @@ export const getProductInsights = query({
       .sort((a, b) => b.createdAt - a.createdAt);
   },
 });
+
+// ============================================
+// CUSTOMER JOURNEY TIMELINE
+// ============================================
+
+export const getCustomerJourney = query({
+  args: { clientName: v.string() },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return null;
+
+    // Get all feedback for this customer
+    const allFeedback = await ctx.db
+      .query("clientFeedback")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+    
+    const customerFeedback = allFeedback.filter(
+      f => f.clientName.toLowerCase() === args.clientName.toLowerCase()
+    );
+
+    if (customerFeedback.length === 0) return null;
+
+    // Get all iterations linked to this customer's feedback
+    const allIterations = await ctx.db
+      .query("iterations")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const customerFeedbackIds = customerFeedback.map(f => f._id);
+    const customerIterations = allIterations.filter(iter =>
+      iter.feedbackIds.some(id => customerFeedbackIds.includes(id))
+    );
+
+    // Get all validations for these iterations
+    const allValidations = await ctx.db
+      .query("impactValidations")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const iterationIds = customerIterations.map(i => i._id);
+    const customerValidations = allValidations.filter(v =>
+      iterationIds.includes(v.iterationId)
+    );
+
+    // Build timeline events
+    const events: Array<{
+      date: number;
+      type: "feedback" | "iteration" | "validation" | "signup";
+      data: any;
+      satisfaction?: number;
+    }> = [];
+
+    // Add signup event (first feedback date)
+    const firstFeedback = customerFeedback.sort((a, b) => a.createdAt - b.createdAt)[0];
+    events.push({
+      date: firstFeedback.createdAt,
+      type: "signup",
+      data: { clientName: args.clientName },
+    });
+
+    // Add feedback events
+    customerFeedback.forEach(feedback => {
+      events.push({
+        date: feedback.createdAt,
+        type: "feedback",
+        data: feedback,
+        satisfaction: feedback.satisfactionScore,
+      });
+    });
+
+    // Add iteration events
+    customerIterations.forEach(iteration => {
+      events.push({
+        date: iteration.createdAt,
+        type: "iteration",
+        data: iteration,
+      });
+    });
+
+    // Add validation events
+    customerValidations.forEach(validation => {
+      events.push({
+        date: validation.createdAt,
+        type: "validation",
+        data: validation,
+        satisfaction: validation.postSatisfaction,
+      });
+    });
+
+    // Sort by date
+    events.sort((a, b) => a.date - b.date);
+
+    // Calculate metrics
+    const satisfactionScores = events
+      .filter(e => e.satisfaction !== undefined)
+      .map(e => e.satisfaction!);
+    
+    const firstSatisfaction = satisfactionScores[0] || 0;
+    const lastSatisfaction = satisfactionScores[satisfactionScores.length - 1] || 0;
+    const trend = lastSatisfaction - firstSatisfaction;
+
+    // Calculate MRR (sum of revenue amounts)
+    const totalRevenue = customerFeedback.reduce(
+      (sum, f) => sum + (f.revenueAmount || 0),
+      0
+    );
+
+    return {
+      clientName: args.clientName,
+      clientEmail: firstFeedback.clientEmail,
+      mrr: totalRevenue,
+      customerSince: firstFeedback.createdAt,
+      events,
+      trend,
+      firstSatisfaction,
+      lastSatisfaction,
+      totalFeedback: customerFeedback.length,
+      totalIterations: customerIterations.length,
+      status: lastSatisfaction >= 8 ? "happy" : lastSatisfaction >= 5 ? "neutral" : "at_risk",
+    };
+  },
+});
+
+export const getAllCustomers = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    const allFeedback = await ctx.db
+      .query("clientFeedback")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    // Group by customer name
+    const customerMap = new Map<string, any>();
+
+    allFeedback.forEach(feedback => {
+      const name = feedback.clientName;
+      if (!customerMap.has(name)) {
+        customerMap.set(name, {
+          clientName: name,
+          clientEmail: feedback.clientEmail,
+          firstSeen: feedback.createdAt,
+          lastSeen: feedback.createdAt,
+          feedbackCount: 0,
+          avgSatisfaction: 0,
+          totalSatisfaction: 0,
+          latestSatisfaction: feedback.satisfactionScore,
+        });
+      }
+
+      const customer = customerMap.get(name)!;
+      customer.feedbackCount++;
+      customer.totalSatisfaction += feedback.satisfactionScore;
+      customer.lastSeen = Math.max(customer.lastSeen, feedback.createdAt);
+      customer.latestSatisfaction = feedback.satisfactionScore;
+    });
+
+    // Calculate averages and return
+    return Array.from(customerMap.values()).map(customer => ({
+      ...customer,
+      avgSatisfaction: Math.round((customer.totalSatisfaction / customer.feedbackCount) * 10) / 10,
+    })).sort((a, b) => b.lastSeen - a.lastSeen);
+  },
+});

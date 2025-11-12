@@ -33,10 +33,13 @@ import {
   Link as LinkIcon,
   TrendingDown,
   Award,
-  BarChart3
+  BarChart3,
+  User,
+  Calendar
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import CustomerJourneyTimeline from "./CustomerJourneyTimeline";
 
 export default function EntrepreneurOSView() {
   const allFeedback = useQuery((api as any).entrepreneurOS.getAllFeedback);
@@ -56,6 +59,13 @@ export default function EntrepreneurOSView() {
   const deleteFeedback = useMutation((api as any).entrepreneurOS.deleteFeedback);
   const updateIteration = useMutation((api as any).entrepreneurOS.updateIteration);
   const createValidation = useMutation((api as any).impactValidation.createValidation);
+  
+  const allCustomers = useQuery((api as any).entrepreneurOS.getAllCustomers);
+  const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
+  const customerJourney = useQuery(
+    (api as any).entrepreneurOS.getCustomerJourney,
+    selectedCustomer ? { clientName: selectedCustomer } : "skip"
+  );
   
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [showIterationForm, setShowIterationForm] = useState(false);
@@ -365,7 +375,7 @@ export default function EntrepreneurOSView() {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="feedback" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-white dark:bg-gray-900 shadow-md">
+        <TabsList className="grid w-full grid-cols-4 bg-white dark:bg-gray-900 shadow-md">
           <TabsTrigger value="feedback" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white">
             <MessageSquare className="h-4 w-4 mr-2" />
             Feedback Loop
@@ -377,6 +387,10 @@ export default function EntrepreneurOSView() {
           <TabsTrigger value="insights" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-600 data-[state=active]:text-white">
             <Lightbulb className="h-4 w-4 mr-2" />
             Insights
+          </TabsTrigger>
+          <TabsTrigger value="journey" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white">
+            <User className="h-4 w-4 mr-2" />
+            Customer Journey
           </TabsTrigger>
         </TabsList>
 
@@ -1444,6 +1458,89 @@ export default function EntrepreneurOSView() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Customer Journey Tab */}
+        <TabsContent value="journey" className="space-y-4">
+          {selectedCustomer && customerJourney ? (
+            <CustomerJourneyTimeline
+              journey={customerJourney}
+              onClose={() => setSelectedCustomer(null)}
+            />
+          ) : (
+            <Card className="shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950">
+                <CardTitle className="flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Customer Journeys
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Track each customer's complete journey from signup to success
+                </p>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {!allCustomers || allCustomers.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <User className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                    <p className="text-lg font-medium">No customers yet</p>
+                    <p className="text-sm">Add feedback to start tracking customer journeys</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {allCustomers.map((customer: any, index: number) => (
+                      <motion.div
+                        key={customer.clientName}
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: index * 0.05 }}
+                        onClick={() => setSelectedCustomer(customer.clientName)}
+                        className="p-5 border-2 border-green-200 dark:border-green-800 rounded-xl bg-white dark:bg-gray-900 shadow-md hover:shadow-xl transition-all cursor-pointer hover:border-green-400 dark:hover:border-green-600"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <div className="bg-gradient-to-br from-green-600 to-emerald-600 p-2 rounded-lg">
+                                <User className="h-4 w-4 text-white" />
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-lg">{customer.clientName}</h4>
+                                {customer.clientEmail && (
+                                  <p className="text-xs text-muted-foreground">{customer.clientEmail}</p>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 text-sm">
+                              <span className="flex items-center gap-1">
+                                <MessageSquare className="h-3 w-3 text-purple-600" />
+                                <strong>{customer.feedbackCount}</strong> feedback
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Star className="h-3 w-3 text-yellow-600" />
+                                <strong>{customer.avgSatisfaction}/10</strong> avg
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3 text-blue-600" />
+                                Since {new Date(customer.firstSeen).toLocaleDateString("en-US", { month: "short", year: "numeric" })}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge
+                              variant={customer.latestSatisfaction >= 8 ? "default" : customer.latestSatisfaction >= 5 ? "secondary" : "destructive"}
+                              className="text-sm"
+                            >
+                              {customer.latestSatisfaction >= 8 ? "😊 Happy" : customer.latestSatisfaction >= 5 ? "😐 Neutral" : "😞 At Risk"}
+                            </Badge>
+                            <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
     </div>
