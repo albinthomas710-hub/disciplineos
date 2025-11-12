@@ -871,6 +871,11 @@ export function EntrepreneurOSView() {
           <ProblemVaultView />
         </TabsContent>
 
+        {/* WEEKLY REVIEW TAB */}
+        <TabsContent value="weekly-review" className="space-y-6">
+          <WeeklyReviewView />
+        </TabsContent>
+
         {/* CUSTOMER JOURNEY TAB */}
         <TabsContent value="journey" className="space-y-6">
           {selectedCustomer && customerJourney ? (
