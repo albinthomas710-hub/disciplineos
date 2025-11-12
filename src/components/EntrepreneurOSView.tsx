@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Rocket, 
   MessageSquare, 
@@ -24,7 +24,13 @@ import {
   Loader2,
   ThumbsUp,
   ThumbsDown,
-  Zap
+  Zap,
+  AlertTriangle,
+  Clock,
+  ArrowRight,
+  Edit,
+  Trash2,
+  Link as LinkIcon
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -38,9 +44,11 @@ export default function EntrepreneurOSView() {
   const createFeedback = useMutation((api as any).entrepreneurOS.createFeedback);
   const createIteration = useMutation((api as any).entrepreneurOS.createIteration);
   const updateFeedbackStatus = useMutation((api as any).entrepreneurOS.updateFeedbackStatus);
+  const deleteFeedback = useMutation((api as any).entrepreneurOS.deleteFeedback);
   
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [showIterationForm, setShowIterationForm] = useState(false);
+  const [selectedFeedbackIds, setSelectedFeedbackIds] = useState<string[]>([]);
   
   // Feedback form state
   const [clientName, setClientName] = useState("");
@@ -49,6 +57,13 @@ export default function EntrepreneurOSView() {
   const [feedbackText, setFeedbackText] = useState("");
   const [satisfactionScore, setSatisfactionScore] = useState(5);
   const [priority, setPriority] = useState("medium");
+  const [actionTaken, setActionTaken] = useState("");
+
+  // Iteration form state
+  const [iterationTitle, setIterationTitle] = useState("");
+  const [iterationDescription, setIterationDescription] = useState("");
+  const [iterationHypothesis, setIterationHypothesis] = useState("");
+  const [iterationChanges, setIterationChanges] = useState([{ change: "", reason: "", expectedImpact: "" }]);
 
   const handleAddFeedback = async () => {
     if (!clientName.trim() || !feedbackText.trim()) {
@@ -70,11 +85,58 @@ export default function EntrepreneurOSView() {
       setClientEmail("");
       setFeedbackText("");
       setSatisfactionScore(5);
+      setPriority("medium");
       setShowFeedbackForm(false);
       toast.success("Feedback captured! 🎯");
     } catch (error) {
       toast.error("Failed to add feedback");
     }
+  };
+
+  const handleAddIteration = async () => {
+    if (!iterationTitle.trim() || selectedFeedbackIds.length === 0) {
+      toast.error("Please add a title and select at least one feedback item");
+      return;
+    }
+
+    try {
+      const iterationNumber = (allIterations?.length || 0) + 1;
+      await createIteration({
+        feedbackIds: selectedFeedbackIds as any,
+        iterationNumber,
+        title: iterationTitle,
+        description: iterationDescription,
+        hypothesis: iterationHypothesis,
+        changes: iterationChanges.filter(c => c.change.trim()),
+      });
+      
+      setIterationTitle("");
+      setIterationDescription("");
+      setIterationHypothesis("");
+      setIterationChanges([{ change: "", reason: "", expectedImpact: "" }]);
+      setSelectedFeedbackIds([]);
+      setShowIterationForm(false);
+      toast.success("Iteration created! 🚀");
+    } catch (error) {
+      toast.error("Failed to create iteration");
+    }
+  };
+
+  const handleDeleteFeedback = async (feedbackId: string) => {
+    try {
+      await deleteFeedback({ feedbackId: feedbackId as any });
+      toast.success("Feedback deleted");
+    } catch (error) {
+      toast.error("Failed to delete feedback");
+    }
+  };
+
+  const toggleFeedbackSelection = (feedbackId: string) => {
+    setSelectedFeedbackIds(prev => 
+      prev.includes(feedbackId) 
+        ? prev.filter(id => id !== feedbackId)
+        : [...prev, feedbackId]
+    );
   };
 
   if (!allFeedback) {
@@ -85,7 +147,6 @@ export default function EntrepreneurOSView() {
     );
   }
 
-  // Handle empty metrics (no feedback yet)
   const displayMetrics = metrics || {
     totalFeedback: 0,
     averageSatisfaction: 0,
@@ -98,6 +159,35 @@ export default function EntrepreneurOSView() {
     positivePercentage: 0,
   };
 
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "critical": return "bg-red-600 text-white";
+      case "high": return "bg-orange-600 text-white";
+      case "medium": return "bg-yellow-600 text-white";
+      case "low": return "bg-green-600 text-white";
+      default: return "bg-gray-600 text-white";
+    }
+  };
+
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case "critical": return <AlertTriangle className="h-3 w-3" />;
+      case "high": return <AlertCircle className="h-3 w-3" />;
+      default: return null;
+    }
+  };
+
+  const getFeedbackTypeEmoji = (type: string) => {
+    switch (type) {
+      case "testimonial": return "✨";
+      case "feature_request": return "💡";
+      case "bug_report": return "🐛";
+      case "praise": return "👏";
+      case "complaint": return "😞";
+      default: return "💬";
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Elite Header */}
@@ -105,10 +195,10 @@ export default function EntrepreneurOSView() {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
       >
-        <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950 dark:via-pink-950 dark:to-orange-950">
+        <Card className="border-2 border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-purple-950 dark:via-pink-950 dark:to-orange-950 shadow-xl">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 p-3 rounded-xl">
+              <div className="bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 p-3 rounded-xl shadow-lg">
                 <Rocket className="h-6 w-6 text-white" />
               </div>
               <div>
@@ -123,26 +213,38 @@ export default function EntrepreneurOSView() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-white/50 dark:bg-gray-900/50 rounded-lg text-center">
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className="p-4 bg-white/70 dark:bg-gray-900/70 rounded-xl text-center shadow-md backdrop-blur-sm"
+              >
                 <Users className="h-6 w-6 mx-auto mb-2 text-purple-600" />
                 <p className="text-2xl font-bold">{displayMetrics.totalFeedback}</p>
                 <p className="text-xs text-muted-foreground">Total Feedback</p>
-              </div>
-              <div className="p-4 bg-white/50 dark:bg-gray-900/50 rounded-lg text-center">
+              </motion.div>
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className="p-4 bg-white/70 dark:bg-gray-900/70 rounded-xl text-center shadow-md backdrop-blur-sm"
+              >
                 <Star className="h-6 w-6 mx-auto mb-2 text-yellow-600" />
                 <p className="text-2xl font-bold">{displayMetrics.averageSatisfaction}/10</p>
                 <p className="text-xs text-muted-foreground">Avg Satisfaction</p>
-              </div>
-              <div className="p-4 bg-white/50 dark:bg-gray-900/50 rounded-lg text-center">
+              </motion.div>
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className="p-4 bg-white/70 dark:bg-gray-900/70 rounded-xl text-center shadow-md backdrop-blur-sm"
+              >
                 <ThumbsUp className="h-6 w-6 mx-auto mb-2 text-green-600" />
                 <p className="text-2xl font-bold">{displayMetrics.positivePercentage}%</p>
                 <p className="text-xs text-muted-foreground">Positive Rate</p>
-              </div>
-              <div className="p-4 bg-white/50 dark:bg-gray-900/50 rounded-lg text-center">
+              </motion.div>
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className="p-4 bg-white/70 dark:bg-gray-900/70 rounded-xl text-center shadow-md backdrop-blur-sm"
+              >
                 <TrendingUp className="h-6 w-6 mx-auto mb-2 text-blue-600" />
                 <p className="text-2xl font-bold">{allIterations?.length || 0}</p>
                 <p className="text-xs text-muted-foreground">Iterations</p>
-              </div>
+              </motion.div>
             </div>
           </CardContent>
         </Card>
@@ -150,16 +252,16 @@ export default function EntrepreneurOSView() {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="feedback" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="feedback">
+        <TabsList className="grid w-full grid-cols-3 bg-white dark:bg-gray-900 shadow-md">
+          <TabsTrigger value="feedback" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white">
             <MessageSquare className="h-4 w-4 mr-2" />
             Feedback Loop
           </TabsTrigger>
-          <TabsTrigger value="iterations">
+          <TabsTrigger value="iterations" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-cyan-600 data-[state=active]:text-white">
             <Zap className="h-4 w-4 mr-2" />
             Iterations
           </TabsTrigger>
-          <TabsTrigger value="insights">
+          <TabsTrigger value="insights" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600 data-[state=active]:to-yellow-600 data-[state=active]:text-white">
             <Lightbulb className="h-4 w-4 mr-2" />
             Insights
           </TabsTrigger>
@@ -167,158 +269,435 @@ export default function EntrepreneurOSView() {
 
         {/* Feedback Tab */}
         <TabsContent value="feedback" className="space-y-4">
-          <Card>
-            <CardHeader>
+          <Card className="shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
               <div className="flex items-center justify-between">
-                <CardTitle>Client Feedback</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  Client Feedback
+                </CardTitle>
                 <Button
                   onClick={() => setShowFeedbackForm(!showFeedbackForm)}
-                  className="cursor-pointer"
+                  className="cursor-pointer bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Feedback
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {showFeedbackForm && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  className="space-y-4 p-4 border-2 border-purple-200 dark:border-purple-800 rounded-lg bg-purple-50/50 dark:bg-purple-950/50"
-                >
-                  <div className="grid grid-cols-2 gap-4">
+            <CardContent className="space-y-4 pt-6">
+              <AnimatePresence>
+                {showFeedbackForm && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="space-y-4 p-6 border-2 border-purple-200 dark:border-purple-800 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 shadow-inner"
+                  >
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="font-semibold">Client Name *</Label>
+                        <Input
+                          placeholder="John Doe"
+                          value={clientName}
+                          onChange={(e) => setClientName(e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label className="font-semibold">Client Email</Label>
+                        <Input
+                          type="email"
+                          placeholder="john@example.com"
+                          value={clientEmail}
+                          onChange={(e) => setClientEmail(e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="font-semibold">Feedback Type</Label>
+                        <Select value={feedbackType} onValueChange={setFeedbackType}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="testimonial">✨ Testimonial</SelectItem>
+                            <SelectItem value="feature_request">💡 Feature Request</SelectItem>
+                            <SelectItem value="bug_report">🐛 Bug Report</SelectItem>
+                            <SelectItem value="praise">👏 Praise</SelectItem>
+                            <SelectItem value="complaint">😞 Complaint</SelectItem>
+                            <SelectItem value="general">💬 General</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="font-semibold">Priority Level</Label>
+                        <Select value={priority} onValueChange={setPriority}>
+                          <SelectTrigger className="mt-1">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="low">🟢 Low</SelectItem>
+                            <SelectItem value="medium">🟡 Medium</SelectItem>
+                            <SelectItem value="high">🟠 High</SelectItem>
+                            <SelectItem value="critical">🔴 Critical</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
                     <div>
-                      <Label>Client Name *</Label>
-                      <Input
-                        placeholder="John Doe"
-                        value={clientName}
-                        onChange={(e) => setClientName(e.target.value)}
+                      <Label className="font-semibold">Satisfaction Score: {satisfactionScore}/10</Label>
+                      <div className="flex items-center gap-2 mt-2">
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
+                          <motion.button
+                            key={score}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setSatisfactionScore(score)}
+                            className={`w-10 h-10 rounded-lg font-bold transition-all cursor-pointer ${
+                              satisfactionScore >= score
+                                ? "bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-lg"
+                                : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                            }`}
+                          >
+                            {score}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="font-semibold">Feedback *</Label>
+                      <Textarea
+                        placeholder="What did the client say?"
+                        value={feedbackText}
+                        onChange={(e) => setFeedbackText(e.target.value)}
+                        rows={4}
                         className="mt-1"
                       />
                     </div>
-                    <div>
-                      <Label>Client Email</Label>
-                      <Input
-                        type="email"
-                        placeholder="john@example.com"
-                        value={clientEmail}
-                        onChange={(e) => setClientEmail(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Feedback Type</Label>
-                      <Select value={feedbackType} onValueChange={setFeedbackType}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="testimonial">✨ Testimonial</SelectItem>
-                          <SelectItem value="feature_request">💡 Feature Request</SelectItem>
-                          <SelectItem value="bug_report">🐛 Bug Report</SelectItem>
-                          <SelectItem value="praise">👏 Praise</SelectItem>
-                          <SelectItem value="complaint">😞 Complaint</SelectItem>
-                          <SelectItem value="general">💬 General</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="flex gap-2">
+                      <Button onClick={handleAddFeedback} className="cursor-pointer flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Save Feedback
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowFeedbackForm(false)}
+                        className="cursor-pointer"
+                      >
+                        Cancel
+                      </Button>
                     </div>
-                    <div>
-                      <Label>Priority</Label>
-                      <Select value={priority} onValueChange={setPriority}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label>Satisfaction Score: {satisfactionScore}/10</Label>
-                    <div className="flex items-center gap-2 mt-2">
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => (
-                        <button
-                          key={score}
-                          onClick={() => setSatisfactionScore(score)}
-                          className={`w-10 h-10 rounded-lg font-bold transition-all cursor-pointer ${
-                            satisfactionScore >= score
-                              ? "bg-gradient-to-br from-purple-600 to-pink-600 text-white"
-                              : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                          }`}
-                        >
-                          {score}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label>Feedback *</Label>
-                    <Textarea
-                      placeholder="What did the client say?"
-                      value={feedbackText}
-                      onChange={(e) => setFeedbackText(e.target.value)}
-                      rows={4}
-                      className="mt-1"
-                    />
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button onClick={handleAddFeedback} className="cursor-pointer flex-1">
-                      Save Feedback
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowFeedbackForm(false)}
-                      className="cursor-pointer"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </motion.div>
-              )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Feedback List */}
               {allFeedback.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                  <p>No feedback yet. Start capturing client insights!</p>
+                <div className="text-center py-12 text-muted-foreground">
+                  <MessageSquare className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                  <p className="text-lg font-medium">No feedback yet</p>
+                  <p className="text-sm">Start capturing client insights to build something they love!</p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {allFeedback.map((feedback: any) => (
+                  {allFeedback.map((feedback: any, index: number) => (
                     <motion.div
                       key={feedback._id}
                       initial={{ x: -20, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
-                      className="p-4 border-2 rounded-lg bg-white dark:bg-gray-900"
+                      transition={{ delay: index * 0.05 }}
+                      className={`p-5 border-2 rounded-xl bg-white dark:bg-gray-900 shadow-md hover:shadow-lg transition-all ${
+                        selectedFeedbackIds.includes(feedback._id) 
+                          ? "border-purple-500 dark:border-purple-400 bg-purple-50 dark:bg-purple-950" 
+                          : "border-gray-200 dark:border-gray-800"
+                      }`}
                     >
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h4 className="font-semibold">{feedback.clientName}</h4>
-                          <p className="text-xs text-muted-foreground">{feedback.clientEmail}</p>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-start gap-3 flex-1">
+                          <input
+                            type="checkbox"
+                            checked={selectedFeedbackIds.includes(feedback._id)}
+                            onChange={() => toggleFeedbackSelection(feedback._id)}
+                            className="mt-1 cursor-pointer w-4 h-4"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-2xl">{getFeedbackTypeEmoji(feedback.feedbackType)}</span>
+                              <h4 className="font-bold text-lg">{feedback.clientName}</h4>
+                              <Badge className={`${getPriorityColor(feedback.priority)} flex items-center gap-1`}>
+                                {getPriorityIcon(feedback.priority)}
+                                {feedback.priority.toUpperCase()}
+                              </Badge>
+                            </div>
+                            {feedback.clientEmail && (
+                              <p className="text-xs text-muted-foreground mb-2">{feedback.clientEmail}</p>
+                            )}
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant={feedback.satisfactionScore >= 8 ? "default" : "secondary"}>
+                          <Badge 
+                            variant={feedback.satisfactionScore >= 8 ? "default" : feedback.satisfactionScore >= 5 ? "secondary" : "destructive"}
+                            className="text-sm font-bold"
+                          >
+                            <Star className="h-3 w-3 mr-1" />
                             {feedback.satisfactionScore}/10
                           </Badge>
-                          <Badge>{feedback.feedbackType}</Badge>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteFeedback(feedback._id)}
+                            className="cursor-pointer text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
-                      <p className="text-sm mb-2">{feedback.feedbackText}</p>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{new Date(feedback.createdAt).toLocaleDateString()}</span>
+                      
+                      <p className="text-sm mb-3 pl-7 leading-relaxed">{feedback.feedbackText}</p>
+                      
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground pl-7">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {new Date(feedback.createdAt).toLocaleDateString()}
+                        </span>
                         <span>•</span>
-                        <Badge variant="outline">{feedback.status}</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {feedback.status}
+                        </Badge>
+                        <span>•</span>
+                        <Badge variant="outline" className="text-xs">
+                          {feedback.feedbackType.replace("_", " ")}
+                        </Badge>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
+
+              {selectedFeedbackIds.length > 0 && (
+                <motion.div
+                  initial={{ y: 20, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  className="fixed bottom-6 right-6 bg-gradient-to-r from-purple-600 to-pink-600 text-white p-4 rounded-xl shadow-2xl"
+                >
+                  <p className="text-sm font-medium mb-2">
+                    {selectedFeedbackIds.length} feedback item{selectedFeedbackIds.length > 1 ? "s" : ""} selected
+                  </p>
+                  <Button
+                    onClick={() => {
+                      setShowIterationForm(true);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="w-full bg-white text-purple-600 hover:bg-gray-100 cursor-pointer"
+                  >
+                    <Zap className="h-4 w-4 mr-2" />
+                    Create Iteration
+                  </Button>
+                </motion.div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Iterations Tab */}
+        <TabsContent value="iterations" className="space-y-4">
+          <Card className="shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950">
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Zap className="h-5 w-5" />
+                  Product Iterations
+                </CardTitle>
+                <Button
+                  onClick={() => setShowIterationForm(!showIterationForm)}
+                  className="cursor-pointer bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                  disabled={selectedFeedbackIds.length === 0}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Iteration
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-6">
+              <AnimatePresence>
+                {showIterationForm && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="space-y-4 p-6 border-2 border-blue-200 dark:border-blue-800 rounded-xl bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950 dark:to-cyan-950 shadow-inner"
+                  >
+                    <div>
+                      <Label className="font-semibold">Iteration Title *</Label>
+                      <Input
+                        placeholder="e.g., Improve onboarding flow based on user feedback"
+                        value={iterationTitle}
+                        onChange={(e) => setIterationTitle(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="font-semibold">Description</Label>
+                      <Textarea
+                        placeholder="What are you building/improving?"
+                        value={iterationDescription}
+                        onChange={(e) => setIterationDescription(e.target.value)}
+                        rows={3}
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="font-semibold">Hypothesis</Label>
+                      <Textarea
+                        placeholder="What do you expect to happen? e.g., 'By simplifying the signup form, we'll increase conversion by 20%'"
+                        value={iterationHypothesis}
+                        onChange={(e) => setIterationHypothesis(e.target.value)}
+                        rows={2}
+                        className="mt-1"
+                      />
+                    </div>
+
+                    <div>
+                      <Label className="font-semibold">Changes & Reasoning</Label>
+                      {iterationChanges.map((change, index) => (
+                        <div key={index} className="mt-2 p-4 bg-white dark:bg-gray-900 rounded-lg space-y-2">
+                          <Input
+                            placeholder="What are you changing?"
+                            value={change.change}
+                            onChange={(e) => {
+                              const newChanges = [...iterationChanges];
+                              newChanges[index].change = e.target.value;
+                              setIterationChanges(newChanges);
+                            }}
+                          />
+                          <Input
+                            placeholder="Why this change?"
+                            value={change.reason}
+                            onChange={(e) => {
+                              const newChanges = [...iterationChanges];
+                              newChanges[index].reason = e.target.value;
+                              setIterationChanges(newChanges);
+                            }}
+                          />
+                          <Input
+                            placeholder="Expected impact?"
+                            value={change.expectedImpact}
+                            onChange={(e) => {
+                              const newChanges = [...iterationChanges];
+                              newChanges[index].expectedImpact = e.target.value;
+                              setIterationChanges(newChanges);
+                            }}
+                          />
+                        </div>
+                      ))}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setIterationChanges([...iterationChanges, { change: "", reason: "", expectedImpact: "" }])}
+                        className="mt-2 cursor-pointer"
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add Change
+                      </Button>
+                    </div>
+
+                    <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+                      <p className="text-sm font-medium mb-2">Linked Feedback ({selectedFeedbackIds.length})</p>
+                      <div className="flex flex-wrap gap-2">
+                        {selectedFeedbackIds.map(id => {
+                          const fb = allFeedback.find((f: any) => f._id === id);
+                          return fb ? (
+                            <Badge key={id} variant="secondary">
+                              {fb.clientName}
+                            </Badge>
+                          ) : null;
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button onClick={handleAddIteration} className="cursor-pointer flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
+                        <Zap className="h-4 w-4 mr-2" />
+                        Create Iteration
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowIterationForm(false)}
+                        className="cursor-pointer"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Iterations List */}
+              {!allIterations || allIterations.length === 0 ? (
+                <div className="text-center py-12 text-muted-foreground">
+                  <Zap className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                  <p className="text-lg font-medium">No iterations yet</p>
+                  <p className="text-sm">Select feedback items and create your first iteration!</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {allIterations.map((iteration: any, index: number) => (
+                    <motion.div
+                      key={iteration._id}
+                      initial={{ x: -20, opacity: 0 }}
+                      animate={{ x: 0, opacity: 1 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="p-5 border-2 border-blue-200 dark:border-blue-800 rounded-xl bg-white dark:bg-gray-900 shadow-md"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <Badge className="bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+                              v{iteration.iterationNumber}
+                            </Badge>
+                            <h4 className="font-bold text-lg">{iteration.title}</h4>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{iteration.description}</p>
+                        </div>
+                        <Badge variant="outline" className="capitalize">
+                          {iteration.status}
+                        </Badge>
+                      </div>
+
+                      {iteration.hypothesis && (
+                        <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                          <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">HYPOTHESIS</p>
+                          <p className="text-sm">{iteration.hypothesis}</p>
+                        </div>
+                      )}
+
+                      <div className="mb-3">
+                        <p className="text-xs font-semibold mb-2">CHANGES</p>
+                        <div className="space-y-2">
+                          {iteration.changes.map((change: any, idx: number) => (
+                            <div key={idx} className="text-sm pl-3 border-l-2 border-blue-300 dark:border-blue-700">
+                              <p className="font-medium">{change.change}</p>
+                              <p className="text-xs text-muted-foreground">→ {change.reason}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <LinkIcon className="h-3 w-3" />
+                        <span>{iteration.feedbackIds.length} feedback items</span>
+                        <span>•</span>
+                        <Clock className="h-3 w-3" />
+                        <span>{new Date(iteration.createdAt).toLocaleDateString()}</span>
                       </div>
                     </motion.div>
                   ))}
@@ -328,31 +707,20 @@ export default function EntrepreneurOSView() {
           </Card>
         </TabsContent>
 
-        {/* Iterations Tab */}
-        <TabsContent value="iterations">
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Iterations</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <Zap className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Iteration tracking coming soon...</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         {/* Insights Tab */}
         <TabsContent value="insights">
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Insights</CardTitle>
+          <Card className="shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950 dark:to-yellow-950">
+              <CardTitle className="flex items-center gap-2">
+                <Lightbulb className="h-5 w-5" />
+                Product Insights
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <Lightbulb className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>AI-powered insights coming soon...</p>
+            <CardContent className="pt-6">
+              <div className="text-center py-12 text-muted-foreground">
+                <Lightbulb className="h-16 w-16 mx-auto mb-4 opacity-30" />
+                <p className="text-lg font-medium">AI-powered insights coming soon</p>
+                <p className="text-sm">Pattern recognition and opportunity identification</p>
               </div>
             </CardContent>
           </Card>
