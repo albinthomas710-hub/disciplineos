@@ -48,6 +48,7 @@ import CustomerJourneyTimeline from "./CustomerJourneyTimeline";
 import { ActionTracker } from "./entrepreneur/ActionTracker";
 import { ProblemVaultView } from "./entrepreneur/ProblemVaultView";
 import { HardDeadlinesView } from "./entrepreneur/HardDeadlinesView";
+import { EightyTwentyView } from "./entrepreneur/EightyTwentyView";
 
 export function EntrepreneurOSView() {
   const allFeedback = useQuery((api as any).entrepreneurOS.getAllFeedback);
@@ -325,7 +326,8 @@ export function EntrepreneurOSView() {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-8">
+          <TabsTrigger value="eighty-twenty">80/20 Focus</TabsTrigger>
           <TabsTrigger value="deadlines">Deadlines</TabsTrigger>
           <TabsTrigger value="action">Action</TabsTrigger>
           <TabsTrigger value="feedback">Feedback Loop</TabsTrigger>
@@ -334,6 +336,11 @@ export function EntrepreneurOSView() {
           <TabsTrigger value="journey">Customer Journey</TabsTrigger>
           <TabsTrigger value="problems">Problem Vault</TabsTrigger>
         </TabsList>
+
+        {/* 80/20 FOCUS TAB */}
+        <TabsContent value="eighty-twenty" className="space-y-6">
+          <EightyTwentyView />
+        </TabsContent>
 
         {/* HARD DEADLINES TAB */}
         <TabsContent value="deadlines" className="space-y-6">

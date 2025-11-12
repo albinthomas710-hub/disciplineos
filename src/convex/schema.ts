@@ -1049,6 +1049,26 @@ const schema = defineSchema(
       .index("by_problem", ["problemId"])
       .index("by_solution", ["solutionId"]),
 
+    // Eighty Twenty Activities - Track high-leverage activities
+    eightyTwentyActivities: defineTable({
+      userId: v.id("users"),
+      activityName: v.string(),
+      category: v.string(), // "product", "marketing", "sales", "operations", "learning"
+      timeInvested: v.number(), // hours per week
+      expectedImpact: v.optional(v.string()),
+      startDate: v.string(),
+      status: v.string(), // "active", "paused", "completed", "eliminated"
+      actualResults: v.array(v.object({
+        resultType: v.string(),
+        resultValue: v.number(),
+        resultDescription: v.string(),
+        dateLogged: v.string(),
+      })),
+      totalImpactScore: v.number(),
+      efficiencyRatio: v.number(), // impact per hour
+    })
+      .index("by_user", ["userId"]),
+
   },
   {
     schemaValidation: false,

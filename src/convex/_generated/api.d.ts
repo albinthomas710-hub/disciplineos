@@ -16,6 +16,7 @@ import type * as categories from "../categories.js";
 import type * as completionLogs from "../completionLogs.js";
 import type * as crons from "../crons.js";
 import type * as dopamineShield from "../dopamineShield.js";
+import type * as eightyTwenty from "../eightyTwenty.js";
 import type * as emergencyTriggers from "../emergencyTriggers.js";
 import type * as entrepreneurActions from "../entrepreneurActions.js";
 import type * as entrepreneurOS from "../entrepreneurOS.js";
@@ -68,6 +69,7 @@ declare const fullApi: ApiFromModules<{
   completionLogs: typeof completionLogs;
   crons: typeof crons;
   dopamineShield: typeof dopamineShield;
+  eightyTwenty: typeof eightyTwenty;
   emergencyTriggers: typeof emergencyTriggers;
   entrepreneurActions: typeof entrepreneurActions;
   entrepreneurOS: typeof entrepreneurOS;

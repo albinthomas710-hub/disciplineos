@@ -122,3 +122,35 @@ export function useDeleteDeadline() {
   const apiRef = (api as any).hardDeadlines.deleteDeadline;
   return useMutation(apiRef);
 }
+
+// 80/20 Focus System Hooks
+export function useAllActivities() {
+  const apiRef = (api as any).eightyTwenty.getAllActivities;
+  return useQuery(apiRef);
+}
+
+export function useTopPerformers() {
+  const apiRef = (api as any).eightyTwenty.getTopPerformers;
+  return useQuery(apiRef);
+}
+
+export function useEightyTwentyInsights() {
+  const apiRef = (api as any).eightyTwenty.getInsights;
+  return useQuery(apiRef);
+}
+
+export function useCreateActivity() {
+  return useMutation((api as any).eightyTwenty.createActivity);
+}
+
+export function useLogResult() {
+  return useMutation((api as any).eightyTwenty.logResult);
+}
+
+export function useUpdateActivityStatus() {
+  return useMutation((api as any).eightyTwenty.updateActivityStatus);
+}
+
+export function useDeleteActivity() {
+  return useMutation((api as any).eightyTwenty.deleteActivity);
+}
