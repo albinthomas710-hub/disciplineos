@@ -333,10 +333,46 @@ export function EntrepreneurOSView() {
           <FeedbackForm onSuccess={() => {}} />
 
           <div className="space-y-4">
-            <h3 className="text-xl font-bold">Recent Feedback</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold">Recent Feedback</h3>
+              {selectedFeedbackIds.length > 0 && (
+                <Button
+                  onClick={() => {
+                    setShowIterationForm(true);
+                    setActiveTab("iterations");
+                  }}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                >
+                  <Rocket className="h-4 w-4 mr-2" />
+                  Create Iteration ({selectedFeedbackIds.length} selected)
+                </Button>
+              )}
+            </div>
             {allFeedback && allFeedback.length > 0 ? (
               allFeedback.map((feedback: any) => (
-                <Card key={feedback._id} className="p-6 border-2 hover:shadow-[0_0_30px_rgba(139,92,246,0.3)] transition-all duration-300">
+                <Card 
+                  key={feedback._id} 
+                  onClick={() => toggleFeedbackSelection(feedback._id)}
+                  className={`p-6 border-2 cursor-pointer transition-all duration-300 ${
+                    selectedFeedbackIds.includes(feedback._id)
+                      ? "border-purple-500 shadow-[0_0_30px_rgba(139,92,246,0.5)] bg-purple-50 dark:bg-purple-950"
+                      : "hover:shadow-[0_0_30px_rgba(139,92,246,0.3)]"
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedFeedbackIds.includes(feedback._id)}
+                        onChange={() => {}}
+                        className="w-5 h-5 text-purple-600 cursor-pointer"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <span className="text-sm font-medium text-muted-foreground">
+                        {selectedFeedbackIds.includes(feedback._id) ? "Selected for iteration" : "Click to select"}
+                      </span>
+                    </div>
+                  </div>
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">
                       <div>
@@ -422,29 +458,171 @@ export function EntrepreneurOSView() {
 
         {/* ITERATIONS TAB */}
         <TabsContent value="iterations" className="space-y-6">
-          {allIterations && allIterations.length > 0 ? (
-            allIterations.map((iteration: any) => (
-              <IterationDetails
-                key={iteration._id}
-                iteration={iteration}
-                onAddValidation={() => {
-                  setSelectedIteration(iteration);
-                  setShowValidationForm(true);
-                }}
-                onUpdateStatus={(status) => {
-                  updateIteration({
-                    iterationId: iteration._id,
-                    status: status as any,
-                    actualShipDate: status === "shipped" ? new Date().toISOString().split("T")[0] : undefined,
-                  });
-                }}
-              />
-            ))
-          ) : (
-            <Card className="p-12 text-center">
-              <p className="text-muted-foreground">No iterations yet. Create your first iteration from feedback!</p>
-            </Card>
-          )}
+          <Card className="p-6 border-2 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950 dark:to-purple-950">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold">Create New Iteration</h3>
+              <Button
+                onClick={() => setShowIterationForm(!showIterationForm)}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                {showIterationForm ? "Cancel" : "New Iteration"}
+              </Button>
+            </div>
+
+            {showIterationForm && (
+              <div className="space-y-4 mt-6 p-6 bg-white dark:bg-gray-900 rounded-lg border-2">
+                <div>
+                  <Label>Select Feedback to Address</Label>
+                  <div className="mt-2 space-y-2 max-h-60 overflow-y-auto">
+                    {allFeedback && allFeedback.map((feedback: any) => (
+                      <div
+                        key={feedback._id}
+                        onClick={() => toggleFeedbackSelection(feedback._id)}
+                        className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${
+                          selectedFeedbackIds.includes(feedback._id)
+                            ? "border-purple-500 bg-purple-50 dark:bg-purple-950"
+                            : "border-gray-200 dark:border-gray-700 hover:border-purple-300"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-semibold">{feedback.clientName}</p>
+                            <p className="text-sm text-muted-foreground">{feedback.feedbackText.slice(0, 80)}...</p>
+                          </div>
+                          <Badge className={selectedFeedbackIds.includes(feedback._id) ? "bg-purple-600" : "bg-gray-400"}>
+                            {selectedFeedbackIds.includes(feedback._id) ? "Selected" : "Select"}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Iteration Title *</Label>
+                  <Input
+                    value={iterationTitle}
+                    onChange={(e) => setIterationTitle(e.target.value)}
+                    placeholder="e.g., Improve onboarding flow"
+                  />
+                </div>
+
+                <div>
+                  <Label>Description</Label>
+                  <Textarea
+                    value={iterationDescription}
+                    onChange={(e) => setIterationDescription(e.target.value)}
+                    placeholder="What are you building?"
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <Label>Hypothesis</Label>
+                  <Textarea
+                    value={iterationHypothesis}
+                    onChange={(e) => setIterationHypothesis(e.target.value)}
+                    placeholder="What do you believe will happen?"
+                    rows={2}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Start Date</Label>
+                    <Input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Target Ship Date</Label>
+                    <Input
+                      type="date"
+                      value={targetShipDate}
+                      onChange={(e) => setTargetShipDate(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label>Complexity (1-10): {complexity}</Label>
+                  <input
+                    type="range"
+                    min="1"
+                    max="10"
+                    value={complexity}
+                    onChange={(e) => setComplexity(parseInt(e.target.value))}
+                    className="w-full"
+                  />
+                </div>
+
+                <Button
+                  onClick={handleAddIteration}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  <Rocket className="h-4 w-4 mr-2" />
+                  Create Iteration
+                </Button>
+              </div>
+            )}
+          </Card>
+
+          <div className="space-y-4">
+            {allIterations && allIterations.length > 0 ? (
+              allIterations.map((iteration: any) => {
+                const validations = useQuery(
+                  (api as any).impactValidation.getValidationsByIteration,
+                  { iterationId: iteration._id }
+                );
+
+                return (
+                  <div key={iteration._id} className="space-y-4">
+                    <IterationDetails
+                      iteration={iteration}
+                      onAddValidation={() => {
+                        setSelectedIteration(iteration);
+                        setShowValidationForm(true);
+                      }}
+                      onUpdateStatus={(status) => {
+                        updateIteration({
+                          iterationId: iteration._id,
+                          status: status as any,
+                          actualShipDate: status === "shipped" ? new Date().toISOString().split("T")[0] : undefined,
+                        });
+                      }}
+                    />
+
+                    {/* Display Validations */}
+                    {validations && validations.length > 0 && (
+                      <div className="ml-8 space-y-3">
+                        <h4 className="text-lg font-bold flex items-center gap-2">
+                          <CheckCircle2 className="h-5 w-5 text-green-600" />
+                          Impact Validations ({validations.length})
+                        </h4>
+                        {validations.map((validation: any) => {
+                          const originalFeedback = allFeedback?.find((f: any) => f._id === validation.feedbackId);
+                          return (
+                            <ValidationDisplay
+                              key={validation._id}
+                              validation={validation}
+                              originalFeedback={originalFeedback}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <Card className="p-12 text-center">
+                <p className="text-muted-foreground">No iterations yet. Create your first iteration from feedback!</p>
+              </Card>
+            )}
+          </div>
         </TabsContent>
 
         {/* INSIGHTS TAB */}
