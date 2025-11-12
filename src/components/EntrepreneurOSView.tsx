@@ -577,7 +577,7 @@ export function EntrepreneurOSView() {
             {allIterations && allIterations.length > 0 ? (
               allIterations.map((iteration: any) => {
                 // FIXED: Filter validations from the top-level query instead of calling useQuery in the loop
-                const iterationValidations = allValidations?.filter(
+                const validations = allValidations?.filter(
                   (v: any) => v.iterationId === iteration._id
                 ) || [];
 
@@ -599,13 +599,13 @@ export function EntrepreneurOSView() {
                     />
 
                     {/* Display Validations */}
-                    {iterationValidations.length > 0 && (
+                    {validations && validations.length > 0 && (
                       <div className="ml-8 space-y-3">
                         <h4 className="text-lg font-bold flex items-center gap-2">
                           <CheckCircle2 className="h-5 w-5 text-green-600" />
-                          Impact Validations ({iterationValidations.length})
+                          Impact Validations ({validations.length})
                         </h4>
-                        {iterationValidations.map((validation: any) => {
+                        {validations.map((validation: any) => {
                           const originalFeedback = allFeedback?.find((f: any) => f._id === validation.feedbackId);
                           return (
                             <ValidationDisplay
