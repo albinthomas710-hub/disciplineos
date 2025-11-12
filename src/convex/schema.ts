@@ -675,7 +675,8 @@ const schema = defineSchema(
         v.literal("building"),
         v.literal("testing"),
         v.literal("launched"),
-        v.literal("measuring")
+        v.literal("measuring"),
+        v.literal("shipped")
       ),
       metrics: v.optional(v.object({
         beforeSatisfaction: v.optional(v.number()),
@@ -684,6 +685,12 @@ const schema = defineSchema(
         positiveResponses: v.optional(v.number()),
         negativeResponses: v.optional(v.number()),
       })),
+      // NEW: Velocity Tracking Fields
+      startDate: v.optional(v.string()), // Date iteration started
+      targetShipDate: v.optional(v.string()), // Target completion date
+      actualShipDate: v.optional(v.string()), // Actual ship date
+      complexity: v.optional(v.number()), // 1-10 complexity rating
+      daysToShip: v.optional(v.number()), // Calculated: actual - start
       launchedAt: v.optional(v.number()),
       completedAt: v.optional(v.number()),
       learnings: v.optional(v.string()), // What did you learn from this iteration?
@@ -692,6 +699,32 @@ const schema = defineSchema(
     }).index("by_user", ["userId"])
       .index("by_project", ["projectId"])
       .index("by_user_and_status", ["userId", "status"]),
+
+    // Impact Validation - Post-ship validation and measurement
+    impactValidations: defineTable({
+      userId: v.id("users"),
+      iterationId: v.id("iterations"),
+      feedbackId: v.id("clientFeedback"), // Original feedback this addresses
+      problemSolved: v.union(
+        v.literal("yes_confirmed"),
+        v.literal("no_still_issues"),
+        v.literal("not_tested_yet")
+      ),
+      postSatisfaction: v.number(), // 1-10 rating after ship
+      timeSaved: v.optional(v.number()), // Hours per week saved
+      revenueGained: v.optional(v.number()), // Dollar amount gained
+      iterationFailed: v.boolean(), // Mark if iteration didn't work
+      customerQuote: v.optional(v.string()), // Testimonial or feedback
+      nextAction: v.union(
+        v.literal("mark_resolved"),
+        v.literal("needs_additional_iteration"),
+        v.literal("request_case_study")
+      ),
+      validatedAt: v.number(),
+      createdAt: v.number(),
+    }).index("by_user", ["userId"])
+      .index("by_iteration", ["iterationId"])
+      .index("by_feedback", ["feedbackId"]),
 
     // Customer Satisfaction Tracking - Aggregate metrics over time
     satisfactionMetrics: defineTable({

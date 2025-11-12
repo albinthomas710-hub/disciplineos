@@ -22,6 +22,7 @@ import type * as futureTimelineQueries from "../futureTimelineQueries.js";
 import type * as holyVideos from "../holyVideos.js";
 import type * as http from "../http.js";
 import type * as ideas from "../ideas.js";
+import type * as impactValidation from "../impactValidation.js";
 import type * as kitchenReclaim from "../kitchenReclaim.js";
 import type * as legendProfiles from "../legendProfiles.js";
 import type * as manifestationAI from "../manifestationAI.js";
@@ -70,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   holyVideos: typeof holyVideos;
   http: typeof http;
   ideas: typeof ideas;
+  impactValidation: typeof impactValidation;
   kitchenReclaim: typeof kitchenReclaim;
   legendProfiles: typeof legendProfiles;
   manifestationAI: typeof manifestationAI;

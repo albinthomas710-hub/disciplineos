@@ -181,6 +181,9 @@ export const createIteration = mutation({
       reason: v.string(),
       expectedImpact: v.string(),
     })),
+    startDate: v.optional(v.string()),
+    targetShipDate: v.optional(v.string()),
+    complexity: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -196,6 +199,9 @@ export const createIteration = mutation({
       hypothesis: args.hypothesis,
       changes: args.changes,
       status: "planning",
+      startDate: args.startDate,
+      targetShipDate: args.targetShipDate,
+      complexity: args.complexity,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -210,7 +216,8 @@ export const updateIteration = mutation({
       v.literal("building"),
       v.literal("testing"),
       v.literal("launched"),
-      v.literal("measuring")
+      v.literal("measuring"),
+      v.literal("shipped")
     )),
     metrics: v.optional(v.object({
       beforeSatisfaction: v.optional(v.number()),
@@ -220,6 +227,9 @@ export const updateIteration = mutation({
       negativeResponses: v.optional(v.number()),
     })),
     learnings: v.optional(v.string()),
+    actualShipDate: v.optional(v.string()),
+    targetShipDate: v.optional(v.string()),
+    complexity: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -234,6 +244,19 @@ export const updateIteration = mutation({
     if (args.status) updates.status = args.status;
     if (args.metrics) updates.metrics = args.metrics;
     if (args.learnings) updates.learnings = args.learnings;
+    if (args.targetShipDate) updates.targetShipDate = args.targetShipDate;
+    if (args.complexity) updates.complexity = args.complexity;
+
+    // Calculate days to ship when marking as shipped
+    if (args.actualShipDate) {
+      updates.actualShipDate = args.actualShipDate;
+      if (iteration.startDate) {
+        const start = new Date(iteration.startDate);
+        const actual = new Date(args.actualShipDate);
+        const diffTime = Math.abs(actual.getTime() - start.getTime());
+        updates.daysToShip = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      }
+    }
 
     if (args.status === "launched" && !iteration.launchedAt) {
       updates.launchedAt = Date.now();

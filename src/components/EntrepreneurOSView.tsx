@@ -70,6 +70,9 @@ export default function EntrepreneurOSView() {
   const [iterationDescription, setIterationDescription] = useState("");
   const [iterationHypothesis, setIterationHypothesis] = useState("");
   const [iterationChanges, setIterationChanges] = useState([{ change: "", reason: "", expectedImpact: "" }]);
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [targetShipDate, setTargetShipDate] = useState("");
+  const [complexity, setComplexity] = useState(5);
 
   const handleAddFeedback = async () => {
     if (!clientName.trim() || !feedbackText.trim()) {
@@ -124,12 +127,18 @@ export default function EntrepreneurOSView() {
         description: iterationDescription,
         hypothesis: iterationHypothesis,
         changes: iterationChanges.filter(c => c.change.trim()),
+        startDate,
+        targetShipDate: targetShipDate || undefined,
+        complexity,
       });
       
       setIterationTitle("");
       setIterationDescription("");
       setIterationHypothesis("");
       setIterationChanges([{ change: "", reason: "", expectedImpact: "" }]);
+      setStartDate(new Date().toISOString().split('T')[0]);
+      setTargetShipDate("");
+      setComplexity(5);
       setSelectedFeedbackIds([]);
       setShowIterationForm(false);
       toast.success("Iteration created! 🚀");
@@ -700,6 +709,51 @@ export default function EntrepreneurOSView() {
                         rows={2}
                         className="mt-1"
                       />
+                    </div>
+
+                    {/* NEW: Velocity Tracking Fields */}
+                    <div className="grid grid-cols-2 gap-4 p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border-2 border-blue-200 dark:border-blue-800">
+                      <div>
+                        <Label className="font-semibold">Start Date</Label>
+                        <Input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => setStartDate(e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label className="font-semibold">Target Ship Date</Label>
+                        <Input
+                          type="date"
+                          value={targetShipDate}
+                          onChange={(e) => setTargetShipDate(e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Label className="font-semibold">Complexity: {complexity}/10</Label>
+                        <div className="flex items-center gap-2 mt-2">
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((level) => (
+                            <motion.button
+                              key={level}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.95 }}
+                              onClick={() => setComplexity(level)}
+                              className={`w-10 h-10 rounded-lg font-bold transition-all cursor-pointer ${
+                                complexity >= level
+                                  ? "bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-lg"
+                                  : "bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
+                              }`}
+                            >
+                              {level}
+                            </motion.button>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          1 = Simple fix, 10 = Major rebuild
+                        </p>
+                      </div>
                     </div>
 
                     <div>
