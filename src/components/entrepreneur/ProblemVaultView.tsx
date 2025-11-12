@@ -13,6 +13,9 @@ import { PivotFormDialog } from "./PivotFormDialog";
 import { FailureFormDialog } from "./FailureFormDialog";
 import { SolutionFormDialog } from "./SolutionFormDialog";
 import { ProblemDetailsDialog } from "./ProblemDetailsDialog";
+import { FailureDetailsDialog } from "./FailureDetailsDialog";
+import { LearningDetailsDialog } from "./LearningDetailsDialog";
+import { PivotDetailsDialog } from "./PivotDetailsDialog";
 import { 
   useAllProblems,
   useProblemStats,
@@ -63,6 +66,15 @@ export function ProblemVaultView() {
   // NEW: Detail view states
   const [selectedProblemForDetails, setSelectedProblemForDetails] = useState<any | null>(null);
   const [showProblemDetails, setShowProblemDetails] = useState(false);
+  
+  const [selectedFailureForDetails, setSelectedFailureForDetails] = useState<any | null>(null);
+  const [showFailureDetails, setShowFailureDetails] = useState(false);
+  
+  const [selectedLearningForDetails, setSelectedLearningForDetails] = useState<any | null>(null);
+  const [showLearningDetails, setShowLearningDetails] = useState(false);
+  
+  const [selectedPivotForDetails, setSelectedPivotForDetails] = useState<any | null>(null);
+  const [showPivotDetails, setShowPivotDetails] = useState(false);
   
   // Problem form state
   const [problemTitle, setProblemTitle] = useState("");
@@ -607,7 +619,10 @@ export function ProblemVaultView() {
           <div className="space-y-4">
             {allLearnings && allLearnings.length > 0 ? (
               allLearnings.map((learning: any) => (
-                <Card key={learning._id} className="border-2 border-blue-200 dark:border-blue-800">
+                <Card key={learning._id} className="border-2 border-blue-200 dark:border-blue-800 cursor-pointer hover:shadow-lg transition-all" onClick={() => {
+                  setSelectedLearningForDetails(learning);
+                  setShowLearningDetails(true);
+                }}>
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -621,7 +636,10 @@ export function ProblemVaultView() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteLearning(learning._id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteLearning(learning._id);
+                              }}
                               className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -634,39 +652,9 @@ export function ProblemVaultView() {
                     <div className="space-y-3">
                       <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-lg border-l-4 border-red-600">
                         <p className="font-semibold text-sm mb-1">📋 Problems Discovered:</p>
-                        <p className="text-sm">{learning.problemsDiscovered}</p>
+                        <p className="text-sm line-clamp-2">{learning.problemsDiscovered}</p>
                       </div>
-
-                      {learning.exactQuotes && (
-                        <div className="p-3 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg border-l-4 border-yellow-600">
-                          <p className="font-semibold text-sm mb-1">💬 Customer Quote:</p>
-                          <p className="text-sm italic">"{learning.exactQuotes}"</p>
-                        </div>
-                      )}
-
-                      {learning.painPoints && learning.painPoints.length > 0 && (
-                        <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg border-l-4 border-orange-600">
-                          <p className="font-semibold text-sm mb-1">😫 Pain Points:</p>
-                          <div className="flex flex-wrap gap-2 mt-2">
-                            {learning.painPoints.map((point: string, idx: number) => (
-                              <Badge key={idx} variant="outline">{point}</Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {learning.industryInsights && (
-                        <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg border-l-4 border-purple-600">
-                          <p className="font-semibold text-sm mb-1">🏭 Industry Insights:</p>
-                          <p className="text-sm">{learning.industryInsights}</p>
-                        </div>
-                      )}
-
-                      {learning.dollarImpact && (
-                        <div className="flex items-center gap-2 text-sm font-semibold text-green-600">
-                          💰 Dollar Impact: ${learning.dollarImpact.toLocaleString()}
-                        </div>
-                      )}
+                      <p className="text-xs text-muted-foreground italic">Click to view full details...</p>
                     </div>
                   </CardContent>
                 </Card>
@@ -699,7 +687,10 @@ export function ProblemVaultView() {
           <div className="space-y-4">
             {allPivots && allPivots.length > 0 ? (
               allPivots.map((pivot: any) => (
-                <Card key={pivot._id} className="border-2 border-orange-200 dark:border-orange-800">
+                <Card key={pivot._id} className="border-2 border-orange-200 dark:border-orange-800 cursor-pointer hover:shadow-lg transition-all" onClick={() => {
+                  setSelectedPivotForDetails(pivot);
+                  setShowPivotDetails(true);
+                }}>
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -713,7 +704,10 @@ export function ProblemVaultView() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeletePivot(pivot._id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeletePivot(pivot._id);
+                              }}
                               className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -725,13 +719,14 @@ export function ProblemVaultView() {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 bg-red-50 dark:bg-red-950/30 rounded-lg">
                         <p className="text-xs font-semibold mb-1">FROM:</p>
-                        <p className="text-sm">{pivot.fromWhat}</p>
+                        <p className="text-sm line-clamp-2">{pivot.fromWhat}</p>
                       </div>
                       <div className="p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
                         <p className="text-xs font-semibold mb-1">TO:</p>
-                        <p className="text-sm">{pivot.toWhat}</p>
+                        <p className="text-sm line-clamp-2">{pivot.toWhat}</p>
                       </div>
                     </div>
+                    <p className="text-xs text-muted-foreground italic">Click to view full details...</p>
                   </CardContent>
                 </Card>
               ))
@@ -763,7 +758,10 @@ export function ProblemVaultView() {
           <div className="space-y-4">
             {allFailures && allFailures.length > 0 ? (
               allFailures.map((failure: any) => (
-                <Card key={failure._id} className="border-2 border-red-200 dark:border-red-800">
+                <Card key={failure._id} className="border-2 border-red-200 dark:border-red-800 cursor-pointer hover:shadow-lg transition-all" onClick={() => {
+                  setSelectedFailureForDetails(failure);
+                  setShowFailureDetails(true);
+                }}>
                   <CardContent className="p-6 space-y-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -777,7 +775,10 @@ export function ProblemVaultView() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteFailure(failure._id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteFailure(failure._id);
+                              }}
                               className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950"
                             >
                               <Trash2 className="h-4 w-4" />
@@ -788,8 +789,9 @@ export function ProblemVaultView() {
                     </div>
                     <div className="p-4 bg-green-50 dark:bg-green-950/30 rounded-lg border-l-4 border-green-600">
                       <p className="font-semibold text-sm mb-1">Lesson Learned:</p>
-                      <p className="text-sm">{failure.lessonLearned}</p>
+                      <p className="text-sm line-clamp-2">{failure.lessonLearned}</p>
                     </div>
+                    <p className="text-xs text-muted-foreground italic">Click to view full details...</p>
                   </CardContent>
                 </Card>
               ))
@@ -958,6 +960,33 @@ export function ProblemVaultView() {
           onOpenChange={setShowProblemDetails}
           problem={selectedProblemForDetails}
           getStatusColor={getStatusColor}
+        />
+      )}
+
+      {/* NEW: Failure Details Dialog */}
+      {selectedFailureForDetails && (
+        <FailureDetailsDialog
+          open={showFailureDetails}
+          onOpenChange={setShowFailureDetails}
+          failure={selectedFailureForDetails}
+        />
+      )}
+
+      {/* NEW: Learning Details Dialog */}
+      {selectedLearningForDetails && (
+        <LearningDetailsDialog
+          open={showLearningDetails}
+          onOpenChange={setShowLearningDetails}
+          learning={selectedLearningForDetails}
+        />
+      )}
+
+      {/* NEW: Pivot Details Dialog */}
+      {selectedPivotForDetails && (
+        <PivotDetailsDialog
+          open={showPivotDetails}
+          onOpenChange={setShowPivotDetails}
+          pivot={selectedPivotForDetails}
         />
       )}
     </div>
