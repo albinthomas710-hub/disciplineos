@@ -46,6 +46,7 @@ import { ValidationDisplay } from "./entrepreneur/ValidationDisplay";
 import { IterationWithValidations } from "./entrepreneur/IterationWithValidations";
 import CustomerJourneyTimeline from "./CustomerJourneyTimeline";
 import { ActionTracker } from "./entrepreneur/ActionTracker";
+import { ProblemVaultView } from "./entrepreneur/ProblemVaultView";
 
 export function EntrepreneurOSView() {
   const allFeedback = useQuery((api as any).entrepreneurOS.getAllFeedback);
@@ -852,26 +853,7 @@ export function EntrepreneurOSView() {
 
         {/* PROBLEM VAULT TAB */}
         <TabsContent value="problems" className="space-y-6">
-          <Card className="shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950">
-              <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5" />
-                Problem Vault
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Track problems, solutions, customer learnings, pivots, and failures
-              </p>
-            </CardHeader>
-            <CardContent className="pt-6">
-              <div className="text-center py-12">
-                <Lightbulb className="h-16 w-16 mx-auto mb-4 opacity-30" />
-                <p className="text-lg font-medium mb-2">Problem Vault Coming Soon</p>
-                <p className="text-sm text-muted-foreground">
-                  Track and validate problems, build solutions, and learn from failures
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <ProblemVaultView />
         </TabsContent>
 
         {/* CUSTOMER JOURNEY TAB */}
