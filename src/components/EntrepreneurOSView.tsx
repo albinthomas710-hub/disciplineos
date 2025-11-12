@@ -327,7 +327,7 @@ export function EntrepreneurOSView() {
   return (
     <div className="space-y-6">
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-9">
           <TabsTrigger value="eighty-twenty">80/20 Focus</TabsTrigger>
           <TabsTrigger value="deadlines">Deadlines</TabsTrigger>
           <TabsTrigger value="action">Action</TabsTrigger>
@@ -336,6 +336,7 @@ export function EntrepreneurOSView() {
           <TabsTrigger value="insights">Insights</TabsTrigger>
           <TabsTrigger value="journey">Customer Journey</TabsTrigger>
           <TabsTrigger value="problems">Problem Vault</TabsTrigger>
+          <TabsTrigger value="weekly-review">Weekly Review</TabsTrigger>
         </TabsList>
 
         {/* 80/20 FOCUS TAB */}
