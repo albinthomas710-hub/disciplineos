@@ -158,6 +158,13 @@ export function FailureWisdomView() {
               </p>
               <p className="text-sm text-gray-600 dark:text-neutral-600 mt-4 pl-8">— Ancient Wisdom</p>
             </div>
+            
+            <div>
+              <p className="text-xl md:text-2xl text-gray-700 dark:text-neutral-400 leading-relaxed font-light border-l-2 border-purple-600 pl-8 py-3">
+                "Some of the most successful people I know have had the most failures. Michael Jordan failed over and over again, and that's why he succeeded."
+              </p>
+              <p className="text-sm text-gray-600 dark:text-neutral-600 mt-4 pl-8">— Barack Obama</p>
+            </div>
           </div>
         </motion.div>
 
