@@ -4,30 +4,33 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 
 export const createEntry = mutation({
   args: {
-    type: v.union(
-      v.literal("recurring_mistake"),
-      v.literal("single_lesson"),
-      v.literal("multi_lesson"),
-      v.literal("external_wisdom"),
-      v.literal("titan_failures")
-    ),
+    type: v.string(),
     title: v.string(),
     description: v.string(),
     lessons: v.array(v.string()),
-    frequency: v.optional(v.string()),
-    preventionStrategy: v.optional(v.string()),
-    source: v.optional(v.string()),
-    tags: v.optional(v.array(v.string())),
     date: v.string(),
+    frequency: v.string(),
+    preventionStrategy: v.string(),
+    source: v.string(),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Unauthorized");
 
-    await ctx.db.insert("failureWisdom", {
+    const entry: any = {
       userId,
-      ...args,
-    });
+      type: args.type,
+      title: args.title,
+      description: args.description,
+      lessons: args.lessons,
+      date: args.date,
+    };
+
+    if (args.frequency) entry.frequency = args.frequency;
+    if (args.preventionStrategy) entry.preventionStrategy = args.preventionStrategy;
+    if (args.source) entry.source = args.source;
+
+    await ctx.db.insert("failureWisdom", entry);
   },
 });
 

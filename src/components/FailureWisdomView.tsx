@@ -1,17 +1,15 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, AlertTriangle, Lightbulb, Layers, User, X, Sparkles } from "lucide-react";
+import { AlertTriangle, Lightbulb, Layers, User, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { FailureWisdomHeader } from "./failurewisdom/FailureWisdomHeader";
+import { FailureWisdomCard } from "./failurewisdom/FailureWisdomCard";
+import { FailureWisdomForm } from "./failurewisdom/FailureWisdomForm";
+import { FailureWisdomSearch } from "./failurewisdom/FailureWisdomSearch";
 
 interface FailureEntry {
   _id: Id<"failureWisdom">;
@@ -29,66 +27,11 @@ interface FailureEntry {
 }
 
 export function FailureWisdomView() {
-  const entries = useQuery((api as any).failureWisdom.getEntries) as FailureEntry[] | undefined;
-  const createEntry = useMutation((api as any).failureWisdom.createEntry);
-  const deleteEntry = useMutation((api as any).failureWisdom.deleteEntry);
+  const entries = useQuery("failureWisdom:getEntries" as any) as FailureEntry[] | undefined;
+  const deleteEntry = useMutation("failureWisdom:deleteEntry" as any);
 
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeType, setActiveType] = useState<"recurring_mistake" | "single_lesson" | "multi_lesson" | "external_wisdom" | "titan_failures">("recurring_mistake");
-
-  // Form State
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [lessons, setLessons] = useState<string[]>([""]);
-  const [frequency, setFrequency] = useState("");
-  const [preventionStrategy, setPreventionStrategy] = useState("");
-  const [source, setSource] = useState("");
-
-  const handleAddLesson = () => setLessons([...lessons, ""]);
-  const handleLessonChange = (index: number, value: string) => {
-    const newLessons = [...lessons];
-    newLessons[index] = value;
-    setLessons(newLessons);
-  };
-  const handleRemoveLesson = (index: number) => {
-    const newLessons = lessons.filter((_, i) => i !== index);
-    setLessons(newLessons);
-  };
-
-  const handleSubmit = async () => {
-    if (!title || !description) {
-      toast.error("Title and description are required");
-      return;
-    }
-
-    try {
-      await createEntry({
-        type: activeType,
-        title,
-        description,
-        lessons: lessons.filter(l => l.trim() !== ""),
-        frequency: activeType === "recurring_mistake" ? frequency : undefined,
-        preventionStrategy: activeType === "recurring_mistake" ? preventionStrategy : undefined,
-        source: (activeType === "external_wisdom" || activeType === "titan_failures") ? source : undefined,
-        date: new Date().toISOString(),
-      });
-      setIsDialogOpen(false);
-      resetForm();
-      toast.success("Wisdom captured.");
-    } catch (error) {
-      toast.error("Failed to save.");
-      console.error(error);
-    }
-  };
-
-  const resetForm = () => {
-    setTitle("");
-    setDescription("");
-    setLessons([""]);
-    setFrequency("");
-    setPreventionStrategy("");
-    setSource("");
-  };
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleDelete = async (id: Id<"failureWisdom">) => {
     if (confirm("Forget this lesson?")) {
@@ -119,7 +62,24 @@ export function FailureWisdomView() {
     }
   };
 
-  const filteredEntries = entries?.filter((e: FailureEntry) => e.type === activeType) || [];
+  // Filter and search entries
+  const filteredEntries = useMemo(() => {
+    if (!entries) return [];
+    
+    let filtered = entries.filter((e: FailureEntry) => e.type === activeType);
+    
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((e: FailureEntry) => 
+        e.title.toLowerCase().includes(query) ||
+        e.description.toLowerCase().includes(query) ||
+        e.lessons.some(l => l.toLowerCase().includes(query)) ||
+        (e.source && e.source.toLowerCase().includes(query))
+      );
+    }
+    
+    return filtered;
+  }, [entries, activeType, searchQuery]);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-rose-50 dark:from-gray-900 dark:via-red-950/20 dark:to-orange-950/20 text-foreground overflow-hidden">
@@ -128,45 +88,7 @@ export function FailureWisdomView() {
       <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-400/10 dark:bg-orange-600/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-16 md:py-24">
-        {/* Hero Header */}
-        <motion.div 
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-20 space-y-8"
-        >
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-red-500/30 bg-red-500/10 backdrop-blur-sm">
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-sm font-medium tracking-wide text-red-600 dark:text-red-400">Learning Archive</span>
-          </div>
-          
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] bg-gradient-to-b from-gray-900 via-red-800 to-orange-700 dark:from-white dark:via-neutral-200 dark:to-neutral-500 bg-clip-text text-transparent">
-            Mistake<br />Vault
-          </h1>
-          
-          <div className="max-w-3xl space-y-8">
-            <div>
-              <p className="text-xl md:text-2xl text-gray-700 dark:text-neutral-400 leading-relaxed font-light border-l-2 border-red-600 pl-8 py-3">
-                "Everyone else is chasing every business model, every skill. True successful people know they can't do everything at once. They understand if you do one thing so well, it can fund the other nine. Choose one goal and commit to it fully—that's what separates them from the majority."
-              </p>
-              <p className="text-sm text-gray-600 dark:text-neutral-600 mt-4 pl-8">— Focus Principle</p>
-            </div>
-            
-            <div>
-              <p className="text-xl md:text-2xl text-gray-700 dark:text-neutral-400 leading-relaxed font-light border-l-2 border-orange-600 pl-8 py-3">
-                "A fool never learns from their mistakes. A wise person learns from their own. But the wisest learn from the mistakes of others."
-              </p>
-              <p className="text-sm text-gray-600 dark:text-neutral-600 mt-4 pl-8">— Ancient Wisdom</p>
-            </div>
-            
-            <div>
-              <p className="text-xl md:text-2xl text-gray-700 dark:text-neutral-400 leading-relaxed font-light border-l-2 border-purple-600 pl-8 py-3">
-                "Some of the most successful people I know have had the most failures. Michael Jordan failed over and over again, and that's why he succeeded."
-              </p>
-              <p className="text-sm text-gray-600 dark:text-neutral-600 mt-4 pl-8">— Barack Obama</p>
-            </div>
-          </div>
-        </motion.div>
+        <FailureWisdomHeader />
 
         {/* Navigation Tabs */}
         <Tabs value={activeType} onValueChange={(v) => setActiveType(v as any)} className="w-full">
@@ -197,108 +119,12 @@ export function FailureWisdomView() {
               ))}
             </TabsList>
 
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button className="group relative bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-2xl px-8 py-6 text-base font-bold shadow-2xl shadow-red-600/20 transition-all hover:scale-[1.02] hover:shadow-red-600/30 border-0">
-                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-400 to-orange-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity" />
-                  <Plus className="mr-2 h-5 w-5" />
-                  Log Mistake
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-3xl bg-white dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-3xl p-8">
-                <DialogHeader>
-                  <DialogTitle className="text-4xl font-black tracking-tight bg-gradient-to-r from-gray-900 to-red-700 dark:from-white dark:to-neutral-400 bg-clip-text text-transparent">
-                    {getTypeLabel(activeType)}
-                  </DialogTitle>
-                </DialogHeader>
-                <div className="space-y-6 py-6">
-                  <div className="space-y-3">
-                    <label className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-neutral-500">The Mistake</label>
-                    <Input 
-                      value={title} 
-                      onChange={(e) => setTitle(e.target.value)} 
-                      placeholder="What happened?"
-                      className="bg-gray-50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-800 text-lg font-medium px-6 py-6 h-auto focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl"
-                    />
-                  </div>
-                  
-                  <div className="space-y-3">
-                    <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Context & Details</label>
-                    <Textarea 
-                      value={description} 
-                      onChange={(e) => setDescription(e.target.value)} 
-                      placeholder="Describe the situation deeply..."
-                      className="bg-gray-50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-800 min-h-[140px] px-6 py-4 focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl resize-none"
-                    />
-                  </div>
+            <FailureWisdomForm activeType={activeType} getTypeLabel={getTypeLabel} />
+          </div>
 
-                  {activeType === "recurring_mistake" && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-3">
-                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Frequency</label>
-                        <Input 
-                          value={frequency} 
-                          onChange={(e) => setFrequency(e.target.value)} 
-                          placeholder="e.g., Weekly, When stressed"
-                          className="bg-neutral-900/50 border-neutral-800 focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl px-4 py-3"
-                        />
-                      </div>
-                      <div className="space-y-3">
-                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Prevention Strategy</label>
-                        <Input 
-                          value={preventionStrategy} 
-                          onChange={(e) => setPreventionStrategy(e.target.value)} 
-                          placeholder="How to stop it?"
-                          className="bg-neutral-900/50 border-neutral-800 focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl px-4 py-3"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {(activeType === "external_wisdom" || activeType === "titan_failures") && (
-                    <div className="space-y-3">
-                      <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Source / Person</label>
-                      <Input 
-                        value={source} 
-                        onChange={(e) => setSource(e.target.value)} 
-                        placeholder="Who made this mistake?"
-                        className="bg-neutral-900/50 border-neutral-800 focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl px-4 py-3"
-                      />
-                    </div>
-                  )}
-
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Key Lessons</label>
-                      <Button variant="ghost" size="sm" onClick={handleAddLesson} className="text-red-500 hover:text-red-400 hover:bg-red-950/30 rounded-lg">
-                        <Plus className="h-4 w-4 mr-1" /> Add Lesson
-                      </Button>
-                    </div>
-                    <div className="space-y-3">
-                      {lessons.map((lesson, index) => (
-                        <div key={index} className="flex gap-3">
-                          <Input 
-                            value={lesson} 
-                            onChange={(e) => handleLessonChange(index, e.target.value)} 
-                            placeholder={`Lesson ${index + 1}`}
-                            className="bg-neutral-900/50 border-neutral-800 focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl px-4 py-3"
-                          />
-                          {lessons.length > 1 && (
-                            <Button variant="ghost" size="icon" onClick={() => handleRemoveLesson(index)} className="hover:bg-red-950/30 rounded-xl">
-                              <X className="h-4 w-4 text-neutral-500 hover:text-red-500" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <Button onClick={handleSubmit} className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white h-14 text-lg font-bold mt-6 rounded-xl shadow-lg shadow-red-600/20">
-                    Commit to Vault
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+          {/* Search Bar */}
+          <div className="mb-8">
+            <FailureWisdomSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
           </div>
 
           <TabsContent value={activeType} className="mt-0">
@@ -308,99 +134,12 @@ export function FailureWisdomView() {
             >
               <AnimatePresence mode="popLayout">
                 {filteredEntries.map((entry: FailureEntry, index: number) => (
-                  <motion.div
+                  <FailureWisdomCard 
                     key={entry._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    transition={{ 
-                      duration: 0.4, 
-                      delay: index * 0.05,
-                      ease: [0.22, 1, 0.36, 1]
-                    }}
-                    layout
-                  >
-                    <Card className="group relative h-full bg-white dark:bg-gradient-to-br dark:from-neutral-900/80 dark:to-neutral-950/80 border border-gray-200 dark:border-neutral-800 hover:border-red-600/30 transition-all duration-500 overflow-hidden backdrop-blur-sm rounded-2xl shadow-sm">
-                      {/* Hover Glow Effect */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-red-600/0 to-orange-600/0 group-hover:from-red-600/5 group-hover:via-red-600/5 group-hover:to-orange-600/5 transition-all duration-500 pointer-events-none" />
-                      
-                      {/* Left Accent Bar */}
-                      <div className="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-red-600 via-orange-600 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      
-                      <CardHeader className="relative pb-4">
-                        <div className="flex justify-between items-start gap-4">
-                          <CardTitle className="text-xl font-bold leading-tight text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
-                            {entry.title}
-                          </CardTitle>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(entry._id)}
-                            className="opacity-0 group-hover:opacity-100 transition-all duration-300 text-neutral-500 hover:text-red-500 hover:bg-red-950/30 rounded-lg"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="flex flex-wrap gap-2 mt-3">
-                          {entry.source && (
-                            <Badge variant="outline" className="border-red-600/30 text-red-500 bg-red-950/20 rounded-lg px-3 py-1">
-                              {entry.source}
-                            </Badge>
-                          )}
-                          {entry.frequency && (
-                            <Badge variant="secondary" className="bg-neutral-800 text-neutral-300 rounded-lg px-3 py-1">
-                              {entry.frequency}
-                            </Badge>
-                          )}
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent className="relative space-y-6">
-                        <p className="text-gray-600 dark:text-neutral-400 text-sm leading-relaxed">
-                          {entry.description}
-                        </p>
-                        
-                        <div className="space-y-3">
-                          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-neutral-600">
-                            Key Takeaways
-                          </h4>
-                          <ul className="space-y-2">
-                            {entry.lessons.map((lesson: string, i: number) => (
-                              <motion.li 
-                                key={i}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: i * 0.1 }}
-                                className="flex items-start gap-3 text-sm font-medium text-gray-700 dark:text-neutral-300"
-                              >
-                                <span className="text-red-500 mt-1 text-lg leading-none">•</span>
-                                <span>{lesson}</span>
-                              </motion.li>
-                            ))}
-                          </ul>
-                        </div>
-
-                        {entry.preventionStrategy && (
-                          <div className="pt-4 border-t border-gray-200 dark:border-neutral-800/50">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">
-                              Prevention Strategy
-                            </h4>
-                            <p className="text-sm font-semibold text-red-500">
-                              {entry.preventionStrategy}
-                            </p>
-                          </div>
-                        )}
-                        
-                        <div className="pt-4 text-[10px] text-gray-500 dark:text-neutral-600 font-mono tracking-wider">
-                          {new Date(entry.date).toLocaleDateString('en-US', { 
-                            year: 'numeric', 
-                            month: 'short', 
-                            day: 'numeric' 
-                          })}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                    entry={entry}
+                    index={index}
+                    onDelete={handleDelete}
+                  />
                 ))}
               </AnimatePresence>
               
@@ -416,8 +155,12 @@ export function FailureWisdomView() {
                       {getTypeIcon(activeType)}
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold mb-2 text-gray-700 dark:text-neutral-300">No entries yet</h3>
-                  <p className="text-gray-600 dark:text-neutral-500 max-w-md">The vault is empty. Start documenting your journey to wisdom.</p>
+                  <h3 className="text-2xl font-bold mb-2 text-gray-700 dark:text-neutral-300">
+                    {searchQuery ? "No matches found" : "No entries yet"}
+                  </h3>
+                  <p className="text-gray-600 dark:text-neutral-500 max-w-md">
+                    {searchQuery ? "Try a different search term" : "The vault is empty. Start documenting your journey to wisdom."}
+                  </p>
                 </motion.div>
               )}
             </motion.div>
