@@ -69,7 +69,7 @@ export function FailureWisdomView() {
         lessons: lessons.filter(l => l.trim() !== ""),
         frequency: activeType === "recurring_mistake" ? frequency : undefined,
         preventionStrategy: activeType === "recurring_mistake" ? preventionStrategy : undefined,
-        source: activeType === "external_wisdom" ? source : undefined,
+        source: (activeType === "external_wisdom" || activeType === "titan_failures") ? source : undefined,
         date: new Date().toISOString(),
       });
       setIsDialogOpen(false);
@@ -122,130 +122,167 @@ export function FailureWisdomView() {
   const filteredEntries = entries?.filter((e: FailureEntry) => e.type === activeType) || [];
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-6 md:p-12 font-sans selection:bg-red-500/30">
-      <div className="max-w-7xl mx-auto space-y-12">
-        {/* Header */}
-        <div className="space-y-4">
-          <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/50">
-            Mistake Vault
+    <div className="relative min-h-screen bg-gradient-to-br from-zinc-950 via-neutral-900 to-stone-950 text-foreground overflow-hidden">
+      {/* Textured Background Layer */}
+      <div className="absolute inset-0 opacity-[0.015]" style={{
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+      }} />
+      
+      {/* Gradient Orbs */}
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-red-600/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-600/5 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-16 md:py-24">
+        {/* Hero Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="mb-20 space-y-8"
+        >
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-red-500/20 bg-red-500/5 backdrop-blur-sm">
+            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-sm font-medium tracking-wide text-red-400">Learning Archive</span>
+          </div>
+          
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] bg-gradient-to-b from-white via-neutral-200 to-neutral-500 bg-clip-text text-transparent">
+            Mistake<br />Vault
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground font-light max-w-2xl border-l-4 border-red-600 pl-6 py-2">
-            "Success is stumbling from failure to failure with no loss of enthusiasm."
-          </p>
-        </div>
+          
+          <div className="max-w-2xl">
+            <p className="text-xl md:text-2xl text-neutral-400 leading-relaxed font-light border-l-2 border-red-600 pl-8 py-3">
+              "Success is stumbling from failure to failure with no loss of enthusiasm."
+            </p>
+            <p className="text-sm text-neutral-600 mt-4 pl-8">— Winston Churchill</p>
+          </div>
+        </motion.div>
 
-        {/* Navigation */}
+        {/* Navigation Tabs */}
         <Tabs value={activeType} onValueChange={(v) => setActiveType(v as any)} className="w-full">
-          <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-8 overflow-x-auto">
-            {["recurring_mistake", "single_lesson", "multi_lesson", "external_wisdom", "titan_failures"].map((type) => (
-              <TabsTrigger
-                key={type}
-                value={type}
-                className="rounded-none border-b-2 border-transparent data-[state=active]:border-red-600 data-[state=active]:text-red-600 px-0 py-4 text-lg font-medium transition-all hover:text-foreground/80"
-              >
-                <div className="flex items-center gap-2">
-                  {getTypeIcon(type)}
-                  {getTypeLabel(type)}
-                </div>
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="flex flex-col lg:flex-row gap-8 items-start lg:items-center justify-between mb-12">
+            <TabsList className="w-full lg:w-auto bg-transparent border-b border-neutral-800 rounded-none h-auto p-0 gap-0 overflow-x-auto flex-nowrap">
+              {[
+                { value: "recurring_mistake", label: "Recurring" },
+                { value: "single_lesson", label: "One-Time" },
+                { value: "multi_lesson", label: "Deep Dive" },
+                { value: "external_wisdom", label: "Others" },
+                { value: "titan_failures", label: "Titans" }
+              ].map((tab, index) => (
+                <TabsTrigger
+                  key={tab.value}
+                  value={tab.value}
+                  className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-red-600 px-6 py-4 text-base font-semibold transition-all hover:text-neutral-300 data-[state=active]:text-red-500 whitespace-nowrap"
+                >
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex items-center gap-2"
+                  >
+                    {getTypeIcon(tab.value)}
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </motion.div>
+                </TabsTrigger>
+              ))}
+            </TabsList>
 
-          <div className="mt-8 flex justify-end">
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
-                <Button className="bg-red-600 hover:bg-red-700 text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg shadow-red-600/20 transition-all hover:scale-105">
+                <Button className="group relative bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white rounded-2xl px-8 py-6 text-base font-bold shadow-2xl shadow-red-600/20 transition-all hover:scale-[1.02] hover:shadow-red-600/30 border-0">
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-red-400 to-orange-400 opacity-0 group-hover:opacity-20 blur-xl transition-opacity" />
                   <Plus className="mr-2 h-5 w-5" />
-                  Log Failure
+                  Log Mistake
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl bg-background border-border">
+              <DialogContent className="max-w-3xl bg-neutral-950 border border-neutral-800 rounded-3xl p-8">
                 <DialogHeader>
-                  <DialogTitle className="text-3xl font-black tracking-tight">
-                    Log {getTypeLabel(activeType)}
+                  <DialogTitle className="text-4xl font-black tracking-tight bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
+                    {getTypeLabel(activeType)}
                   </DialogTitle>
                 </DialogHeader>
-                <div className="space-y-6 py-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Title / The Mistake</label>
+                <div className="space-y-6 py-6">
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">The Mistake</label>
                     <Input 
                       value={title} 
                       onChange={(e) => setTitle(e.target.value)} 
                       placeholder="What happened?"
-                      className="bg-muted/50 border-none text-lg font-medium p-6 h-auto focus-visible:ring-red-600"
+                      className="bg-neutral-900/50 border-neutral-800 text-lg font-medium px-6 py-6 h-auto focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl"
                     />
                   </div>
                   
-                  <div className="space-y-2">
-                    <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Context & Details</label>
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Context & Details</label>
                     <Textarea 
                       value={description} 
                       onChange={(e) => setDescription(e.target.value)} 
                       placeholder="Describe the situation deeply..."
-                      className="bg-muted/50 border-none min-h-[120px] p-4 focus-visible:ring-red-600"
+                      className="bg-neutral-900/50 border-neutral-800 min-h-[140px] px-6 py-4 focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl resize-none"
                     />
                   </div>
 
                   {activeType === "recurring_mistake" && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Frequency</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-3">
+                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Frequency</label>
                         <Input 
                           value={frequency} 
                           onChange={(e) => setFrequency(e.target.value)} 
                           placeholder="e.g., Weekly, When stressed"
-                          className="bg-muted/50 border-none focus-visible:ring-red-600"
+                          className="bg-neutral-900/50 border-neutral-800 focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl px-4 py-3"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Prevention Strategy</label>
+                      <div className="space-y-3">
+                        <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Prevention Strategy</label>
                         <Input 
                           value={preventionStrategy} 
                           onChange={(e) => setPreventionStrategy(e.target.value)} 
                           placeholder="How to stop it?"
-                          className="bg-muted/50 border-none focus-visible:ring-red-600"
+                          className="bg-neutral-900/50 border-neutral-800 focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl px-4 py-3"
                         />
                       </div>
                     </div>
                   )}
 
                   {(activeType === "external_wisdom" || activeType === "titan_failures") && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Source / Person</label>
+                    <div className="space-y-3">
+                      <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Source / Person</label>
                       <Input 
                         value={source} 
                         onChange={(e) => setSource(e.target.value)} 
                         placeholder="Who made this mistake?"
-                        className="bg-muted/50 border-none focus-visible:ring-red-600"
+                        className="bg-neutral-900/50 border-neutral-800 focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl px-4 py-3"
                       />
                     </div>
                   )}
 
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Key Lessons</label>
-                      <Button variant="ghost" size="sm" onClick={handleAddLesson} className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950">
+                      <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">Key Lessons</label>
+                      <Button variant="ghost" size="sm" onClick={handleAddLesson} className="text-red-500 hover:text-red-400 hover:bg-red-950/30 rounded-lg">
                         <Plus className="h-4 w-4 mr-1" /> Add Lesson
                       </Button>
                     </div>
-                    {lessons.map((lesson, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input 
-                          value={lesson} 
-                          onChange={(e) => handleLessonChange(index, e.target.value)} 
-                          placeholder={`Lesson ${index + 1}`}
-                          className="bg-muted/50 border-none focus-visible:ring-red-600"
-                        />
-                        {lessons.length > 1 && (
-                          <Button variant="ghost" size="icon" onClick={() => handleRemoveLesson(index)}>
-                            <X className="h-4 w-4 text-muted-foreground hover:text-red-600" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
+                    <div className="space-y-3">
+                      {lessons.map((lesson, index) => (
+                        <div key={index} className="flex gap-3">
+                          <Input 
+                            value={lesson} 
+                            onChange={(e) => handleLessonChange(index, e.target.value)} 
+                            placeholder={`Lesson ${index + 1}`}
+                            className="bg-neutral-900/50 border-neutral-800 focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl px-4 py-3"
+                          />
+                          {lessons.length > 1 && (
+                            <Button variant="ghost" size="icon" onClick={() => handleRemoveLesson(index)} className="hover:bg-red-950/30 rounded-xl">
+                              <X className="h-4 w-4 text-neutral-500 hover:text-red-500" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
-                  <Button onClick={handleSubmit} className="w-full bg-foreground text-background hover:bg-foreground/90 h-12 text-lg font-bold mt-4">
+                  <Button onClick={handleSubmit} className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white h-14 text-lg font-bold mt-6 rounded-xl shadow-lg shadow-red-600/20">
                     Commit to Vault
                   </Button>
                 </div>
@@ -253,76 +290,102 @@ export function FailureWisdomView() {
             </Dialog>
           </div>
 
-          <TabsContent value={activeType} className="mt-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <TabsContent value={activeType} className="mt-0">
+            <motion.div 
+              layout
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            >
               <AnimatePresence mode="popLayout">
-                {filteredEntries.map((entry: FailureEntry) => (
+                {filteredEntries.map((entry: FailureEntry, index: number) => (
                   <motion.div
                     key={entry._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95 }}
+                    transition={{ 
+                      duration: 0.4, 
+                      delay: index * 0.05,
+                      ease: [0.22, 1, 0.36, 1]
+                    }}
                     layout
                   >
-                    <Card className="h-full bg-card border-border hover:border-red-600/50 transition-all duration-300 group relative overflow-hidden">
-                      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-red-600 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <Card className="group relative h-full bg-gradient-to-br from-neutral-900/80 to-neutral-950/80 border border-neutral-800 hover:border-red-600/30 transition-all duration-500 overflow-hidden backdrop-blur-sm rounded-2xl">
+                      {/* Hover Glow Effect */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-red-600/0 to-orange-600/0 group-hover:from-red-600/5 group-hover:via-red-600/5 group-hover:to-orange-600/5 transition-all duration-500 pointer-events-none" />
                       
-                      <CardHeader>
+                      {/* Left Accent Bar */}
+                      <div className="absolute left-0 top-0 w-1 h-full bg-gradient-to-b from-red-600 via-orange-600 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      
+                      <CardHeader className="relative pb-4">
                         <div className="flex justify-between items-start gap-4">
-                          <CardTitle className="text-xl font-bold leading-tight">{entry.title}</CardTitle>
+                          <CardTitle className="text-xl font-bold leading-tight text-white group-hover:text-red-400 transition-colors duration-300">
+                            {entry.title}
+                          </CardTitle>
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDelete(entry._id)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-red-600"
+                            className="opacity-0 group-hover:opacity-100 transition-all duration-300 text-neutral-500 hover:text-red-500 hover:bg-red-950/30 rounded-lg"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
-                        {entry.source && (
-                          <Badge variant="outline" className="w-fit mt-2 border-red-600/30 text-red-600">
-                            {entry.source}
-                          </Badge>
-                        )}
-                        {entry.frequency && (
-                          <Badge variant="secondary" className="w-fit mt-2">
-                            {entry.frequency}
-                          </Badge>
-                        )}
+                        <div className="flex flex-wrap gap-2 mt-3">
+                          {entry.source && (
+                            <Badge variant="outline" className="border-red-600/30 text-red-500 bg-red-950/20 rounded-lg px-3 py-1">
+                              {entry.source}
+                            </Badge>
+                          )}
+                          {entry.frequency && (
+                            <Badge variant="secondary" className="bg-neutral-800 text-neutral-300 rounded-lg px-3 py-1">
+                              {entry.frequency}
+                            </Badge>
+                          )}
+                        </div>
                       </CardHeader>
                       
-                      <CardContent className="space-y-6">
-                        <p className="text-muted-foreground text-sm leading-relaxed">
+                      <CardContent className="relative space-y-6">
+                        <p className="text-neutral-400 text-sm leading-relaxed">
                           {entry.description}
                         </p>
                         
                         <div className="space-y-3">
-                          <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground/70">
+                          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600">
                             Key Takeaways
                           </h4>
                           <ul className="space-y-2">
                             {entry.lessons.map((lesson: string, i: number) => (
-                              <li key={i} className="flex items-start gap-2 text-sm font-medium">
-                                <span className="text-red-600 mt-1.5">•</span>
+                              <motion.li 
+                                key={i}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.1 }}
+                                className="flex items-start gap-3 text-sm font-medium text-neutral-300"
+                              >
+                                <span className="text-red-500 mt-1 text-lg leading-none">•</span>
                                 <span>{lesson}</span>
-                              </li>
+                              </motion.li>
                             ))}
                           </ul>
                         </div>
 
                         {entry.preventionStrategy && (
-                          <div className="pt-4 border-t border-border/50">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-muted-foreground/70 mb-2">
+                          <div className="pt-4 border-t border-neutral-800/50">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">
                               Prevention Strategy
                             </h4>
-                            <p className="text-sm font-medium text-red-600">
+                            <p className="text-sm font-semibold text-red-500">
                               {entry.preventionStrategy}
                             </p>
                           </div>
                         )}
                         
-                        <div className="pt-4 text-xs text-muted-foreground/50 font-mono">
-                          {new Date(entry.date).toLocaleDateString()}
+                        <div className="pt-4 text-[10px] text-neutral-600 font-mono tracking-wider">
+                          {new Date(entry.date).toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric' 
+                          })}
                         </div>
                       </CardContent>
                     </Card>
@@ -331,15 +394,22 @@ export function FailureWisdomView() {
               </AnimatePresence>
               
               {filteredEntries.length === 0 && (
-                <div className="col-span-full flex flex-col items-center justify-center py-24 text-center opacity-50">
-                  <div className="bg-muted rounded-full p-6 mb-4">
-                    {getTypeIcon(activeType)}
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="col-span-full flex flex-col items-center justify-center py-32 text-center"
+                >
+                  <div className="relative mb-6">
+                    <div className="absolute inset-0 bg-red-600/20 rounded-full blur-2xl" />
+                    <div className="relative bg-neutral-900 rounded-full p-8 border border-neutral-800">
+                      {getTypeIcon(activeType)}
+                    </div>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">No entries yet</h3>
-                  <p className="text-muted-foreground">The vault is empty. Start documenting your journey.</p>
-                </div>
+                  <h3 className="text-2xl font-bold mb-2 text-neutral-300">No entries yet</h3>
+                  <p className="text-neutral-500 max-w-md">The vault is empty. Start documenting your journey to wisdom.</p>
+                </motion.div>
               )}
-            </div>
+            </motion.div>
           </TabsContent>
         </Tabs>
       </div>
