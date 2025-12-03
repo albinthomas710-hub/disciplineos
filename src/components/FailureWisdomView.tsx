@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Trash2, AlertTriangle, Lightbulb, Layers, User, X } from "lucide-react";
+import { Plus, Trash2, AlertTriangle, Lightbulb, Layers, User, X, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 
@@ -17,7 +17,7 @@ interface FailureEntry {
   _id: Id<"failureWisdom">;
   _creationTime: number;
   userId: Id<"users">;
-  type: "recurring_mistake" | "single_lesson" | "multi_lesson" | "external_wisdom";
+  type: "recurring_mistake" | "single_lesson" | "multi_lesson" | "external_wisdom" | "titan_failures";
   title: string;
   description: string;
   lessons: string[];
@@ -34,7 +34,7 @@ export function FailureWisdomView() {
   const deleteEntry = useMutation((api as any).failureWisdom.deleteEntry);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [activeType, setActiveType] = useState<"recurring_mistake" | "single_lesson" | "multi_lesson" | "external_wisdom">("recurring_mistake");
+  const [activeType, setActiveType] = useState<"recurring_mistake" | "single_lesson" | "multi_lesson" | "external_wisdom" | "titan_failures">("recurring_mistake");
 
   // Form State
   const [title, setTitle] = useState("");
@@ -103,6 +103,7 @@ export function FailureWisdomView() {
       case "single_lesson": return <Lightbulb className="h-5 w-5" />;
       case "multi_lesson": return <Layers className="h-5 w-5" />;
       case "external_wisdom": return <User className="h-5 w-5" />;
+      case "titan_failures": return <Sparkles className="h-5 w-5" />;
       default: return <AlertTriangle className="h-5 w-5" />;
     }
   };
@@ -113,6 +114,7 @@ export function FailureWisdomView() {
       case "single_lesson": return "Single Lessons";
       case "multi_lesson": return "Deep Analysis";
       case "external_wisdom": return "External Wisdom";
+      case "titan_failures": return "Titan Failures";
       default: return "Mistakes";
     }
   };
@@ -135,7 +137,7 @@ export function FailureWisdomView() {
         {/* Navigation */}
         <Tabs value={activeType} onValueChange={(v) => setActiveType(v as any)} className="w-full">
           <TabsList className="w-full justify-start bg-transparent border-b border-border rounded-none h-auto p-0 gap-8 overflow-x-auto">
-            {["recurring_mistake", "single_lesson", "multi_lesson", "external_wisdom"].map((type) => (
+            {["recurring_mistake", "single_lesson", "multi_lesson", "external_wisdom", "titan_failures"].map((type) => (
               <TabsTrigger
                 key={type}
                 value={type}
@@ -207,7 +209,7 @@ export function FailureWisdomView() {
                     </div>
                   )}
 
-                  {activeType === "external_wisdom" && (
+                  {(activeType === "external_wisdom" || activeType === "titan_failures") && (
                     <div className="space-y-2">
                       <label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Source / Person</label>
                       <Input 

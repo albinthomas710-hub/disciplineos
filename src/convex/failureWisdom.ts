@@ -8,7 +8,8 @@ export const createEntry = mutation({
       v.literal("recurring_mistake"),
       v.literal("single_lesson"),
       v.literal("multi_lesson"),
-      v.literal("external_wisdom")
+      v.literal("external_wisdom"),
+      v.literal("titan_failures")
     ),
     title: v.string(),
     description: v.string(),

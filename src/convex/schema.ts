@@ -1073,7 +1073,8 @@ const schema = defineSchema(
         v.literal("recurring_mistake"), // Mistakes I do frequently
         v.literal("single_lesson"),     // Learns one lesson from mistake
         v.literal("multi_lesson"),      // Learns multiple lessons from mistakes
-        v.literal("external_wisdom")    // Lessons from mistakes of others/successful people
+        v.literal("external_wisdom"),   // Lessons from mistakes of others
+        v.literal("titan_failures")     // Lessons from very successful people
       ),
       title: v.string(), // The mistake or concept
       description: v.string(), // Context/Details
