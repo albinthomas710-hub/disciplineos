@@ -1,0 +1,1 @@
+rm -f src/components/FailureWisdomViewNew.tsx

@@ -54,7 +54,7 @@ import { FailureWisdomView } from "@/components/FailureWisdomView";
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield" | "vectal" | "quotes" | "projects" | "manifest" | "future" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur">("timer");
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield" | "vectal" | "quotes" | "projects" | "manifest" | "future" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure">("timer");
   const [showReflection, setShowReflection] = useState(false);
 
   const activeTimetable = useQuery((api as any).timetables.getActive);
@@ -346,6 +346,14 @@ export default function Dashboard() {
             <Rocket className="h-4 w-4 mr-2" />
             Entrepreneur OS
           </Button>
+          <Button
+            variant={activeTab === "failure" ? "default" : "ghost"}
+            onClick={() => setActiveTab("failure")}
+            className="cursor-pointer bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700"
+          >
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            Failure Vault
+          </Button>
         </div>
       </div>
 
@@ -366,6 +374,7 @@ export default function Dashboard() {
         {activeTab === "advice" && <AdviceView />}
         {activeTab === "nottodo" && <NotToDoListView />}
         {activeTab === "entrepreneur" && <EntrepreneurOSView />}
+        {activeTab === "failure" && <FailureWisdomView />}
       </div>
 
       {/* Reflection Dialog */}

@@ -117,7 +117,7 @@ export function FailureWisdomView() {
     }
   };
 
-  const filteredEntries = entries?.filter((e: FailureEntry) => e.type === activeType) || [];
+  const filteredEntries = entries?.filter(e => e.type === activeType) || [];
 
   return (
     <div className="min-h-screen bg-background text-foreground p-6 md:p-12 font-sans selection:bg-red-500/30">
@@ -254,7 +254,7 @@ export function FailureWisdomView() {
           <TabsContent value={activeType} className="mt-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <AnimatePresence mode="popLayout">
-                {filteredEntries.map((entry: FailureEntry) => (
+                {filteredEntries.map((entry) => (
                   <motion.div
                     key={entry._id}
                     initial={{ opacity: 0, y: 20 }}
@@ -299,7 +299,7 @@ export function FailureWisdomView() {
                             Key Takeaways
                           </h4>
                           <ul className="space-y-2">
-                            {entry.lessons.map((lesson: string, i: number) => (
+                            {entry.lessons.map((lesson, i) => (
                               <li key={i} className="flex items-start gap-2 text-sm font-medium">
                                 <span className="text-red-600 mt-1.5">•</span>
                                 <span>{lesson}</span>
