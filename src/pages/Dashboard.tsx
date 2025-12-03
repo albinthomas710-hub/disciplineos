@@ -346,13 +346,13 @@ export default function Dashboard() {
             <Rocket className="h-4 w-4 mr-2" />
             Entrepreneur OS
           </Button>
-          <Button
+            <Button
             variant={activeTab === "failure" ? "default" : "ghost"}
             onClick={() => setActiveTab("failure")}
             className="cursor-pointer bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700"
           >
             <AlertTriangle className="h-4 w-4 mr-2" />
-            Failure Vault
+            Mistake Vault
           </Button>
         </div>
       </div>

@@ -127,7 +127,7 @@ export function FailureWisdomView() {
         {/* Header */}
         <div className="space-y-4">
           <h1 className="text-5xl md:text-7xl font-black tracking-tighter uppercase bg-clip-text text-transparent bg-gradient-to-b from-foreground to-foreground/50">
-            Failure Vault
+            Mistake Vault
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground font-light max-w-2xl border-l-4 border-red-600 pl-6 py-2">
             "Success is stumbling from failure to failure with no loss of enthusiasm."
