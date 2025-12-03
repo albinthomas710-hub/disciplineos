@@ -6,26 +6,29 @@ import { useAuth } from "@/hooks/use-auth";
 import { useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
 import {
-  Calendar,
-  CheckCircle2,
+  LayoutDashboard,
+  Briefcase,
   Clock,
-  Flame,
-  Loader2,
+  Shield,
+  Target,
+  Brain,
+  BookOpen,
   LogOut,
   Menu,
+  AlertTriangle,
+  Flame,
+  Loader2,
+  CheckCircle2,
+  Calendar,
   Plus,
   Settings,
-  Target,
-  Shield,
-  BookOpen,
-  FolderOpen,
   Sparkles,
-  Brain,
   Heart,
   Video,
   Lightbulb,
   Ban,
   Rocket,
+  AlertTriangle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
@@ -46,6 +49,7 @@ import VideoLibraryView from "@/components/VideoLibraryView";
 import AdviceView from "@/components/AdviceView";
 import NotToDoListView from "@/components/NotToDoListView";
 import { EntrepreneurOSView } from "@/components/EntrepreneurOSView";
+import { FailureWisdomView } from "@/components/FailureWisdomView";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();

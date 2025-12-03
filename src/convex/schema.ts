@@ -1001,29 +1001,24 @@ const schema = defineSchema(
       pivotDate: v.string(),
       pivotType: v.union(
         v.literal("niche_change"),
-        v.literal("industry_change"),
         v.literal("product_change"),
+        v.literal("market_change"),
         v.literal("business_model_change"),
-        v.literal("target_customer_change")
+        v.literal("technology_change")
       ),
-      fromWhat: v.string(), // What we were doing
-      toWhat: v.string(), // What we're pivoting to
+      fromWhat: v.string(),
+      toWhat: v.string(),
       whyPivoting: v.string(),
       trigger: v.union(
         v.literal("customer_insight"),
-        v.literal("market_research"),
-        v.literal("technology_wave"),
-        v.literal("opportunity"),
-        v.literal("failed_hypothesis"),
-        v.literal("competition")
+        v.literal("market_shift"),
+        v.literal("tech_breakthrough"),
+        v.literal("competitor_move"),
+        v.literal("internal_realization")
       ),
-      evidence: v.string(), // Data that led to pivot
+      evidence: v.string(),
       expectedImpact: v.string(),
-      actualImpact: v.optional(v.string()), // Fill after 30 days
-      lessonsLearned: v.optional(v.string()),
-      createdAt: v.number(),
-    }).index("by_user", ["userId"])
-      .index("by_user_and_date", ["userId", "pivotDate"]),
+    }).index("by_user", ["userId"]),
 
     // Failures Vault - Learn from what didn't work
     failuresVault: defineTable({
@@ -1068,6 +1063,25 @@ const schema = defineSchema(
       efficiencyRatio: v.number(), // impact per hour
     })
       .index("by_user", ["userId"]),
+
+    // failureWisdom - Learn from mistakes and failures
+    failureWisdom: defineTable({
+      userId: v.id("users"),
+      type: v.union(
+        v.literal("recurring_mistake"), // Mistakes I do frequently
+        v.literal("single_lesson"),     // Learns one lesson from mistake
+        v.literal("multi_lesson"),      // Learns multiple lessons from mistakes
+        v.literal("external_wisdom")    // Lessons from mistakes of others/successful people
+      ),
+      title: v.string(), // The mistake or concept
+      description: v.string(), // Context/Details
+      lessons: v.array(v.string()), // Array of lessons
+      frequency: v.optional(v.string()), // For recurring
+      preventionStrategy: v.optional(v.string()), // For recurring
+      source: v.optional(v.string()), // For external (e.g., "Steve Jobs")
+      tags: v.optional(v.array(v.string())),
+      date: v.string(),
+    }).index("by_user", ["userId"]),
 
   },
   {

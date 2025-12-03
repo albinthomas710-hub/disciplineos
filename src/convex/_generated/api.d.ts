@@ -20,6 +20,7 @@ import type * as eightyTwenty from "../eightyTwenty.js";
 import type * as emergencyTriggers from "../emergencyTriggers.js";
 import type * as entrepreneurActions from "../entrepreneurActions.js";
 import type * as entrepreneurOS from "../entrepreneurOS.js";
+import type * as failureWisdom from "../failureWisdom.js";
 import type * as futureTimelineQueries from "../futureTimelineQueries.js";
 import type * as hardDeadlines from "../hardDeadlines.js";
 import type * as holyVideos from "../holyVideos.js";
@@ -73,6 +74,7 @@ declare const fullApi: ApiFromModules<{
   emergencyTriggers: typeof emergencyTriggers;
   entrepreneurActions: typeof entrepreneurActions;
   entrepreneurOS: typeof entrepreneurOS;
+  failureWisdom: typeof failureWisdom;
   futureTimelineQueries: typeof futureTimelineQueries;
   hardDeadlines: typeof hardDeadlines;
   holyVideos: typeof holyVideos;
