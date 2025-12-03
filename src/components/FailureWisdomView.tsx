@@ -144,11 +144,20 @@ export function FailureWisdomView() {
             Mistake<br />Vault
           </h1>
           
-          <div className="max-w-2xl">
-            <p className="text-xl md:text-2xl text-gray-700 dark:text-neutral-400 leading-relaxed font-light border-l-2 border-red-600 pl-8 py-3">
-              "Success is stumbling from failure to failure with no loss of enthusiasm."
-            </p>
-            <p className="text-sm text-gray-600 dark:text-neutral-600 mt-4 pl-8">— Winston Churchill</p>
+          <div className="max-w-3xl space-y-8">
+            <div>
+              <p className="text-xl md:text-2xl text-gray-700 dark:text-neutral-400 leading-relaxed font-light border-l-2 border-red-600 pl-8 py-3">
+                "Everyone else is chasing every business model, every skill. True successful people know they can't do everything at once. They understand if you do one thing so well, it can fund the other nine. Choose one goal and commit to it fully—that's what separates them from the majority."
+              </p>
+              <p className="text-sm text-gray-600 dark:text-neutral-600 mt-4 pl-8">— Focus Principle</p>
+            </div>
+            
+            <div>
+              <p className="text-xl md:text-2xl text-gray-700 dark:text-neutral-400 leading-relaxed font-light border-l-2 border-orange-600 pl-8 py-3">
+                "A fool never learns from their mistakes. A wise person learns from their own. But the wisest learn from the mistakes of others."
+              </p>
+              <p className="text-sm text-gray-600 dark:text-neutral-600 mt-4 pl-8">— Ancient Wisdom</p>
+            </div>
           </div>
         </motion.div>
 
