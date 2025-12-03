@@ -110,11 +110,11 @@ export function FailureWisdomView() {
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case "recurring_mistake": return "Recurring Mistakes";
-      case "single_lesson": return "Single Lessons";
-      case "multi_lesson": return "Deep Analysis";
-      case "external_wisdom": return "External Wisdom";
-      case "titan_failures": return "Titan Failures";
+      case "recurring_mistake": return "Mistakes I Keep Making";
+      case "single_lesson": return "One-Time Mistakes";
+      case "multi_lesson": return "Multiple Lessons From One Mistake";
+      case "external_wisdom": return "Learning From Others' Mistakes";
+      case "titan_failures": return "Lessons From Successful People";
       default: return "Mistakes";
     }
   };
