@@ -116,7 +116,12 @@ export const updateProblem = mutation({
       v.literal("market_research"),
       v.literal("personal_experience"),
       v.literal("competitor_analysis"),
-      v.literal("industry_report")
+      v.literal("industry_report"),
+      v.literal("reddit"),
+      v.literal("g2_reviews"),
+      v.literal("facebook_groups"),
+      v.literal("trustpilot"),
+      v.literal("forum_mining")
     )),
     discoveredDate: v.optional(v.string()),
     customerName: v.optional(v.string()),

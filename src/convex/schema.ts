@@ -1001,23 +1001,25 @@ const schema = defineSchema(
       pivotDate: v.string(),
       pivotType: v.union(
         v.literal("niche_change"),
+        v.literal("industry_change"),
         v.literal("product_change"),
-        v.literal("market_change"),
         v.literal("business_model_change"),
-        v.literal("technology_change")
+        v.literal("target_customer_change")
       ),
       fromWhat: v.string(),
       toWhat: v.string(),
       whyPivoting: v.string(),
       trigger: v.union(
         v.literal("customer_insight"),
-        v.literal("market_shift"),
-        v.literal("tech_breakthrough"),
-        v.literal("competitor_move"),
-        v.literal("internal_realization")
+        v.literal("market_research"),
+        v.literal("technology_wave"),
+        v.literal("opportunity"),
+        v.literal("failed_hypothesis"),
+        v.literal("competition")
       ),
       evidence: v.string(),
       expectedImpact: v.string(),
+      createdAt: v.number(),
     }).index("by_user", ["userId"]),
 
     // Failures Vault - Learn from what didn't work

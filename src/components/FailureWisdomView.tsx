@@ -1,7 +1,78 @@
+  const handleDelete = async (id: Id<"failureWisdom">) => {
+    if (confirm("Forget this lesson?")) {
+      await deleteEntry({ id });
+      toast.success("Deleted.");
+    }
+  };
+=======
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
+=======
+export function FailureWisdomView() {
+  const entries = useQuery(api.failureWisdom.getEntries);
+  const createEntry = useMutation(api.failureWisdom.createEntry);
+  const deleteEntry = useMutation(api.failureWisdom.deleteEntry);
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+  const handleDelete = async (id: Id<"failureWisdom">) => {
+    if (confirm("Forget this lesson?")) {
+      await deleteEntry({ id });
+      toast.success("Deleted.");
+    }
+  };
+=======
+  const handleDelete = async (id: Id<"failureWisdom">) => {
+    if (confirm("Forget this lesson?")) {
+      await deleteEntry({ id });
+      toast.success("Deleted.");
+    }
+  };
+=======
+import { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { Button } from "@/components/ui/button";
+=======
+  const handleDelete = async (id: Id<"failureWisdom">) => {
+    if (confirm("Forget this lesson?")) {
+      await deleteEntry({ id });
+      toast.success("Deleted.");
+    }
+  };
+=======
+import { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { Button } from "@/components/ui/button";
+=======
+export function FailureWisdomView() {
+  const entries = useQuery(api.failureWisdom.getEntries);
+  const createEntry = useMutation(api.failureWisdom.createEntry);
+  const deleteEntry = useMutation(api.failureWisdom.deleteEntry);
+
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+>>>>>>> REPLACE
+<<<<<<< SEARCH
+  const handleDelete = async (id: Id<"failureWisdom">) => {
+    if (confirm("Forget this lesson?")) {
+      await deleteEntry({ id });
+      toast.success("Deleted.");
+    }
+  };
+=======
+  const handleDelete = async (id: Id<"failureWisdom">) => {
+    if (confirm("Forget this lesson?")) {
+      await deleteEntry({ id });
+      toast.success("Deleted.");
+    }
+  };
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -73,7 +144,7 @@ export function FailureWisdomView() {
     setSource("");
   };
 
-  const handleDelete = async (id: any) => {
+  const handleDelete = async (id: Id<"failureWisdom">) => {
     if (confirm("Forget this lesson?")) {
       await deleteEntry({ id });
       toast.success("Deleted.");

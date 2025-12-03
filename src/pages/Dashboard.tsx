@@ -28,7 +28,7 @@ import {
   Lightbulb,
   Ban,
   Rocket,
-  AlertTriangle,
+  FolderOpen,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
