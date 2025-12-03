@@ -122,15 +122,10 @@ export function FailureWisdomView() {
   const filteredEntries = entries?.filter((e: FailureEntry) => e.type === activeType) || [];
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-zinc-950 via-neutral-900 to-stone-950 text-foreground overflow-hidden">
-      {/* Textured Background Layer */}
-      <div className="absolute inset-0 opacity-[0.015]" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-      }} />
-      
+    <div className="relative min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-rose-50 dark:from-gray-900 dark:via-red-950/20 dark:to-orange-950/20 text-foreground overflow-hidden">
       {/* Gradient Orbs */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-red-600/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-600/5 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-red-400/10 dark:bg-red-600/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-orange-400/10 dark:bg-orange-600/5 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative max-w-[1400px] mx-auto px-6 md:px-12 py-16 md:py-24">
         {/* Hero Header */}
@@ -140,27 +135,27 @@ export function FailureWisdomView() {
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           className="mb-20 space-y-8"
         >
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-red-500/20 bg-red-500/5 backdrop-blur-sm">
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full border border-red-500/30 bg-red-500/10 backdrop-blur-sm">
             <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-sm font-medium tracking-wide text-red-400">Learning Archive</span>
+            <span className="text-sm font-medium tracking-wide text-red-600 dark:text-red-400">Learning Archive</span>
           </div>
           
-          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] bg-gradient-to-b from-white via-neutral-200 to-neutral-500 bg-clip-text text-transparent">
+          <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] bg-gradient-to-b from-gray-900 via-red-800 to-orange-700 dark:from-white dark:via-neutral-200 dark:to-neutral-500 bg-clip-text text-transparent">
             Mistake<br />Vault
           </h1>
           
           <div className="max-w-2xl">
-            <p className="text-xl md:text-2xl text-neutral-400 leading-relaxed font-light border-l-2 border-red-600 pl-8 py-3">
+            <p className="text-xl md:text-2xl text-gray-700 dark:text-neutral-400 leading-relaxed font-light border-l-2 border-red-600 pl-8 py-3">
               "Success is stumbling from failure to failure with no loss of enthusiasm."
             </p>
-            <p className="text-sm text-neutral-600 mt-4 pl-8">— Winston Churchill</p>
+            <p className="text-sm text-gray-600 dark:text-neutral-600 mt-4 pl-8">— Winston Churchill</p>
           </div>
         </motion.div>
 
         {/* Navigation Tabs */}
         <Tabs value={activeType} onValueChange={(v) => setActiveType(v as any)} className="w-full">
           <div className="flex flex-col lg:flex-row gap-8 items-start lg:items-center justify-between mb-12">
-            <TabsList className="w-full lg:w-auto bg-transparent border-b border-neutral-800 rounded-none h-auto p-0 gap-0 overflow-x-auto flex-nowrap">
+            <TabsList className="w-full lg:w-auto bg-white/50 dark:bg-transparent border-b border-gray-300 dark:border-neutral-800 rounded-none h-auto p-0 gap-0 overflow-x-auto flex-nowrap">
               {[
                 { value: "recurring_mistake", label: "Recurring" },
                 { value: "single_lesson", label: "One-Time" },
@@ -171,7 +166,7 @@ export function FailureWisdomView() {
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
-                  className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-red-600 px-6 py-4 text-base font-semibold transition-all hover:text-neutral-300 data-[state=active]:text-red-500 whitespace-nowrap"
+                  className="relative rounded-none border-b-2 border-transparent data-[state=active]:border-red-600 px-6 py-4 text-base font-semibold transition-all hover:text-red-600 data-[state=active]:text-red-600 whitespace-nowrap text-gray-700 dark:text-neutral-300 dark:hover:text-neutral-300"
                 >
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -194,20 +189,20 @@ export function FailureWisdomView() {
                   Log Mistake
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl bg-neutral-950 border border-neutral-800 rounded-3xl p-8">
+              <DialogContent className="max-w-3xl bg-white dark:bg-neutral-950 border border-gray-200 dark:border-neutral-800 rounded-3xl p-8">
                 <DialogHeader>
-                  <DialogTitle className="text-4xl font-black tracking-tight bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
+                  <DialogTitle className="text-4xl font-black tracking-tight bg-gradient-to-r from-gray-900 to-red-700 dark:from-white dark:to-neutral-400 bg-clip-text text-transparent">
                     {getTypeLabel(activeType)}
                   </DialogTitle>
                 </DialogHeader>
                 <div className="space-y-6 py-6">
                   <div className="space-y-3">
-                    <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">The Mistake</label>
+                    <label className="text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-neutral-500">The Mistake</label>
                     <Input 
                       value={title} 
                       onChange={(e) => setTitle(e.target.value)} 
                       placeholder="What happened?"
-                      className="bg-neutral-900/50 border-neutral-800 text-lg font-medium px-6 py-6 h-auto focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl"
+                      className="bg-gray-50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-800 text-lg font-medium px-6 py-6 h-auto focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl"
                     />
                   </div>
                   
@@ -217,7 +212,7 @@ export function FailureWisdomView() {
                       value={description} 
                       onChange={(e) => setDescription(e.target.value)} 
                       placeholder="Describe the situation deeply..."
-                      className="bg-neutral-900/50 border-neutral-800 min-h-[140px] px-6 py-4 focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl resize-none"
+                      className="bg-gray-50 dark:bg-neutral-900/50 border-gray-300 dark:border-neutral-800 min-h-[140px] px-6 py-4 focus-visible:ring-red-600 focus-visible:border-red-600 rounded-xl resize-none"
                     />
                   </div>
 
@@ -309,7 +304,7 @@ export function FailureWisdomView() {
                     }}
                     layout
                   >
-                    <Card className="group relative h-full bg-gradient-to-br from-neutral-900/80 to-neutral-950/80 border border-neutral-800 hover:border-red-600/30 transition-all duration-500 overflow-hidden backdrop-blur-sm rounded-2xl">
+                    <Card className="group relative h-full bg-white dark:bg-gradient-to-br dark:from-neutral-900/80 dark:to-neutral-950/80 border border-gray-200 dark:border-neutral-800 hover:border-red-600/30 transition-all duration-500 overflow-hidden backdrop-blur-sm rounded-2xl shadow-sm">
                       {/* Hover Glow Effect */}
                       <div className="absolute inset-0 bg-gradient-to-br from-red-600/0 via-red-600/0 to-orange-600/0 group-hover:from-red-600/5 group-hover:via-red-600/5 group-hover:to-orange-600/5 transition-all duration-500 pointer-events-none" />
                       
@@ -318,7 +313,7 @@ export function FailureWisdomView() {
                       
                       <CardHeader className="relative pb-4">
                         <div className="flex justify-between items-start gap-4">
-                          <CardTitle className="text-xl font-bold leading-tight text-white group-hover:text-red-400 transition-colors duration-300">
+                          <CardTitle className="text-xl font-bold leading-tight text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
                             {entry.title}
                           </CardTitle>
                           <Button
@@ -345,12 +340,12 @@ export function FailureWisdomView() {
                       </CardHeader>
                       
                       <CardContent className="relative space-y-6">
-                        <p className="text-neutral-400 text-sm leading-relaxed">
+                        <p className="text-gray-600 dark:text-neutral-400 text-sm leading-relaxed">
                           {entry.description}
                         </p>
                         
                         <div className="space-y-3">
-                          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600">
+                          <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-neutral-600">
                             Key Takeaways
                           </h4>
                           <ul className="space-y-2">
@@ -360,7 +355,7 @@ export function FailureWisdomView() {
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 transition={{ delay: i * 0.1 }}
-                                className="flex items-start gap-3 text-sm font-medium text-neutral-300"
+                                className="flex items-start gap-3 text-sm font-medium text-gray-700 dark:text-neutral-300"
                               >
                                 <span className="text-red-500 mt-1 text-lg leading-none">•</span>
                                 <span>{lesson}</span>
@@ -370,7 +365,7 @@ export function FailureWisdomView() {
                         </div>
 
                         {entry.preventionStrategy && (
-                          <div className="pt-4 border-t border-neutral-800/50">
+                          <div className="pt-4 border-t border-gray-200 dark:border-neutral-800/50">
                             <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-600 mb-2">
                               Prevention Strategy
                             </h4>
@@ -380,7 +375,7 @@ export function FailureWisdomView() {
                           </div>
                         )}
                         
-                        <div className="pt-4 text-[10px] text-neutral-600 font-mono tracking-wider">
+                        <div className="pt-4 text-[10px] text-gray-500 dark:text-neutral-600 font-mono tracking-wider">
                           {new Date(entry.date).toLocaleDateString('en-US', { 
                             year: 'numeric', 
                             month: 'short', 
@@ -401,12 +396,12 @@ export function FailureWisdomView() {
                 >
                   <div className="relative mb-6">
                     <div className="absolute inset-0 bg-red-600/20 rounded-full blur-2xl" />
-                    <div className="relative bg-neutral-900 rounded-full p-8 border border-neutral-800">
+                    <div className="relative bg-white dark:bg-neutral-900 rounded-full p-8 border border-gray-200 dark:border-neutral-800">
                       {getTypeIcon(activeType)}
                     </div>
                   </div>
-                  <h3 className="text-2xl font-bold mb-2 text-neutral-300">No entries yet</h3>
-                  <p className="text-neutral-500 max-w-md">The vault is empty. Start documenting your journey to wisdom.</p>
+                  <h3 className="text-2xl font-bold mb-2 text-gray-700 dark:text-neutral-300">No entries yet</h3>
+                  <p className="text-gray-600 dark:text-neutral-500 max-w-md">The vault is empty. Start documenting your journey to wisdom.</p>
                 </motion.div>
               )}
             </motion.div>
