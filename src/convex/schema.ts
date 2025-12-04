@@ -1084,6 +1084,8 @@ const schema = defineSchema(
       source: v.optional(v.string()), // For external (e.g., "Steve Jobs")
       tags: v.optional(v.array(v.string())),
       date: v.string(),
+      relapseCount: v.optional(v.number()), // How many times repeated after logging
+      lastRelapseDate: v.optional(v.string()), // When was the last time
     }).index("by_user", ["userId"]),
 
   },

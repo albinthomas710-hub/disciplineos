@@ -74,6 +74,25 @@ export const deleteEntry = mutation({
   },
 });
 
+export const logRelapse = mutation({
+  args: { id: v.id("failureWisdom") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Unauthorized");
+
+    const existing = await ctx.db.get(args.id);
+    if (!existing || existing.userId !== userId) {
+      throw new Error("Unauthorized or not found");
+    }
+
+    const currentCount = existing.relapseCount || 0;
+    await ctx.db.patch(args.id, {
+      relapseCount: currentCount + 1,
+      lastRelapseDate: new Date().toISOString(),
+    });
+  },
+});
+
 export const getEntries = query({
   args: {},
   handler: async (ctx) => {

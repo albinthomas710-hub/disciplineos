@@ -2,8 +2,10 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2 } from "lucide-react";
+import { Trash2, RefreshCw, AlertCircle } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
+import { useMutation } from "convex/react";
+import { toast } from "sonner";
 
 interface FailureEntry {
   _id: Id<"failureWisdom">;
@@ -18,6 +20,8 @@ interface FailureEntry {
   source?: string;
   tags?: string[];
   date: string;
+  relapseCount?: number;
+  lastRelapseDate?: string;
 }
 
 interface FailureWisdomCardProps {
@@ -27,6 +31,17 @@ interface FailureWisdomCardProps {
 }
 
 export function FailureWisdomCard({ entry, index, onDelete }: FailureWisdomCardProps) {
+  const logRelapse = useMutation("failureWisdom:logRelapse" as any);
+
+  const handleRelapse = async () => {
+    try {
+      await logRelapse({ id: entry._id });
+      toast.error("Relapse logged. Be kind to yourself, analyze why, and reset.");
+    } catch (error) {
+      toast.error("Failed to log relapse");
+    }
+  };
+
   return (
     <motion.div
       key={entry._id}
@@ -50,14 +65,16 @@ export function FailureWisdomCard({ entry, index, onDelete }: FailureWisdomCardP
             <CardTitle className="text-xl font-bold leading-tight text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300">
               {entry.title}
             </CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onDelete(entry._id)}
-              className="opacity-0 group-hover:opacity-100 transition-all duration-300 text-neutral-500 hover:text-red-500 hover:bg-red-950/30 rounded-lg"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => onDelete(entry._id)}
+                className="opacity-0 group-hover:opacity-100 transition-all duration-300 text-neutral-500 hover:text-red-500 hover:bg-red-950/30 rounded-lg"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           <div className="flex flex-wrap gap-2 mt-3">
             {entry.source && (
@@ -68,6 +85,12 @@ export function FailureWisdomCard({ entry, index, onDelete }: FailureWisdomCardP
             {entry.frequency && (
               <Badge variant="secondary" className="bg-neutral-800 text-neutral-300 rounded-lg px-3 py-1">
                 {entry.frequency}
+              </Badge>
+            )}
+            {(entry.relapseCount || 0) > 0 && (
+              <Badge variant="outline" className="border-orange-500/50 text-orange-600 dark:text-orange-400 bg-orange-500/10 rounded-lg px-3 py-1 flex items-center gap-1">
+                <RefreshCw className="h-3 w-3" />
+                {entry.relapseCount} Relapses
               </Badge>
             )}
           </div>
@@ -109,12 +132,26 @@ export function FailureWisdomCard({ entry, index, onDelete }: FailureWisdomCardP
             </div>
           )}
           
-          <div className="pt-4 text-[10px] text-gray-500 dark:text-neutral-600 font-mono tracking-wider">
-            {new Date(entry.date).toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'short', 
-              day: 'numeric' 
-            })}
+          <div className="pt-4 flex items-center justify-between border-t border-gray-200 dark:border-neutral-800/50 mt-4">
+            <div className="text-[10px] text-gray-500 dark:text-neutral-600 font-mono tracking-wider">
+              {new Date(entry.date).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+              })}
+            </div>
+
+            {entry.type === "recurring_mistake" && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={handleRelapse}
+                className="text-xs font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-950/30 h-8 px-3 rounded-lg transition-colors"
+              >
+                <AlertCircle className="h-3 w-3 mr-1.5" />
+                I did it again
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
