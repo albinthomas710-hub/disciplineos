@@ -141,17 +141,15 @@ export function FailureWisdomCard({ entry, index, onDelete }: FailureWisdomCardP
               })}
             </div>
 
-            {entry.type === "recurring_mistake" && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={handleRelapse}
-                className="text-xs font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-950/30 h-8 px-3 rounded-lg transition-colors"
-              >
-                <AlertCircle className="h-3 w-3 mr-1.5" />
-                I did it again
-              </Button>
-            )}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleRelapse}
+              className="text-xs font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 dark:text-orange-400 dark:hover:bg-orange-950/30 h-8 px-3 rounded-lg transition-colors"
+            >
+              <AlertCircle className="h-3 w-3 mr-1.5" />
+              I did it again
+            </Button>
           </div>
         </CardContent>
       </Card>
