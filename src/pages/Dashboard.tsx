@@ -54,7 +54,7 @@ import { FailureWisdomView } from "@/components/FailureWisdomView";
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "shield" | "vectal" | "quotes" | "projects" | "manifest" | "future" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure">("timer");
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "vectal" | "quotes" | "projects" | "manifest" | "future" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure">("timer");
   const [showReflection, setShowReflection] = useState(false);
 
   const activeTimetable = useQuery((api as any).timetables.getActive);
@@ -251,14 +251,6 @@ export default function Dashboard() {
             Analytics
           </Button>
           <Button
-            variant={activeTab === "shield" ? "default" : "ghost"}
-            onClick={() => setActiveTab("shield")}
-            className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
-          >
-            <Shield className="h-4 w-4 mr-2" />
-            Shield
-          </Button>
-          <Button
             variant={activeTab === "vectal" ? "default" : "ghost"}
             onClick={() => setActiveTab("vectal")}
             className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700"
@@ -362,7 +354,6 @@ export default function Dashboard() {
         {activeTab === "timer" && <ActiveTimerView />}
         {activeTab === "timetables" && <TimetableManager />}
         {activeTab === "analytics" && <AnalyticsView />}
-        {activeTab === "shield" && <DopamineShieldView />}
         {activeTab === "vectal" && <VectalView />}
         {activeTab === "quotes" && <QuotesView />}
         {activeTab === "projects" && <ProjectsView />}
