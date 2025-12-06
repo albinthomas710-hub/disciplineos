@@ -10,13 +10,6 @@ crons.daily(
   (internal as any).streaks.calculateDailyStreaks
 );
 
-// Reset dopamine shield bypass attempts daily
-crons.daily(
-  "reset dopamine shield attempts",
-  { hourUTC: 0, minuteUTC: 0 },
-  (internal as any).dopamineShield.resetDailyAttempts
-);
-
 // Reset reality anchor weekly counters
 crons.weekly(
   "reset reality anchor weekly",

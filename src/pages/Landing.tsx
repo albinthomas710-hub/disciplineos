@@ -120,8 +120,7 @@ export default function Landing() {
             </h2>
 
             <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 mb-6 max-w-3xl mx-auto leading-relaxed">
-              Create timetables, track progress, and see two parallel timelines of your future self - 
-              one where you stay disciplined, one where you drift. Your daily choices determine which future becomes real.
+              Create timetables, track progress, and build the discipline to achieve your goals. Your daily choices determine your future.
             </p>
 
             <motion.div
@@ -176,13 +175,6 @@ export default function Landing() {
                 description:
                   "Create different schedules for school days, holidays, and focus modes. Switch between them instantly. Time-block your entire day.",
                 color: "from-blue-500 to-cyan-500",
-              },
-              {
-                icon: Shield,
-                title: "Dopamine Shield",
-                description:
-                  "Emergency support when temptation hits. Convert fantasies into 3-step action plans. Track your urges and build resistance.",
-                color: "from-red-500 to-orange-500",
               },
               {
                 icon: Target,
