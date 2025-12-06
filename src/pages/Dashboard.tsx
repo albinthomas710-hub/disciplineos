@@ -54,7 +54,7 @@ import { FailureWisdomView } from "@/components/FailureWisdomView";
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "vectal" | "quotes" | "projects" | "manifest" | "future" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure">("timer");
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "vectal" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure">("timer");
   const [showReflection, setShowReflection] = useState(false);
 
   const activeTimetable = useQuery((api as any).timetables.getActive);
@@ -283,14 +283,6 @@ export default function Dashboard() {
             Manifest
           </Button>
           <Button
-            variant={activeTab === "future" ? "default" : "ghost"}
-            onClick={() => setActiveTab("future")}
-            className="cursor-pointer bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700"
-          >
-            <Sparkles className="h-4 w-4 mr-2" />
-            Future
-          </Button>
-          <Button
             variant={activeTab === "knowyourself" ? "default" : "ghost"}
             onClick={() => setActiveTab("knowyourself")}
             className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700"
@@ -358,7 +350,6 @@ export default function Dashboard() {
         {activeTab === "quotes" && <QuotesView />}
         {activeTab === "projects" && <ProjectsView />}
         {activeTab === "manifest" && <ManifestationView />}
-        {activeTab === "future" && <FutureTimelineView />}
         {activeTab === "knowyourself" && <KnowYourselfView />}
         {activeTab === "prayer" && <PrayerView />}
         {activeTab === "videos" && <VideoLibraryView />}
