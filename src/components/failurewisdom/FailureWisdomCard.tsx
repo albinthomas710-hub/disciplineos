@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, RefreshCw, AlertCircle } from "lucide-react";
+import { Trash2, RefreshCw, AlertCircle, Sparkles } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ interface FailureEntry {
   date: string;
   relapseCount?: number;
   lastRelapseDate?: string;
+  isFavorite: boolean;
 }
 
 interface FailureWisdomCardProps {
@@ -32,6 +33,7 @@ interface FailureWisdomCardProps {
 
 export function FailureWisdomCard({ entry, index, onDelete }: FailureWisdomCardProps) {
   const logRelapse = useMutation("failureWisdom:logRelapse" as any);
+  const toggleFavorite = useMutation("failureWisdom:toggleFavorite" as any);
 
   const handleRelapse = async () => {
     try {
@@ -39,6 +41,15 @@ export function FailureWisdomCard({ entry, index, onDelete }: FailureWisdomCardP
       toast.error("Relapse logged. Be kind to yourself, analyze why, and reset.");
     } catch (error) {
       toast.error("Failed to log relapse");
+    }
+  };
+
+  const handleToggleFavorite = async () => {
+    try {
+      await toggleFavorite({ id: entry._id });
+      toast.success(entry.isFavorite ? "Removed from favorites" : "Added to favorites");
+    } catch (error) {
+      toast.error("Failed to update favorite");
     }
   };
 
@@ -66,6 +77,24 @@ export function FailureWisdomCard({ entry, index, onDelete }: FailureWisdomCardP
               {entry.title}
             </CardTitle>
             <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleToggleFavorite}
+                className="opacity-0 group-hover:opacity-100 transition-all duration-300 text-neutral-500 hover:text-yellow-500 hover:bg-yellow-950/30 rounded-lg"
+              >
+                {entry.isFavorite ? (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 15 }}
+                  >
+                    <Sparkles className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+                  </motion.div>
+                ) : (
+                  <Sparkles className="h-4 w-4" />
+                )}
+              </Button>
               <Button
                 variant="ghost"
                 size="icon"

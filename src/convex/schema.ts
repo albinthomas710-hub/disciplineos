@@ -1086,7 +1086,9 @@ const schema = defineSchema(
       date: v.string(),
       relapseCount: v.optional(v.number()), // How many times repeated after logging
       lastRelapseDate: v.optional(v.string()), // When was the last time
-    }).index("by_user", ["userId"]),
+      isFavorite: v.boolean(), // Mark important mistakes
+    }).index("by_user", ["userId"])
+      .index("by_user_and_favorite", ["userId", "isFavorite"]),
 
   },
   {

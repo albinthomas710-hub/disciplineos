@@ -34,6 +34,23 @@ export const createEntry = mutation({
   },
 });
 
+export const toggleFavorite = mutation({
+  args: { id: v.id("failureWisdom") },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Unauthorized");
+
+    const existing = await ctx.db.get(args.id);
+    if (!existing || existing.userId !== userId) {
+      throw new Error("Unauthorized or not found");
+    }
+
+    await ctx.db.patch(args.id, {
+      isFavorite: !existing.isFavorite,
+    });
+  },
+});
+
 export const updateEntry = mutation({
   args: {
     id: v.id("failureWisdom"),
