@@ -36,7 +36,6 @@ export function FailureWisdomView() {
 
   const [activeType, setActiveType] = useState<"recurring_mistake" | "single_lesson" | "multi_lesson" | "external_wisdom" | "titan_failures">("recurring_mistake");
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortByImportance, setSortByImportance] = useState(false);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   const handleDelete = async (id: Id<"failureWisdom">) => {
@@ -88,17 +87,8 @@ export function FailureWisdomView() {
       );
     }
     
-    // Sort by importance (relapse count) if enabled
-    if (sortByImportance) {
-      filtered = [...filtered].sort((a, b) => {
-        const aCount = a.relapseCount || 0;
-        const bCount = b.relapseCount || 0;
-        return bCount - aCount; // Descending order
-      });
-    }
-    
     return filtered;
-  }, [entries, activeType, searchQuery, sortByImportance, showFavoritesOnly]);
+  }, [entries, activeType, searchQuery, showFavoritesOnly]);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-rose-50 dark:from-gray-900 dark:via-red-950/20 dark:to-orange-950/20 text-foreground overflow-hidden">
@@ -141,35 +131,21 @@ export function FailureWisdomView() {
             <FailureWisdomForm activeType={activeType} getTypeLabel={getTypeLabel} />
           </div>
 
-          {/* Search Bar and Sort Button */}
+          {/* Search Bar and Favorites Filter */}
           <div className="mb-8 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <FailureWisdomSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
-            <div className="flex gap-2">
-              <Button
-                variant={showFavoritesOnly ? "default" : "outline"}
-                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-                className={`${
-                  showFavoritesOnly 
-                    ? "bg-gradient-to-r from-yellow-600 to-orange-600 text-white hover:from-yellow-700 hover:to-orange-700" 
-                    : "border-yellow-600/30 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950/30"
-                } rounded-xl px-6 py-3 font-semibold transition-all`}
-              >
-                <Sparkles className="h-4 w-4 mr-2" />
-                {showFavoritesOnly ? "Showing Favorites" : "Show Favorites"}
-              </Button>
-              <Button
-                variant={sortByImportance ? "default" : "outline"}
-                onClick={() => setSortByImportance(!sortByImportance)}
-                className={`${
-                  sortByImportance 
-                    ? "bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700" 
-                    : "border-red-600/30 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-                } rounded-xl px-6 py-3 font-semibold transition-all`}
-              >
-                <AlertTriangle className="h-4 w-4 mr-2" />
-                {sortByImportance ? "Showing Critical First" : "Sort by Importance"}
-              </Button>
-            </div>
+            <Button
+              variant={showFavoritesOnly ? "default" : "outline"}
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              className={`${
+                showFavoritesOnly 
+                  ? "bg-gradient-to-r from-yellow-600 to-orange-600 text-white hover:from-yellow-700 hover:to-orange-700" 
+                  : "border-yellow-600/30 text-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-950/30"
+              } rounded-xl px-6 py-3 font-semibold transition-all`}
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              {showFavoritesOnly ? "Showing Favorites" : "Show Favorites"}
+            </Button>
           </div>
 
           <TabsContent value={activeType} className="mt-0">
