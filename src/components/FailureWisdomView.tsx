@@ -4,6 +4,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle, Lightbulb, Layers, User, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { FailureWisdomHeader } from "./failurewisdom/FailureWisdomHeader";
@@ -24,6 +25,8 @@ interface FailureEntry {
   source?: string;
   tags?: string[];
   date: string;
+  relapseCount?: number;
+  lastRelapseDate?: string;
 }
 
 export function FailureWisdomView() {
@@ -32,6 +35,7 @@ export function FailureWisdomView() {
 
   const [activeType, setActiveType] = useState<"recurring_mistake" | "single_lesson" | "multi_lesson" | "external_wisdom" | "titan_failures">("recurring_mistake");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortByImportance, setSortByImportance] = useState(false);
 
   const handleDelete = async (id: Id<"failureWisdom">) => {
     if (confirm("Forget this lesson?")) {
@@ -78,8 +82,17 @@ export function FailureWisdomView() {
       );
     }
     
+    // Sort by importance (relapse count) if enabled
+    if (sortByImportance) {
+      filtered = [...filtered].sort((a, b) => {
+        const aCount = a.relapseCount || 0;
+        const bCount = b.relapseCount || 0;
+        return bCount - aCount; // Descending order
+      });
+    }
+    
     return filtered;
-  }, [entries, activeType, searchQuery]);
+  }, [entries, activeType, searchQuery, sortByImportance]);
 
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-rose-50 dark:from-gray-900 dark:via-red-950/20 dark:to-orange-950/20 text-foreground overflow-hidden">
@@ -122,9 +135,21 @@ export function FailureWisdomView() {
             <FailureWisdomForm activeType={activeType} getTypeLabel={getTypeLabel} />
           </div>
 
-          {/* Search Bar */}
-          <div className="mb-8">
+          {/* Search Bar and Sort Button */}
+          <div className="mb-8 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
             <FailureWisdomSearch searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+            <Button
+              variant={sortByImportance ? "default" : "outline"}
+              onClick={() => setSortByImportance(!sortByImportance)}
+              className={`${
+                sortByImportance 
+                  ? "bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700" 
+                  : "border-red-600/30 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+              } rounded-xl px-6 py-3 font-semibold transition-all`}
+            >
+              <AlertTriangle className="h-4 w-4 mr-2" />
+              {sortByImportance ? "Showing Critical First" : "Sort by Importance"}
+            </Button>
           </div>
 
           <TabsContent value={activeType} className="mt-0">
