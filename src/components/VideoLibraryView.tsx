@@ -184,7 +184,7 @@ export default function VideoLibraryView() {
                   Video Library
                 </h2>
                 <p className="text-sm text-muted-foreground font-semibold">
-                  Organize your YouTube videos by category
+                  Organize videos from YouTube, Instagram, and more
                 </p>
               </div>
             </CardTitle>

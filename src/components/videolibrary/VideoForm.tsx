@@ -51,13 +51,16 @@ export function VideoForm({
             />
           </div>
           <div>
-            <Label>YouTube URL</Label>
+            <Label>Video URL</Label>
             <Input
               value={url}
               onChange={(e) => onUrlChange(e.target.value)}
-              placeholder="https://youtube.com/watch?v=..."
+              placeholder="YouTube, Instagram, or any video URL..."
               className="mt-2"
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              Supports YouTube, Instagram, Vimeo, and other video platforms
+            </p>
           </div>
           <div>
             <Label>Description (optional)</Label>
