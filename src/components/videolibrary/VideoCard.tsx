@@ -1,8 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Edit2, Trash2, ExternalLink } from "lucide-react";
+import { Star, Edit2, Trash2, ExternalLink, FolderInput } from "lucide-react";
 import { motion } from "framer-motion";
 import { Id } from "@/convex/_generated/dataModel";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface VideoCardProps {
   video: {
@@ -12,18 +18,27 @@ interface VideoCardProps {
     description?: string;
     notes?: string;
     isFavorite: boolean;
+    categoryId: Id<"videoCategories">;
   };
+  categories: Array<{
+    _id: Id<"videoCategories">;
+    name: string;
+    color: string;
+  }>;
   onToggleFavorite: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onMoveToCategory: (categoryId: Id<"videoCategories">) => void;
   index: number;
 }
 
 export function VideoCard({
   video,
+  categories,
   onToggleFavorite,
   onEdit,
   onDelete,
+  onMoveToCategory,
   index,
 }: VideoCardProps) {
   return (
@@ -70,6 +85,31 @@ export function VideoCard({
                   }`}
                 />
               </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="cursor-pointer"
+                  >
+                    <FolderInput className="h-4 w-4 text-purple-600" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {categories
+                    .filter((cat) => cat._id !== video.categoryId)
+                    .map((category) => (
+                      <DropdownMenuItem
+                        key={category._id}
+                        onClick={() => onMoveToCategory(category._id)}
+                        className="cursor-pointer"
+                      >
+                        <FolderInput className="h-4 w-4 mr-2" />
+                        Move to {category.name}
+                      </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 size="sm"
                 variant="ghost"

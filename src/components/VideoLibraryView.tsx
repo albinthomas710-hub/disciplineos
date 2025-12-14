@@ -25,6 +25,7 @@ export default function VideoLibraryView() {
   const toggleFavorite = useMutation((api as any).videoLibrary.toggleFavorite);
   const updateVideo = useMutation((api as any).videoLibrary.updateVideo);
   const updateCategory = useMutation((api as any).videoLibrary.updateCategory);
+  const moveToCategory = useMutation((api as any).videoLibrary.moveToCategory);
 
   const [selectedCategory, setSelectedCategory] = useState<Id<"videoCategories"> | null>(null);
   const [showNewCategory, setShowNewCategory] = useState(false);
@@ -148,6 +149,17 @@ export default function VideoLibraryView() {
     setVideoNotes(video.notes || "");
     setEditingVideo(video._id);
     setShowNewVideo(true);
+  };
+
+  const handleMoveToCategory = async (videoId: Id<"videoLibrary">, newCategoryId: Id<"videoCategories">) => {
+    const toastId = toast.loading("Moving video...");
+    try {
+      await moveToCategory({ videoId, newCategoryId });
+      const newCategoryName = categories.find((c: any) => c._id === newCategoryId)?.name;
+      toast.success(`Video moved to ${newCategoryName}! 📁`, { id: toastId });
+    } catch (error) {
+      toast.error("Failed to move video", { id: toastId });
+    }
   };
 
   if (categories === undefined || allVideos === undefined) {
@@ -313,9 +325,11 @@ export default function VideoLibraryView() {
               <VideoCard
                 key={video._id}
                 video={video}
+                categories={categories}
                 onToggleFavorite={() => toggleFavorite({ videoId: video._id })}
                 onEdit={() => handleEditVideo(video)}
                 onDelete={() => deleteVideo({ videoId: video._id })}
+                onMoveToCategory={(newCategoryId) => handleMoveToCategory(video._id, newCategoryId)}
                 index={i}
               />
             ))}

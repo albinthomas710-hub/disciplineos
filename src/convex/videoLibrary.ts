@@ -205,3 +205,28 @@ export const updateVideo = mutation({
     });
   },
 });
+
+export const moveToCategory = mutation({
+  args: {
+    videoId: v.id("videoLibrary"),
+    newCategoryId: v.id("videoCategories"),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const video = await ctx.db.get(args.videoId);
+    if (!video || video.userId !== user._id) {
+      throw new Error("Video not found or unauthorized");
+    }
+
+    const newCategory = await ctx.db.get(args.newCategoryId);
+    if (!newCategory || newCategory.userId !== user._id) {
+      throw new Error("Category not found or unauthorized");
+    }
+
+    await ctx.db.patch(args.videoId, {
+      categoryId: args.newCategoryId,
+    });
+  },
+});
