@@ -213,6 +213,10 @@ export default function ActiveTimerView() {
                   {activeTimetable && (
                     <Button
                       variant="outline"
+                      onClick={() => {
+                        const timetablesButton = document.querySelector('[data-view="timetables"]') as HTMLButtonElement;
+                        if (timetablesButton) timetablesButton.click();
+                      }}
                       className="border-orange-300 dark:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/30 font-semibold px-6 py-3 rounded-xl"
                     >
                       <Plus className="h-5 w-5 mr-2" />

@@ -228,6 +228,7 @@ export default function Dashboard() {
             variant={activeTab === "timer" ? "default" : "ghost"}
             onClick={() => setActiveTab("timer")}
             className="cursor-pointer"
+            data-view="timer"
           >
             <Clock className="h-4 w-4 mr-2" />
             Timer
@@ -236,6 +237,7 @@ export default function Dashboard() {
             variant={activeTab === "timetables" ? "default" : "ghost"}
             onClick={() => setActiveTab("timetables")}
             className="cursor-pointer"
+            data-view="timetables"
           >
             <Calendar className="h-4 w-4 mr-2" />
             Timetables
@@ -244,6 +246,7 @@ export default function Dashboard() {
             variant={activeTab === "analytics" ? "default" : "ghost"}
             onClick={() => setActiveTab("analytics")}
             className="cursor-pointer"
+            data-view="analytics"
           >
             <Target className="h-4 w-4 mr-2" />
             Analytics
