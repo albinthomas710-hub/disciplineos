@@ -6,7 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { CheckCircle2, Circle, Clock, Loader2 } from "lucide-react";
+import { CheckCircle2, Circle, Clock, Loader2, Calendar, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -50,9 +50,11 @@ const categoryStyles = {
 };
 
 export default function ActiveTimerView() {
-  const activeTimetable = useQuery((api as any).timetables.getActive);
+  const user = useQuery(api.users.currentUser);
+  const timetables = useQuery(api.timetables.list);
+  const activeTimetable = timetables?.find((t: any) => t.isActive);
   const timeBlocks = useQuery(
-    (api as any).timeBlocks.listByTimetable,
+    api.timeBlocks.listByTimetable,
     activeTimetable ? { timetableId: activeTimetable._id } : "skip"
   );
   const todayLogs = useQuery((api as any).completionLogs.getToday);
@@ -131,10 +133,103 @@ export default function ActiveTimerView() {
     return categoryStyles[category as keyof typeof categoryStyles] || categoryStyles.General;
   };
 
-  if (!activeTimetable || !timeBlocks || !categories) {
+  // Add empty state check after loading
+  if (!timetables) {
     return (
       <div className="flex items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // NEW: Empty state when no timetable exists or is active
+  if (!activeTimetable || !timeBlocks || timeBlocks.length === 0) {
+    return (
+      <div className="space-y-6">
+        {/* Header */}
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+          <Card className="border-2 border-orange-300 dark:border-orange-700 bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 dark:from-orange-950 dark:via-red-950 dark:to-pink-950 shadow-2xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-3">
+                <motion.div
+                  className="bg-gradient-to-br from-orange-600 to-red-600 p-3 rounded-xl shadow-2xl"
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                >
+                  <Clock className="h-6 w-6 text-white" />
+                </motion.div>
+                <div>
+                  <h2 className="text-3xl font-black bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent">
+                    Active Timer
+                  </h2>
+                  <p className="text-sm text-muted-foreground font-semibold">
+                    Stay focused on your current time block
+                  </p>
+                </div>
+              </CardTitle>
+            </CardHeader>
+          </Card>
+        </motion.div>
+
+        {/* Empty State */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Card className="border-2 border-orange-200 dark:border-orange-800">
+            <CardContent className="py-16 text-center">
+              <div className="flex flex-col items-center gap-6 max-w-md mx-auto">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-orange-500/20 rounded-full blur-2xl" />
+                  <div className="relative bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 rounded-full p-8">
+                    <Calendar className="h-16 w-16 text-orange-600 dark:text-orange-400" />
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <h3 className="text-2xl font-bold text-foreground">
+                    {!activeTimetable ? "No Active Timetable" : "No Time Blocks"}
+                  </h3>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {!activeTimetable 
+                      ? "To use the timer, you need to create and activate a timetable first. Go to the Timetables section to set up your daily schedule."
+                      : "Your active timetable doesn't have any time blocks yet. Add some time blocks to start tracking your day."}
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 mt-4">
+                  <Button
+                    onClick={() => {
+                      // Navigate to Timetables section
+                      const timetablesButton = document.querySelector('[data-view="timetables"]') as HTMLButtonElement;
+                      if (timetablesButton) timetablesButton.click();
+                    }}
+                    className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all"
+                  >
+                    <Calendar className="h-5 w-5 mr-2" />
+                    Go to Timetables
+                  </Button>
+                  
+                  {activeTimetable && (
+                    <Button
+                      variant="outline"
+                      className="border-orange-300 dark:border-orange-700 hover:bg-orange-50 dark:hover:bg-orange-950/30 font-semibold px-6 py-3 rounded-xl"
+                    >
+                      <Plus className="h-5 w-5 mr-2" />
+                      Add Time Blocks
+                    </Button>
+                  )}
+                </div>
+
+                <div className="mt-6 p-4 bg-orange-50 dark:bg-orange-950/30 rounded-xl border border-orange-200 dark:border-orange-800">
+                  <p className="text-sm text-muted-foreground">
+                    💡 <strong>Tip:</strong> Create a timetable with time blocks for your daily routine, then activate it to start using the timer feature.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     );
   }
