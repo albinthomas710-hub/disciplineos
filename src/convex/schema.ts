@@ -65,6 +65,10 @@ const schema = defineSchema(
       category: v.optional(v.string()), // "Focus", "Health", "Spiritual", "Learning"
       order: v.number(), // for sorting
       notificationEnabled: v.optional(v.boolean()),
+      // CEO / High-Performance Fields
+      energyLevel: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
+      isDeepWork: v.optional(v.boolean()),
+      context: v.optional(v.string()), // "Office", "Home", "Commute", "Gym"
     }).index("by_timetable", ["timetableId"]),
 
     // Completion Logs - track daily progress

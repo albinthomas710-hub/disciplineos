@@ -28,6 +28,9 @@ export const create = mutation({
     endTime: v.string(),
     category: v.optional(v.string()),
     order: v.number(),
+    energyLevel: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
+    isDeepWork: v.optional(v.boolean()),
+    context: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -69,6 +72,9 @@ export const create = mutation({
       category: args.category || "General",
       order: args.order,
       notificationEnabled: true,
+      energyLevel: args.energyLevel,
+      isDeepWork: args.isDeepWork,
+      context: args.context,
     });
   },
 });
@@ -83,6 +89,9 @@ export const update = mutation({
     endTime: v.optional(v.string()),
     category: v.optional(v.string()),
     order: v.optional(v.number()),
+    energyLevel: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
+    isDeepWork: v.optional(v.boolean()),
+    context: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -103,6 +112,9 @@ export const update = mutation({
     if (args.endTime !== undefined) updateData.endTime = args.endTime;
     if (args.category !== undefined) updateData.category = args.category;
     if (args.order !== undefined) updateData.order = args.order;
+    if (args.energyLevel !== undefined) updateData.energyLevel = args.energyLevel;
+    if (args.isDeepWork !== undefined) updateData.isDeepWork = args.isDeepWork;
+    if (args.context !== undefined) updateData.context = args.context;
 
     await ctx.db.patch(args.id, updateData);
   },

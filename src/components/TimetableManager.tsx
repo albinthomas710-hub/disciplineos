@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
@@ -115,35 +116,41 @@ export default function TimetableManager() {
               transition={{ delay: i * 0.1 }}
             >
               <Card
-                className={`cursor-pointer transition-all ${
+                className={`cursor-pointer transition-all duration-300 ${
                   isActive
-                    ? "border-2 border-indigo-500 shadow-lg"
-                    : "hover:shadow-md"
+                    ? "border-2 border-primary shadow-xl scale-[1.02] bg-gradient-to-br from-background to-accent/10"
+                    : "hover:shadow-lg hover:border-primary/50 hover:-translate-y-1"
                 }`}
                 onClick={() => !isActive && handleSetActive(timetable._id)}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: timetable.color }}
-                      />
+                        className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${
+                          isActive ? "ring-2 ring-offset-2 ring-primary" : ""
+                        }`}
+                        style={{ backgroundColor: timetable.color + "20" }}
+                      >
+                        <Calendar className="h-6 w-6" style={{ color: timetable.color }} />
+                      </div>
                       <div>
-                        <CardTitle className="flex items-center gap-2">
+                        <CardTitle className="flex items-center gap-2 text-xl">
                           {timetable.name}
                           {isActive && (
-                            <CheckCircle2 className="h-4 w-4 text-green-600" />
+                            <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white gap-1 pl-1 pr-2">
+                              <CheckCircle2 className="h-3 w-3" /> Active
+                            </Badge>
                           )}
                         </CardTitle>
                         {timetable.description && (
-                          <p className="text-sm text-muted-foreground mt-1">
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
                             {timetable.description}
                           </p>
                         )}
                       </div>
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button
                         variant="ghost"
                         size="icon"
@@ -151,7 +158,7 @@ export default function TimetableManager() {
                           e.stopPropagation();
                           setEditingTimetable(timetable._id);
                         }}
-                        className="cursor-pointer"
+                        className="hover:bg-primary/10 hover:text-primary"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -162,7 +169,7 @@ export default function TimetableManager() {
                           e.stopPropagation();
                           handleDelete(timetable._id);
                         }}
-                        className="cursor-pointer text-red-600 hover:text-red-700"
+                        className="hover:bg-destructive/10 hover:text-destructive"
                       >
                         <Trash className="h-4 w-4" />
                       </Button>
@@ -170,12 +177,31 @@ export default function TimetableManager() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {isActive && (
-                    <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400">
-                      <Calendar className="h-4 w-4" />
-                      Active Schedule
-                    </div>
-                  )}
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span className="flex items-center gap-2">
+                      {isActive ? (
+                        <span className="text-green-600 font-medium flex items-center gap-1">
+                          <span className="relative flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                          </span>
+                          Running Now
+                        </span>
+                      ) : (
+                        "Click to activate"
+                      )}
+                    </span>
+                    <Button 
+                      variant="link" 
+                      className="p-0 h-auto font-semibold text-primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingTimetable(timetable._id);
+                      }}
+                    >
+                      Edit Schedule →
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </motion.div>
