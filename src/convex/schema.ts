@@ -563,7 +563,10 @@ const schema = defineSchema(
       description: v.optional(v.string()),
       color: v.string(), // gradient colors
       createdAt: v.number(),
-    }).index("by_user", ["userId"]),
+      isDeleted: v.optional(v.boolean()),
+      deletedAt: v.optional(v.number()),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_deleted", ["userId", "isDeleted"]),
 
     adviceLibrary: defineTable({
       userId: v.id("users"),
@@ -574,9 +577,12 @@ const schema = defineSchema(
       tags: v.optional(v.array(v.string())),
       isFavorite: v.boolean(),
       createdAt: v.number(),
+      isDeleted: v.optional(v.boolean()),
+      deletedAt: v.optional(v.number()),
     }).index("by_user", ["userId"])
       .index("by_category", ["categoryId"])
-      .index("by_user_and_favorite", ["userId", "isFavorite"]),
+      .index("by_user_and_favorite", ["userId", "isFavorite"])
+      .index("by_user_and_deleted", ["userId", "isDeleted"]),
 
     // Not To Do List - Track tasks/habits to AVOID
     notToDoList: defineTable({
