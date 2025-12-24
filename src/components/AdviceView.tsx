@@ -13,6 +13,16 @@ import { AdviceCategoryCard } from "@/components/advice/AdviceCategoryCard";
 import { CategoryForm } from "@/components/advice/CategoryForm";
 import { AdviceForm } from "@/components/advice/AdviceForm";
 import { AdviceCard } from "@/components/advice/AdviceCard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function AdviceView() {
   const categories = useQuery((api as any).advice.getAllCategories);
@@ -30,6 +40,7 @@ export default function AdviceView() {
   const [showNewAdvice, setShowNewAdvice] = useState(false);
   const [editingAdvice, setEditingAdvice] = useState<Id<"adviceLibrary"> | null>(null);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [adviceToDelete, setAdviceToDelete] = useState<Id<"adviceLibrary"> | null>(null);
 
   // Category form state
   const [categoryName, setCategoryName] = useState("");
@@ -129,6 +140,19 @@ export default function AdviceView() {
     setAdviceTags(advice.tags?.join(", ") || "");
     setEditingAdvice(advice._id);
     setShowNewAdvice(true);
+  };
+
+  const handleConfirmDeleteAdvice = async () => {
+    if (!adviceToDelete) return;
+    
+    const toastId = toast.loading("Deleting advice...");
+    try {
+      await deleteAdvice({ adviceId: adviceToDelete });
+      toast.success("Advice deleted", { id: toastId });
+      setAdviceToDelete(null);
+    } catch (error) {
+      toast.error("Failed to delete advice", { id: toastId });
+    }
   };
 
   if (categories === undefined || allAdvice === undefined) {
@@ -285,7 +309,7 @@ export default function AdviceView() {
                 advice={advice}
                 onToggleFavorite={() => toggleFavorite({ adviceId: advice._id })}
                 onEdit={() => handleEditAdvice(advice)}
-                onDelete={() => deleteAdvice({ adviceId: advice._id })}
+                onDelete={() => setAdviceToDelete(advice._id)}
                 index={i}
               />
             ))}
@@ -304,6 +328,26 @@ export default function AdviceView() {
           )}
         </div>
       )}
+
+      <AlertDialog open={!!adviceToDelete} onOpenChange={(open) => !open && setAdviceToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Advice?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this piece of advice from your library.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDeleteAdvice}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
