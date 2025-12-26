@@ -1,6 +1,7 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, action } from "./_generated/server";
 import { getCurrentUser } from "./users";
 import { v } from "convex/values";
+import { api } from "./_generated/api";
 
 export const getAllUserData = query({
   args: {},
@@ -188,6 +189,27 @@ export const getAllUserData = query({
         failureWisdom
       }
     };
+  },
+});
+
+export const generateBackupAction = action({
+  args: {},
+  handler: async (ctx) => {
+    const user = await ctx.auth.getUserIdentity();
+    if (!user) throw new Error("Not authenticated");
+
+    const data = await ctx.runQuery(api.backup.getAllUserData);
+    
+    if (!data) throw new Error("Failed to generate backup data");
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
+
+    const storageId = await ctx.storage.store(blob);
+    const url = await ctx.storage.getUrl(storageId);
+    
+    return url;
   },
 });
 

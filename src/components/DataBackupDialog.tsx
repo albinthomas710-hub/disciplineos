@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { api } from "@/convex/_generated/api";
-import { useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery, useAction } from "convex/react";
 import { Download, FileJson, Loader2, ShieldCheck, Upload, AlertTriangle } from "lucide-react";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
@@ -25,29 +25,27 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const userData = useQuery(api.backup.getAllUserData);
+  const generateBackup = useAction(api.backup.generateBackupAction);
   const restoreData = useMutation(api.backup.restoreUserData);
 
-  const handleDownload = () => {
-    if (!userData) {
-      toast.error("Data is still loading...");
-      return;
-    }
-
+  const handleDownload = async () => {
     setIsExporting(true);
     try {
-      const dataStr = JSON.stringify(userData, null, 2);
-      const blob = new Blob([dataStr], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
+      // Generate backup on server to avoid browser "virus" false positives with blobs
+      const url = await generateBackup();
+      if (!url) throw new Error("Failed to generate backup URL");
       
+      // Trigger download from the secure URL
       const link = document.createElement("a");
       link.href = url;
       link.download = `discipline_os_backup_${new Date().toISOString().split('T')[0]}.json`;
+      // Target _blank to ensure it opens/downloads correctly from cross-origin
+      link.target = "_blank"; 
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
       
-      toast.success("Backup downloaded successfully! 🔒");
+      toast.success("Backup generated and downloading! 🔒");
     } catch (error) {
       console.error("Export failed:", error);
       toast.error("Failed to generate backup file");
