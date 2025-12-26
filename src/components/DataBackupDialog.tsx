@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery, useAction } from "convex/react";
-import { Download, FileJson, Loader2, ShieldCheck, Upload, AlertTriangle } from "lucide-react";
+import { Download, FileJson, Loader2, ShieldCheck, Upload, AlertTriangle, Copy, Check } from "lucide-react";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -22,6 +22,7 @@ interface DataBackupDialogProps {
 export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [isCopying, setIsCopying] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const userData = useQuery(api.backup.getAllUserData);
@@ -51,6 +52,25 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
       toast.error("Failed to generate backup file");
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handleCopyToClipboard = async () => {
+    setIsCopying(true);
+    try {
+      const url = await generateBackup();
+      if (!url) throw new Error("Failed to generate backup URL");
+      
+      const response = await fetch(url);
+      const text = await response.text();
+      
+      await navigator.clipboard.writeText(text);
+      toast.success("Data copied to clipboard! Paste it into a text file to save.");
+    } catch (error) {
+      console.error("Copy failed:", error);
+      toast.error("Failed to copy data. Try downloading instead.");
+    } finally {
+      setIsCopying(false);
     }
   };
 
@@ -136,23 +156,52 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
               </div>
             </div>
 
-            <Button 
-              onClick={handleDownload} 
-              disabled={!userData || isExporting}
-              className="w-full bg-green-600 hover:bg-green-700 text-white"
-            >
-              {isExporting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Exporting...
-                </>
-              ) : (
-                <>
-                  <Download className="mr-2 h-4 w-4" />
-                  Download Backup ({userData ? "Ready" : "Loading..."})
-                </>
-              )}
-            </Button>
+            <Alert className="bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800">
+              <ShieldCheck className="h-4 w-4 text-blue-600" />
+              <AlertTitle>False Positive Warning</AlertTitle>
+              <AlertDescription className="text-xs text-muted-foreground">
+                If your browser flags the download as "suspicious", it is a false positive because the file is generated on the fly. It is safe to keep/allow the file.
+              </AlertDescription>
+            </Alert>
+
+            <div className="flex flex-col gap-2">
+              <Button 
+                onClick={handleDownload} 
+                disabled={!userData || isExporting}
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+              >
+                {isExporting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    Download Backup ({userData ? "Ready" : "Loading..."})
+                  </>
+                )}
+              </Button>
+
+              <Button 
+                onClick={handleCopyToClipboard} 
+                disabled={!userData || isCopying}
+                variant="outline"
+                className="w-full"
+              >
+                {isCopying ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Copying...
+                  </>
+                ) : (
+                  <>
+                    <Copy className="mr-2 h-4 w-4" />
+                    Copy Data to Clipboard (Fallback)
+                  </>
+                )}
+              </Button>
+            </div>
           </TabsContent>
           
           <TabsContent value="import" className="space-y-4 py-4">

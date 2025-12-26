@@ -202,8 +202,9 @@ export const generateBackupAction = action({
     
     if (!data) throw new Error("Failed to generate backup data");
 
+    // Use octet-stream to prevent browser "virus" false positives on JSON downloads
     const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
+      type: "application/octet-stream",
     });
 
     const storageId = await ctx.storage.store(blob);
