@@ -29,6 +29,7 @@ import {
   Ban,
   Rocket,
   FolderOpen,
+  Download,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
@@ -48,12 +49,14 @@ import AdviceView from "@/components/AdviceView";
 import NotToDoListView from "@/components/NotToDoListView";
 import { EntrepreneurOSView } from "@/components/EntrepreneurOSView";
 import { FailureWisdomView } from "@/components/FailureWisdomView";
+import { DataBackupDialog } from "@/components/DataBackupDialog";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "vectal" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure">("timer");
   const [showReflection, setShowReflection] = useState(false);
+  const [showBackup, setShowBackup] = useState(false);
 
   const activeTimetable = useQuery((api as any).timetables.getActive);
   const todayLogs = useQuery((api as any).completionLogs.getToday);
@@ -339,6 +342,14 @@ export default function Dashboard() {
             <AlertTriangle className="h-4 w-4 mr-2" />
             Mistake Vault
           </Button>
+          <Button
+            variant="ghost"
+            onClick={() => setShowBackup(true)}
+            className="cursor-pointer bg-gradient-to-r from-slate-600 to-gray-600 text-white hover:from-slate-700 hover:to-gray-700"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Backup Data
+          </Button>
         </div>
       </div>
 
@@ -364,6 +375,12 @@ export default function Dashboard() {
       <ReflectionDialog
         open={showReflection}
         onOpenChange={setShowReflection}
+      />
+
+      {/* Backup Dialog */}
+      <DataBackupDialog 
+        open={showBackup} 
+        onOpenChange={setShowBackup} 
       />
     </div>
   );
