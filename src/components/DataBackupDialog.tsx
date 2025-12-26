@@ -121,6 +121,33 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
     }
   };
 
+  const handleDownloadPreview = () => {
+    try {
+      const dataToDownload = getPreviewData;
+      if (!dataToDownload) return;
+
+      const blob = new Blob([JSON.stringify(dataToDownload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      
+      const timestamp = new Date().toISOString().split('T')[0];
+      const categoryName = previewCategory === 'all' ? 'full_backup' : previewCategory;
+      const cleanSuffix = isCleanMode ? '_cleaned' : '';
+      
+      link.href = url;
+      link.download = `discipline_os_${categoryName}${cleanSuffix}_${timestamp}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success(`Downloaded ${isCleanMode ? 'cleaned' : ''} ${previewCategory === 'all' ? 'data' : previewCategory} JSON!`);
+    } catch (error) {
+      console.error("Download failed:", error);
+      toast.error("Failed to download preview data");
+    }
+  };
+
   const getPreviewData = useMemo(() => {
     if (!userData?.data) return null;
     
@@ -312,6 +339,16 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
                 >
                   <Copy className="h-3 w-3 mr-2" />
                   Copy {previewCategory === 'all' ? 'All' : 'Section'}
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleDownloadPreview}
+                  disabled={!userData}
+                >
+                  <Download className="h-3 w-3 mr-2" />
+                  Download JSON
                 </Button>
               </div>
 
