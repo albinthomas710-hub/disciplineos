@@ -1,5 +1,6 @@
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./users";
+import { v } from "convex/values";
 
 export const getAllUserData = query({
   args: {},
@@ -188,4 +189,126 @@ export const getAllUserData = query({
       }
     };
   },
+});
+
+export const restoreUserData = mutation({
+  args: { 
+    data: v.any(), 
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+    
+    const { data } = args;
+    if (!data || !data.metadata || !data.data) {
+      throw new Error("Invalid backup file format");
+    }
+
+    // We map old IDs to new IDs to maintain relationships
+    const idMap = new Map<string, any>();
+    
+    // Helper to map IDs in an object
+    const mapIds = (obj: any, fields: string[]) => {
+      const newObj = { ...obj };
+      for (const field of fields) {
+        if (newObj[field]) {
+          if (Array.isArray(newObj[field])) {
+             newObj[field] = newObj[field].map((id: string) => idMap.get(id) || id);
+          } else {
+             newObj[field] = idMap.get(newObj[field]) || newObj[field];
+          }
+        }
+      }
+      return newObj;
+    };
+
+    // Helper to restore a table
+    const restoreTable = async (tableName: string, records: any[], idFieldsToMap: string[] = []) => {
+      if (!records || !Array.isArray(records)) return;
+      
+      for (const record of records) {
+        const oldId = record._id;
+        // Strip system fields and userId
+        const { _id, _creationTime, userId, ...rest } = record;
+        
+        // Map foreign keys
+        const mappedRecord = mapIds(rest, idFieldsToMap);
+        
+        // Set current user
+        mappedRecord.userId = user._id;
+        
+        // Insert
+        try {
+          const newId = await ctx.db.insert(tableName as any, mappedRecord);
+          idMap.set(oldId, newId);
+        } catch (e) {
+          console.error(`Failed to restore record in ${tableName}:`, e);
+        }
+      }
+    };
+
+    // Restore Order - Parents first, then children
+    const d = data.data;
+
+    // 1. Independent / Parent Tables
+    await restoreTable("userSettings", d.userSettings);
+    await restoreTable("dopamineShield", d.dopamineShield);
+    await restoreTable("futureTimeline", d.futureTimeline);
+    await restoreTable("selfDiscovery", d.selfDiscovery);
+    await restoreTable("customCategories", d.customCategories);
+    await restoreTable("emergencyTriggers", d.emergencyTriggers);
+    await restoreTable("quoteChains", d.quoteChains);
+    await restoreTable("videoCategories", d.videoCategories);
+    await restoreTable("adviceCategories", d.adviceCategories);
+    await restoreTable("projects", d.projects);
+    await restoreTable("problems", d.problems);
+    await restoreTable("timetables", d.timetables);
+    await restoreTable("legendProfiles", d.legendProfiles);
+
+    // 2. Dependent Level 1
+    await restoreTable("timeBlocks", d.timeBlocks, ["timetableId"]);
+    await restoreTable("quotes", d.quotes, ["chainId"]);
+    await restoreTable("notes", d.notes, ["projectId"]);
+    await restoreTable("ideas", d.ideas, ["projectId"]);
+    await restoreTable("manifestations", d.manifestations);
+    await restoreTable("prayers", d.prayers);
+    await restoreTable("scriptures", d.scriptures);
+    await restoreTable("holyVideos", d.holyVideos);
+    await restoreTable("notToDoList", d.notToDoList);
+    await restoreTable("weeklyReviews", d.weeklyReviews);
+    await restoreTable("eightyTwentyActivities", d.eightyTwentyActivities);
+    await restoreTable("failureWisdom", d.failureWisdom);
+    await restoreTable("pivotLog", d.pivotLog);
+    await restoreTable("customerLearnings", d.customerLearnings, ["linkedProblemIds"]);
+    await restoreTable("vectal", d.vectal);
+    await restoreTable("reflections", d.reflections);
+    
+    // 3. Dependent Level 2
+    await restoreTable("completionLogs", d.completionLogs, ["timetableId", "timeBlockId"]);
+    await restoreTable("realityAnchor", d.realityAnchor); // Complex nested IDs skipped for now
+    await restoreTable("videoLibrary", d.videoLibrary, ["categoryId"]);
+    await restoreTable("adviceLibrary", d.adviceLibrary, ["categoryId"]);
+    await restoreTable("solutions", d.solutions, ["problemId"]);
+    await restoreTable("hardDeadlines", d.hardDeadlines, ["linkedProblemId", "linkedSolutionId"]);
+    await restoreTable("clientFeedback", d.clientFeedback, ["projectId"]);
+    await restoreTable("entrepreneurActions", d.entrepreneurActions);
+    await restoreTable("affirmationIdeas", d.affirmationIdeas, ["manifestationId"]);
+
+    // 4. Dependent Level 3
+    await restoreTable("iterations", d.iterations, ["projectId", "feedbackIds"]);
+    await restoreTable("failuresVault", d.failuresVault, ["problemId", "solutionId"]);
+    await restoreTable("productInsights", d.productInsights, ["projectId", "relatedFeedbackIds", "relatedIterationIds"]);
+
+    // 5. Dependent Level 4
+    await restoreTable("impactValidations", d.impactValidations, ["iterationId", "feedbackId"]);
+    await restoreTable("satisfactionMetrics", d.satisfactionMetrics, ["projectId"]);
+    
+    // Others
+    await restoreTable("kitchenReclaim", d.kitchenReclaim);
+    await restoreTable("prayerStreaks", d.prayerStreaks);
+    await restoreTable("selfReflectionJournal", d.selfReflectionJournal);
+    await restoreTable("patternInsights", d.patternInsights);
+
+    return { success: true, count: idMap.size };
+  }
 });
