@@ -52,16 +52,16 @@ export function LogoDropdown() {
             Landing Page
           </DropdownMenuItem>
           
+          <DropdownMenuItem 
+            onClick={() => setShowBackup(true)} 
+            className="cursor-pointer"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Backup Data
+          </DropdownMenuItem>
+          
           {isAuthenticated && (
             <>
-              <DropdownMenuItem 
-                onClick={() => setShowBackup(true)} 
-                className="cursor-pointer"
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Backup Data
-              </DropdownMenuItem>
-              
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={handleSignOut}
