@@ -12,6 +12,7 @@ import type * as advice from "../advice.js";
 import type * as affirmationIdeas from "../affirmationIdeas.js";
 import type * as auth from "../auth.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
+import type * as backup from "../backup.js";
 import type * as categories from "../categories.js";
 import type * as completionLogs from "../completionLogs.js";
 import type * as crons from "../crons.js";
@@ -64,6 +65,7 @@ declare const fullApi: ApiFromModules<{
   affirmationIdeas: typeof affirmationIdeas;
   auth: typeof auth;
   "auth/emailOtp": typeof auth_emailOtp;
+  backup: typeof backup;
   categories: typeof categories;
   completionLogs: typeof completionLogs;
   crons: typeof crons;
