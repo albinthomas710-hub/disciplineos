@@ -8,12 +8,20 @@ import {
 } from "@/components/ui/dialog";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery, useAction } from "convex/react";
-import { Download, FileJson, Loader2, ShieldCheck, Upload, AlertTriangle, Copy, Check, Eye } from "lucide-react";
-import { useState, useRef } from "react";
+import { Download, FileJson, Loader2, ShieldCheck, Upload, AlertTriangle, Copy, Check, Eye, Filter } from "lucide-react";
+import { useState, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface DataBackupDialogProps {
   open: boolean;
@@ -24,6 +32,7 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
+  const [previewCategory, setPreviewCategory] = useState<string>("all");
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const userData = useQuery(api.backup.getAllUserData);
@@ -59,6 +68,15 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
   const handleCopyToClipboard = async () => {
     setIsCopying(true);
     try {
+      // If viewing a specific category, only copy that
+      if (previewCategory !== "all" && userData?.data) {
+        const dataToCopy = (userData.data as any)[previewCategory];
+        await navigator.clipboard.writeText(JSON.stringify(dataToCopy, null, 2));
+        toast.success(`Copied ${previewCategory} data to clipboard!`);
+        setIsCopying(false);
+        return;
+      }
+
       const url = await generateBackup();
       if (!url) throw new Error("Failed to generate backup URL");
       
@@ -74,6 +92,30 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
       setIsCopying(false);
     }
   };
+
+  const getPreviewData = useMemo(() => {
+    if (!userData?.data) return null;
+    if (previewCategory === "all") return userData;
+    
+    // Return just the selected category data
+    return (userData.data as any)[previewCategory] || { message: "No data found for this category" };
+  }, [userData, previewCategory]);
+
+  const categories = [
+    { value: "all", label: "All Data (Complete Backup)" },
+    { value: "projects", label: "Projects" },
+    { value: "notes", label: "Notes" },
+    { value: "adviceLibrary", label: "Advice Library" },
+    { value: "quotes", label: "Quotes" },
+    { value: "timetables", label: "Timetables" },
+    { value: "manifestations", label: "Manifestations" },
+    { value: "problems", label: "Problem Vault" },
+    { value: "solutions", label: "Solutions" },
+    { value: "failureWisdom", label: "Mistake Vault" },
+    { value: "prayers", label: "Prayers" },
+    { value: "videoLibrary", label: "Video Library" },
+    { value: "vectal", label: "Vectal Tasks" },
+  ];
 
   const handleImportClick = () => {
     fileInputRef.current?.click();
@@ -126,7 +168,7 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <ShieldCheck className="h-6 w-6 text-green-600" />
@@ -204,6 +246,57 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
                 )}
               </Button>
             </div>
+          </TabsContent>
+
+          <TabsContent value="preview" className="flex-1 flex flex-col overflow-hidden space-y-4 py-4">
+            <div className="flex items-center justify-between gap-4 px-1">
+              <div className="flex items-center gap-2 flex-1">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <Select value={previewCategory} onValueChange={setPreviewCategory}>
+                  <SelectTrigger className="w-[240px]">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={handleCopyToClipboard}
+                disabled={!userData}
+              >
+                <Copy className="h-3 w-3 mr-2" />
+                Copy {previewCategory === 'all' ? 'All' : 'Section'}
+              </Button>
+            </div>
+
+            <div className="flex-1 border rounded-md bg-slate-950 text-slate-50 overflow-hidden relative">
+              <div className="absolute top-2 right-2 text-xs text-slate-500 font-mono">
+                {previewCategory === 'all' ? 'full_backup.json' : `${previewCategory}.json`}
+              </div>
+              <ScrollArea className="h-full w-full p-4">
+                {userData ? (
+                  <pre className="text-xs font-mono whitespace-pre-wrap break-all">
+                    {JSON.stringify(getPreviewData, null, 2)}
+                  </pre>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-slate-500">
+                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                    Loading data...
+                  </div>
+                )}
+              </ScrollArea>
+            </div>
+            <p className="text-xs text-muted-foreground text-center">
+              This is a live preview of your data. You can copy specific sections or download the full backup.
+            </p>
           </TabsContent>
           
           <TabsContent value="import" className="space-y-4 py-4">
