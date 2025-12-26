@@ -8,12 +8,13 @@ import {
 } from "@/components/ui/dialog";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery, useAction } from "convex/react";
-import { Download, FileJson, Loader2, ShieldCheck, Upload, AlertTriangle, Copy, Check, Eye, Filter } from "lucide-react";
+import { Download, FileJson, Loader2, ShieldCheck, Upload, AlertTriangle, Copy, Check, Eye, Filter, Sparkles } from "lucide-react";
 import { useState, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -33,11 +34,38 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
   const [isImporting, setIsImporting] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const [previewCategory, setPreviewCategory] = useState<string>("all");
+  const [isCleanMode, setIsCleanMode] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const userData = useQuery(api.backup.getAllUserData);
   const generateBackup = useAction(api.backup.generateBackupAction);
   const restoreData = useMutation(api.backup.restoreUserData);
+
+  // Helper to clean data for export/preview
+  const cleanData = (data: any): any => {
+    if (Array.isArray(data)) {
+      return data.map(item => cleanData(item));
+    }
+    if (data && typeof data === 'object') {
+      const cleaned: any = {};
+      for (const key in data) {
+        // Remove system fields, userId, and foreign keys (ending in Id)
+        // Also remove timestamps if they are numbers (likely system timestamps)
+        if (
+          key.startsWith('_') || 
+          key === 'userId' || 
+          key.endsWith('Id') ||
+          key === 'createdAt' ||
+          key === 'updatedAt'
+        ) {
+          continue;
+        }
+        cleaned[key] = cleanData(data[key]);
+      }
+      return cleaned;
+    }
+    return data;
+  };
 
   const handleDownload = async () => {
     setIsExporting(true);
@@ -68,11 +96,11 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
   const handleCopyToClipboard = async () => {
     setIsCopying(true);
     try {
-      // If viewing a specific category, only copy that
-      if (previewCategory !== "all" && userData?.data) {
-        const dataToCopy = (userData.data as any)[previewCategory];
+      // If viewing a specific category OR if clean mode is on, use the preview data
+      if (previewCategory !== "all" || isCleanMode) {
+        const dataToCopy = getPreviewData;
         await navigator.clipboard.writeText(JSON.stringify(dataToCopy, null, 2));
-        toast.success(`Copied ${previewCategory} data to clipboard!`);
+        toast.success(`Copied ${isCleanMode ? 'cleaned' : ''} ${previewCategory === 'all' ? 'data' : previewCategory} to clipboard!`);
         setIsCopying(false);
         return;
       }
@@ -95,11 +123,20 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
 
   const getPreviewData = useMemo(() => {
     if (!userData?.data) return null;
-    if (previewCategory === "all") return userData;
     
-    // Return just the selected category data
-    return (userData.data as any)[previewCategory] || { message: "No data found for this category" };
-  }, [userData, previewCategory]);
+    let data;
+    if (previewCategory === "all") {
+      data = userData;
+    } else {
+      // Return just the selected category data
+      data = (userData.data as any)[previewCategory] || { message: "No data found for this category" };
+    }
+
+    if (isCleanMode) {
+      return cleanData(data);
+    }
+    return data;
+  }, [userData, previewCategory, isCleanMode]);
 
   const categories = [
     { value: "all", label: "All Data (Complete Backup)" },
@@ -249,37 +286,55 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
           </TabsContent>
 
           <TabsContent value="preview" className="flex-1 flex flex-col overflow-hidden space-y-4 py-4">
-            <div className="flex items-center justify-between gap-4 px-1">
-              <div className="flex items-center gap-2 flex-1">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <Select value={previewCategory} onValueChange={setPreviewCategory}>
-                  <SelectTrigger className="w-[240px]">
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.value} value={cat.value}>
-                        {cat.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="flex flex-col gap-4 px-1">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2 flex-1">
+                  <Filter className="h-4 w-4 text-muted-foreground" />
+                  <Select value={previewCategory} onValueChange={setPreviewCategory}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.value} value={cat.value}>
+                          {cat.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleCopyToClipboard}
+                  disabled={!userData}
+                >
+                  <Copy className="h-3 w-3 mr-2" />
+                  Copy {previewCategory === 'all' ? 'All' : 'Section'}
+                </Button>
               </div>
-              
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={handleCopyToClipboard}
-                disabled={!userData}
-              >
-                <Copy className="h-3 w-3 mr-2" />
-                Copy {previewCategory === 'all' ? 'All' : 'Section'}
-              </Button>
+
+              <div className="flex items-center space-x-2 bg-slate-100 dark:bg-slate-900 p-2 rounded-md border">
+                <Switch 
+                  id="clean-mode" 
+                  checked={isCleanMode}
+                  onCheckedChange={setIsCleanMode}
+                />
+                <Label htmlFor="clean-mode" className="flex items-center gap-2 cursor-pointer text-sm font-medium">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-500" />
+                  Clean Data Mode
+                  <span className="text-xs font-normal text-muted-foreground hidden sm:inline">
+                    (Removes IDs & system fields for easy sharing)
+                  </span>
+                </Label>
+              </div>
             </div>
 
             <div className="flex-1 border rounded-md bg-slate-950 text-slate-50 overflow-hidden relative">
               <div className="absolute top-2 right-2 text-xs text-slate-500 font-mono">
                 {previewCategory === 'all' ? 'full_backup.json' : `${previewCategory}.json`}
+                {isCleanMode && ' (Cleaned)'}
               </div>
               <ScrollArea className="h-full w-full p-4">
                 {userData ? (
