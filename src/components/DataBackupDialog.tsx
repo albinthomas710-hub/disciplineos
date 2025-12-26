@@ -8,11 +8,12 @@ import {
 } from "@/components/ui/dialog";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery, useAction } from "convex/react";
-import { Download, FileJson, Loader2, ShieldCheck, Upload, AlertTriangle, Copy, Check } from "lucide-react";
+import { Download, FileJson, Loader2, ShieldCheck, Upload, AlertTriangle, Copy, Check, Eye } from "lucide-react";
 import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface DataBackupDialogProps {
   open: boolean;
@@ -125,24 +126,25 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <ShieldCheck className="h-6 w-6 text-green-600" />
             Data Backup & Restore
           </DialogTitle>
           <DialogDescription className="pt-2">
-            Manage your data sovereignty. Export a full backup or restore from a previous backup file.
+            Manage your data sovereignty. Export a full backup, preview your raw data, or restore from a file.
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="export" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="export" className="w-full flex-1 flex flex-col overflow-hidden">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="export">Export Data</TabsTrigger>
+            <TabsTrigger value="preview">Preview Data</TabsTrigger>
             <TabsTrigger value="import">Import Data</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="export" className="space-y-4 py-4">
+          <TabsContent value="export" className="space-y-4 py-4 overflow-y-auto">
             <div className="flex flex-col items-center justify-center py-4 space-y-4">
               <div className="h-20 w-20 bg-green-50 dark:bg-green-900/20 rounded-full flex items-center justify-center">
                 <Download className="h-10 w-10 text-green-600 dark:text-green-400" />
