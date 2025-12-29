@@ -44,7 +44,7 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
   const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
-    if (isDirty) return;
+    // Always load initial data when date changes, but preserve user edits within the same date
     if (initialData) {
       if (initialData.productivityInventory && initialData.productivityInventory.length > 0) {
         setInventory(initialData.productivityInventory);
@@ -67,20 +67,25 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
       setCallsClosed(initialData.callsClosed || 0);
       setDistractions(initialData.distractions || []);
     } else {
-      // Reset if no data
-      setInventory([
-        { text: "", checked: false },
-        { text: "", checked: false },
-        { text: "", checked: false }
-      ]);
-      setImprovements(["", "", ""]);
-      setCallsBooked(0);
-      setCallsConducted(0);
-      setCallsClosed(0);
-      setDistractions([]);
+      // Reset if no data - only if not dirty
+      if (!isDirty) {
+        setInventory([
+          { text: "", checked: false },
+          { text: "", checked: false },
+          { text: "", checked: false }
+        ]);
+        setImprovements(["", "", ""]);
+        setCallsBooked(0);
+        setCallsConducted(0);
+        setCallsClosed(0);
+        setDistractions([]);
+      }
     }
-    setIsDirty(false);
-  }, [initialData, dateStr]);
+    // Reset isDirty when date changes
+    if (dateStr) {
+      setIsDirty(false);
+    }
+  }, [initialData, dateStr, isDirty]);
 
   const handleSave = async () => {
     try {
