@@ -27,81 +27,119 @@ export const getRange = query({
       )
       .collect();
 
-    // 3. Fetch Time Block Details
-    // We need to get the titles for the blocks. 
-    // Optimization: Collect unique IDs first.
-    const blockIds = new Set(logs.map(l => l.timeBlockId));
-    const blocksMap = new Map();
+    // 3. Identify Timetables involved
+    const logTimetableIds = new Set(logs.map(l => l.timetableId));
+    if (user.activeTimetableId) {
+      logTimetableIds.add(user.activeTimetableId);
+    }
     
-    await Promise.all(
-      Array.from(blockIds).map(async (id) => {
-        const block = await ctx.db.get(id);
-        if (block) {
-          blocksMap.set(id, block);
-        }
-      })
-    );
-
-    // 4. Fetch Timetables for context (colors, names)
-    const timetableIds = new Set(Array.from(blocksMap.values()).map(b => b.timetableId));
+    // Fetch all timetables involved
     const timetablesMap = new Map();
-    
     await Promise.all(
-      Array.from(timetableIds).map(async (id) => {
-        const timetable = await ctx.db.get(id as any);
+      Array.from(logTimetableIds).map(async (id) => {
+        const timetable = await ctx.db.get(id);
         if (timetable) {
           timetablesMap.set(id, timetable);
         }
       })
     );
 
-    // 5. Structure Data by Date
+    // Fetch ALL blocks for these timetables
+    const timetableBlocksMap = new Map<string, any[]>();
+    await Promise.all(
+      Array.from(logTimetableIds).map(async (tid) => {
+        const blocks = await ctx.db
+          .query("timeBlocks")
+          .withIndex("by_timetable", (q) => q.eq("timetableId", tid))
+          .collect();
+        timetableBlocksMap.set(tid, blocks);
+      })
+    );
+
+    // 4. Structure Data by Date
     const historyByDate: Record<string, any> = {};
 
-    // Initialize dates in range (optional, but good for complete data)
-    // For now, we'll just populate what we have.
+    // Helper to generate date range array
+    const start = new Date(args.startDate);
+    const end = new Date(args.endDate);
+    const dateArray = [];
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      dateArray.push(d.toISOString().split('T')[0]);
+    }
 
-    // Process Logs
-    logs.forEach(log => {
-      if (!historyByDate[log.date]) {
-        historyByDate[log.date] = { blocks: [], tasks: [], stats: { completedBlocks: 0, totalBlocks: 0 } };
-      }
+    // Process each day in the range
+    dateArray.forEach(dateStr => {
+      // Find logs for this date
+      const dayLogs = logs.filter(l => l.date === dateStr);
       
-      const block = blocksMap.get(log.timeBlockId);
-      const timetable = block ? timetablesMap.get(block.timetableId) : null;
+      // Determine Timetable ID
+      let timetableId = null;
+      if (dayLogs.length > 0) {
+        timetableId = dayLogs[0].timetableId; // Use the one from logs
+      } else if (user.activeTimetableId) {
+        timetableId = user.activeTimetableId; // Fallback to active
+      }
 
-      if (block) { // Only add if block still exists
-        historyByDate[log.date].blocks.push({
-          ...log,
-          blockTitle: block.title,
-          blockDescription: block.description,
-          category: block.category,
-          startTime: block.startTime,
-          endTime: block.endTime,
-          timetableName: timetable?.name,
-          timetableColor: timetable?.color,
-        });
+      // If we have a timetable, we can build the full view
+      if (timetableId && timetablesMap.has(timetableId)) {
+        const timetable = timetablesMap.get(timetableId);
+        const allBlocks = timetableBlocksMap.get(timetableId) || [];
         
-        if (log.completed) {
-          historyByDate[log.date].stats.completedBlocks++;
-        }
-        historyByDate[log.date].stats.totalBlocks++;
+        // Map logs for quick lookup
+        const logMap = new Map(dayLogs.map(l => [l.timeBlockId, l]));
+
+        // Build full block list (merging schedule with logs)
+        const fullBlocks = allBlocks.map(block => {
+          const log = logMap.get(block._id);
+          return {
+            _id: log?._id, // Log ID if exists
+            timeBlockId: block._id,
+            date: dateStr,
+            completed: log?.completed || false, // Default to false if no log
+            completedAt: log?.completedAt,
+            blockTitle: block.title,
+            blockDescription: block.description,
+            category: block.category,
+            startTime: block.startTime,
+            endTime: block.endTime,
+            timetableName: timetable.name,
+            timetableColor: timetable.color,
+            order: block.order,
+          };
+        });
+
+        // Sort by order or time
+        fullBlocks.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+        // Calculate Stats
+        const totalBlocks = fullBlocks.length;
+        const completedBlocks = fullBlocks.filter(b => b.completed).length;
+
+        historyByDate[dateStr] = {
+          blocks: fullBlocks,
+          tasks: [], // Will fill next
+          stats: {
+            completedBlocks,
+            totalBlocks,
+            timetableName: timetable.name
+          }
+        };
+      } else {
+        // No timetable data available for this day
+        historyByDate[dateStr] = {
+          blocks: [],
+          tasks: [],
+          stats: { completedBlocks: 0, totalBlocks: 0 }
+        };
       }
     });
 
-    // Process Vectal
+    // 5. Merge Vectal Tasks
     vectalEntries.forEach(entry => {
-      if (!historyByDate[entry.date]) {
-        historyByDate[entry.date] = { blocks: [], tasks: [], stats: { completedBlocks: 0, totalBlocks: 0 } };
+      if (historyByDate[entry.date]) {
+        historyByDate[entry.date].tasks = entry.tasks;
+        historyByDate[entry.date].vectalCompleted = entry.allCompleted;
       }
-      
-      historyByDate[entry.date].tasks = entry.tasks;
-      historyByDate[entry.date].vectalCompleted = entry.allCompleted;
-    });
-
-    // Sort blocks by time for each day
-    Object.keys(historyByDate).forEach(date => {
-      historyByDate[date].blocks.sort((a: any, b: any) => a.startTime.localeCompare(b.startTime));
     });
 
     return historyByDate;
@@ -119,7 +157,7 @@ export const getYearlyStats = query({
     const startDate = `${args.year}-01-01`;
     const endDate = `${args.year}-12-31`;
 
-    // 1. Fetch Completion Logs (Time Blocks) - Only need status
+    // 1. Fetch Completion Logs
     const logs = await ctx.db
       .query("completionLogs")
       .withIndex("by_user_and_date", (q) => 
@@ -127,14 +165,33 @@ export const getYearlyStats = query({
       )
       .collect();
 
-    // 2. Calculate stats per day
+    // 2. Identify Timetables
+    const logTimetableIds = new Set(logs.map(l => l.timetableId));
+    if (user.activeTimetableId) {
+      logTimetableIds.add(user.activeTimetableId);
+    }
+
+    // 3. Get Block Counts for each Timetable
+    const timetableCounts = new Map<string, number>();
+    await Promise.all(
+      Array.from(logTimetableIds).map(async (tid) => {
+        const blocks = await ctx.db
+          .query("timeBlocks")
+          .withIndex("by_timetable", (q) => q.eq("timetableId", tid))
+          .collect();
+        timetableCounts.set(tid, blocks.length);
+      })
+    );
+
+    // 4. Calculate stats per day
     const statsByDate: Record<string, { total: number; completed: number }> = {};
 
     logs.forEach((log) => {
       if (!statsByDate[log.date]) {
-        statsByDate[log.date] = { total: 0, completed: 0 };
+        // Initialize with the FULL timetable count, not just log count
+        const total = timetableCounts.get(log.timetableId) || 0;
+        statsByDate[log.date] = { total, completed: 0 };
       }
-      statsByDate[log.date].total++;
       if (log.completed) {
         statsByDate[log.date].completed++;
       }
