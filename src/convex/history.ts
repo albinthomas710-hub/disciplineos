@@ -107,3 +107,39 @@ export const getRange = query({
     return historyByDate;
   },
 });
+
+export const getYearlyStats = query({
+  args: {
+    year: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return null;
+
+    const startDate = `${args.year}-01-01`;
+    const endDate = `${args.year}-12-31`;
+
+    // 1. Fetch Completion Logs (Time Blocks) - Only need status
+    const logs = await ctx.db
+      .query("completionLogs")
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id).gte("date", startDate).lte("date", endDate)
+      )
+      .collect();
+
+    // 2. Calculate stats per day
+    const statsByDate: Record<string, { total: number; completed: number }> = {};
+
+    logs.forEach((log) => {
+      if (!statsByDate[log.date]) {
+        statsByDate[log.date] = { total: 0, completed: 0 };
+      }
+      statsByDate[log.date].total++;
+      if (log.completed) {
+        statsByDate[log.date].completed++;
+      }
+    });
+
+    return statsByDate;
+  },
+});
