@@ -146,8 +146,9 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
   };
 
   const addDistraction = () => {
-    if (newDistraction.trim()) {
-      setDistractions([...distractions, newDistraction.trim()]);
+    const trimmedDistraction = newDistraction.trim();
+    if (trimmedDistraction) {
+      setDistractions([...distractions, trimmedDistraction]);
       setNewDistraction("");
       setIsDirty(true);
     }
