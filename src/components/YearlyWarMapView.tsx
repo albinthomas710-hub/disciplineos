@@ -20,9 +20,10 @@ import { Button } from "@/components/ui/button";
 interface YearlyWarMapViewProps {
   year: number;
   onMonthSelect?: (date: Date) => void;
+  onDaySelect?: (date: Date) => void;
 }
 
-export default function YearlyWarMapView({ year, onMonthSelect }: YearlyWarMapViewProps) {
+export default function YearlyWarMapView({ year, onMonthSelect, onDaySelect }: YearlyWarMapViewProps) {
   const yearlyData = useQuery(api.history.getYearlyStats, { year });
 
   const yearStart = startOfYear(new Date(year, 0, 1));
@@ -134,8 +135,9 @@ export default function YearlyWarMapView({ year, onMonthSelect }: YearlyWarMapVi
                           <TooltipTrigger asChild>
                             <motion.div
                               whileHover={{ scale: 1.2, zIndex: 10 }}
+                              onClick={() => onDaySelect?.(date)}
                               className={`
-                                aspect-square rounded-sm cursor-help relative transition-colors
+                                aspect-square rounded-sm cursor-pointer relative transition-colors
                                 ${status.color}
                                 ${isCurrentDay ? "ring-2 ring-primary ring-offset-1" : ""}
                               `}

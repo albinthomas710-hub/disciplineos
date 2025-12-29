@@ -93,6 +93,12 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
     setViewMode("month");
   };
 
+  const handleDaySelect = (date: Date) => {
+    setCurrentDate(date);
+    setSelectedDate(date);
+    setViewMode("month");
+  };
+
   // Calculate monthly stats
   const monthlyStats = historyData ? Object.values(historyData).reduce((acc: any, day: any) => {
     acc.completedBlocks += day.stats.completedBlocks || 0;
@@ -124,6 +130,7 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
         <YearlyWarMapView 
           year={currentDate.getFullYear()} 
           onMonthSelect={handleMonthSelect}
+          onDaySelect={handleDaySelect}
         />
       ) : (
         <>
