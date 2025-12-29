@@ -61,6 +61,14 @@ export const getRange = query({
     // 4. Structure Data by Date
     const historyByDate: Record<string, any> = {};
 
+    // Fetch Day Tags for the range
+    const dayTags = await ctx.db
+      .query("dayTags")
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id).gte("date", args.startDate).lte("date", args.endDate)
+      )
+      .collect();
+
     // Helper to generate date range array
     const start = new Date(args.startDate);
     const end = new Date(args.endDate);
@@ -74,6 +82,7 @@ export const getRange = query({
       // Find logs for this date
       const dayLogs = logs.filter(l => l.date === dateStr);
       const override = overrides.find(o => o.date === dateStr);
+      const tags = dayTags.filter(t => t.date === dateStr).map(t => t.tagId);
       
       // Determine Timetable ID
       let timetableId = null;
@@ -129,18 +138,97 @@ export const getRange = query({
             timetableName: timetable.name,
             timetableId: timetable._id,
             isOverride: !!override
-          }
+          },
+          tags, // Add tags to the day data
         };
       } else {
         // No timetable data available for this day
         historyByDate[dateStr] = {
           blocks: [],
-          stats: { completedBlocks: 0, totalBlocks: 0 }
+          stats: { completedBlocks: 0, totalBlocks: 0 },
+          tags, // Add tags even if no timetable
         };
       }
     });
 
     return historyByDate;
+  },
+});
+
+export const getCalendarTags = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+    return await ctx.db
+      .query("calendarTags")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+  },
+});
+
+export const createCalendarTag = mutation({
+  args: {
+    label: v.string(),
+    color: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+    return await ctx.db.insert("calendarTags", {
+      userId: user._id,
+      label: args.label,
+      color: args.color,
+    });
+  },
+});
+
+export const deleteCalendarTag = mutation({
+  args: { tagId: v.id("calendarTags") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+    
+    // Clean up assignments
+    const assignments = await ctx.db
+      .query("dayTags")
+      .filter(q => q.eq(q.field("tagId"), args.tagId))
+      .collect();
+      
+    for (const assignment of assignments) {
+      await ctx.db.delete(assignment._id);
+    }
+    
+    await ctx.db.delete(args.tagId);
+  },
+});
+
+export const toggleDayTag = mutation({
+  args: {
+    date: v.string(),
+    tagId: v.id("calendarTags"),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const existing = await ctx.db
+      .query("dayTags")
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id).eq("date", args.date)
+      )
+      .filter(q => q.eq(q.field("tagId"), args.tagId))
+      .first();
+
+    if (existing) {
+      await ctx.db.delete(existing._id);
+    } else {
+      await ctx.db.insert("dayTags", {
+        userId: user._id,
+        date: args.date,
+        tagId: args.tagId,
+      });
+    }
   },
 });
 

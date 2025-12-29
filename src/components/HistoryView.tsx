@@ -28,6 +28,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import YearlyWarMapView from "./YearlyWarMapView";
+import DayTagsManager from "./DayTagsManager";
 import { 
   Select,
   SelectContent,
@@ -67,6 +68,9 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
   // Fetch all timetables for the dropdown
   const allTimetables = useQuery(api.timetables.list);
   const setDayTimetable = useMutation(api.history.setDayTimetable);
+  
+  // Fetch calendar tags for visualization
+  const calendarTags = useQuery(api.history.getCalendarTags);
 
   // Sync monthly goals when data loads
   useEffect(() => {
@@ -270,6 +274,7 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
                       
                       const isSelected = isSameDay(date, selectedDate);
                       const isPerfect = completionRate === 1 && dayData?.stats.totalBlocks > 0;
+                      const dayTags = dayData?.tags || [];
                       
                       // Determine color intensity based on completion
                       let bgClass = "bg-secondary/30 hover:bg-secondary/60 text-muted-foreground";
@@ -293,6 +298,23 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
                           `}
                         >
                           <span className="text-xs sm:text-sm">{format(date, "d")}</span>
+                          
+                          {/* Tag Indicators */}
+                          {dayTags.length > 0 && calendarTags && (
+                            <div className="absolute bottom-1 flex gap-0.5 justify-center w-full px-1">
+                              {dayTags.slice(0, 3).map((tagId: any) => {
+                                const tag = calendarTags.find(t => t._id === tagId);
+                                if (!tag) return null;
+                                return (
+                                  <div key={tagId} className={`w-1.5 h-1.5 rounded-full ${tag.color}`} />
+                                );
+                              })}
+                              {dayTags.length > 3 && (
+                                <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
+                              )}
+                            </div>
+                          )}
+
                           {isPerfect && (
                             <motion.div 
                               initial={{ scale: 0 }} 
@@ -355,6 +377,13 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Day Tags Manager */}
+              <DayTagsManager 
+                selectedDate={selectedDate} 
+                selectedDateStr={selectedDateStr}
+                assignedTagIds={selectedDayData?.tags}
+              />
             </div>
 
             {/* Daily Detail Section */}

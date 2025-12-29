@@ -1116,6 +1116,20 @@ const schema = defineSchema(
       notes: v.optional(v.string()),
     }).index("by_user_and_month", ["userId", "month"]),
 
+    // Calendar Tags - User defined tags for days
+    calendarTags: defineTable({
+      userId: v.id("users"),
+      label: v.string(),
+      color: v.string(),
+    }).index("by_user", ["userId"]),
+
+    // Day Tags - Assigning tags to specific dates
+    dayTags: defineTable({
+      userId: v.id("users"),
+      date: v.string(), // "2025-01-11"
+      tagId: v.id("calendarTags"),
+    }).index("by_user_and_date", ["userId", "date"]),
+
   },
   {
     schemaValidation: false,
