@@ -31,6 +31,8 @@ import YearlyWarMapView from "./YearlyWarMapView";
 import DayTagsManager from "./DayTagsManager";
 import DailyMetricsCard from "./DailyMetricsCard";
 import DailyAccountabilityCard from "./DailyAccountabilityCard";
+import HistoryStatsCards from "./history/HistoryStatsCards";
+import HistoryCalendar from "./history/HistoryCalendar";
 import { 
   Select,
   SelectContent,
@@ -187,163 +189,21 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
       ) : (
         <>
           {/* Header & Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-none shadow-lg relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Trophy className="h-24 w-24" />
-              </div>
-              <CardContent className="p-6 relative z-10">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shadow-inner">
-                    <Trophy className="h-8 w-8 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-indigo-100 font-medium text-sm">Monthly Focus</p>
-                    <h3 className="text-3xl font-bold tracking-tight">
-                      {monthlyStats ? Math.round((monthlyStats.completedBlocks / (monthlyStats.totalBlocks || 1)) * 100) : 0}%
-                    </h3>
-                    <p className="text-xs text-indigo-200 mt-1">Completion Rate</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-amber-400 to-orange-500 text-white border-none shadow-lg relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Star className="h-24 w-24" />
-              </div>
-              <CardContent className="p-6 relative z-10">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shadow-inner">
-                    <Star className="h-8 w-8 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-amber-100 font-medium text-sm">Perfect Days</p>
-                    <h3 className="text-3xl font-bold tracking-tight">
-                      {monthlyStats?.perfectDays || 0}
-                    </h3>
-                    <p className="text-xs text-amber-100 mt-1">100% Execution</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-blue-500 to-cyan-600 text-white border-none shadow-lg relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Activity className="h-24 w-24" />
-              </div>
-              <CardContent className="p-6 relative z-10">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shadow-inner">
-                    <Activity className="h-8 w-8 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-blue-100 font-medium text-sm">Time Invested</p>
-                    <h3 className="text-3xl font-bold tracking-tight">
-                      {monthlyStats ? Math.round(monthlyStats.totalMinutes / 60) : 0}h
-                    </h3>
-                    <p className="text-xs text-blue-200 mt-1">Actual Deep Work</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <HistoryStatsCards monthlyStats={monthlyStats} />
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Calendar Section */}
             <div className="lg:col-span-5 xl:col-span-4 space-y-6">
-              <Card className="border-2 border-muted/50">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                  <CardTitle className="text-xl font-bold flex items-center gap-2">
-                    <CalendarIcon className="h-5 w-5 text-primary" />
-                    History
-                  </CardTitle>
-                  <div className="flex items-center gap-2 bg-secondary/50 p-1 rounded-lg">
-                    <Button variant="ghost" size="icon" onClick={prevMonth} className="h-8 w-8">
-                      <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <span className="font-semibold text-sm min-w-[100px] text-center">
-                      {format(currentDate, "MMMM yyyy")}
-                    </span>
-                    <Button variant="ghost" size="icon" onClick={nextMonth} className="h-8 w-8">
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-7 gap-2 text-center mb-2">
-                    {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-                      <div key={day} className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-7 gap-2">
-                    {dateRange.map((date, i) => {
-                      const dateStr = format(date, "yyyy-MM-dd");
-                      const dayData = historyData?.[dateStr];
-                      const completionRate = dayData?.stats.totalBlocks 
-                        ? dayData.stats.completedBlocks / dayData.stats.totalBlocks 
-                        : 0;
-                      
-                      const isSelected = isSameDay(date, selectedDate);
-                      const isPerfect = completionRate === 1 && dayData?.stats.totalBlocks > 0;
-                      const dayTags = dayData?.tags || [];
-                      
-                      // Determine color intensity based on completion
-                      let bgClass = "bg-secondary/30 hover:bg-secondary/60 text-muted-foreground";
-                      if (dayData?.stats.totalBlocks > 0) {
-                        if (isPerfect) bgClass = "bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/20";
-                        else if (completionRate >= 0.8) bgClass = "bg-green-500 hover:bg-green-600 text-white shadow-sm";
-                        else if (completionRate >= 0.5) bgClass = "bg-green-400/80 hover:bg-green-500/80 text-white";
-                        else if (completionRate > 0) bgClass = "bg-green-200 dark:bg-green-900/40 text-green-900 dark:text-green-100";
-                      }
-
-                      return (
-                        <motion.button
-                          key={date.toString()}
-                          whileHover={{ scale: 1.1, zIndex: 10 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => setSelectedDate(date)}
-                          className={`
-                            aspect-square rounded-xl flex flex-col items-center justify-center text-sm relative transition-all duration-200
-                            ${bgClass}
-                            ${isSelected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-gray-900 scale-105 z-10 font-bold" : ""}
-                          `}
-                        >
-                          <span className="text-xs sm:text-sm">{format(date, "d")}</span>
-                          
-                          {/* Tag Indicators */}
-                          {dayTags.length > 0 && calendarTags && (
-                            <div className="absolute bottom-1 flex gap-0.5 justify-center w-full px-1">
-                              {dayTags.slice(0, 3).map((tagId: any) => {
-                                const tag = calendarTags.find(t => t._id === tagId);
-                                if (!tag) return null;
-                                return (
-                                  <div key={tagId} className={`w-1.5 h-1.5 rounded-full ${tag.color}`} />
-                                );
-                              })}
-                              {dayTags.length > 3 && (
-                                <div className="w-1.5 h-1.5 rounded-full bg-gray-400" />
-                              )}
-                            </div>
-                          )}
-
-                          {isPerfect && (
-                            <motion.div 
-                              initial={{ scale: 0 }} 
-                              animate={{ scale: 1 }}
-                              className="absolute -top-1 -right-1"
-                            >
-                              <Star className="h-3 w-3 text-yellow-200 fill-yellow-200 drop-shadow-sm" />
-                            </motion.div>
-                          )}
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-                </CardContent>
-              </Card>
+              <HistoryCalendar 
+                currentDate={currentDate}
+                onPrevMonth={prevMonth}
+                onNextMonth={nextMonth}
+                dateRange={dateRange}
+                historyData={historyData}
+                selectedDate={selectedDate}
+                onSelectDate={setSelectedDate}
+                calendarTags={calendarTags || []}
+              />
 
               {/* Monthly Goals & Notes */}
               <Card className="border-2 border-muted/50">
