@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery } from "convex/react";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, subMonths, addMonths, parseISO } from "date-fns";
@@ -15,7 +15,9 @@ import {
   ListTodo,
   Activity,
   Star,
-  Sparkles
+  Sparkles,
+  Pencil,
+  Save
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,28 +25,73 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import YearlyWarMapView from "./YearlyWarMapView";
 
-export default function HistoryView() {
+interface HistoryViewProps {
+  onNavigateToTimer?: () => void;
+}
+
+export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"month" | "year">("month");
+  
+  // Monthly Goals State
+  const [objectives, setObjectives] = useState("");
+  const [notes, setNotes] = useState("");
+  const [isEditingGoals, setIsEditingGoals] = useState(false);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const dateRange = eachDayOfInterval({ start: monthStart, end: monthEnd });
+  const currentMonthStr = format(monthStart, "yyyy-MM");
 
-  // Fetch data for the current month
+  // Fetch data
   const historyData = useQuery(api.history.getRange, {
     startDate: format(monthStart, "yyyy-MM-dd"),
     endDate: format(monthEnd, "yyyy-MM-dd"),
   });
+
+  const monthlyGoals = useQuery(api.history.getMonthlyGoals, { month: currentMonthStr });
+  const updateMonthlyGoals = useMutation(api.history.updateMonthlyGoals);
+
+  // Sync monthly goals when data loads
+  useEffect(() => {
+    if (monthlyGoals) {
+      setObjectives(monthlyGoals.mainObjectives || "");
+      setNotes(monthlyGoals.notes || "");
+    } else {
+      setObjectives("");
+      setNotes("");
+    }
+  }, [monthlyGoals, currentMonthStr]);
+
+  const handleSaveGoals = async () => {
+    try {
+      await updateMonthlyGoals({
+        month: currentMonthStr,
+        mainObjectives: objectives,
+        notes: notes,
+      });
+      setIsEditingGoals(false);
+      toast.success("Monthly goals saved");
+    } catch (error) {
+      toast.error("Failed to save goals");
+    }
+  };
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   const selectedDayData = historyData?.[selectedDateStr];
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
+
+  const handleMonthSelect = (date: Date) => {
+    setCurrentDate(date);
+    setViewMode("month");
+  };
 
   // Calculate monthly stats
   const monthlyStats = historyData ? Object.values(historyData).reduce((acc: any, day: any) => {
@@ -74,7 +121,10 @@ export default function HistoryView() {
       </div>
 
       {viewMode === "year" ? (
-        <YearlyWarMapView year={currentDate.getFullYear()} />
+        <YearlyWarMapView 
+          year={currentDate.getFullYear()} 
+          onMonthSelect={handleMonthSelect}
+        />
       ) : (
         <>
           {/* Header & Stats */}
@@ -162,83 +212,132 @@ export default function HistoryView() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Calendar Section */}
-            <Card className="lg:col-span-5 xl:col-span-4 h-fit border-2 border-muted/50">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                <CardTitle className="text-xl font-bold flex items-center gap-2">
-                  <CalendarIcon className="h-5 w-5 text-primary" />
-                  History
-                </CardTitle>
-                <div className="flex items-center gap-2 bg-secondary/50 p-1 rounded-lg">
-                  <Button variant="ghost" size="icon" onClick={prevMonth} className="h-8 w-8">
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <span className="font-semibold text-sm min-w-[100px] text-center">
-                    {format(currentDate, "MMMM yyyy")}
-                  </span>
-                  <Button variant="ghost" size="icon" onClick={nextMonth} className="h-8 w-8">
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-7 gap-2 text-center mb-2">
-                  {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
-                    <div key={day} className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
-                      {day}
-                    </div>
-                  ))}
-                </div>
-                <div className="grid grid-cols-7 gap-2">
-                  {dateRange.map((date, i) => {
-                    const dateStr = format(date, "yyyy-MM-dd");
-                    const dayData = historyData?.[dateStr];
-                    const completionRate = dayData?.stats.totalBlocks 
-                      ? dayData.stats.completedBlocks / dayData.stats.totalBlocks 
-                      : 0;
-                    
-                    const isSelected = isSameDay(date, selectedDate);
-                    const isPerfect = completionRate === 1 && dayData?.stats.totalBlocks > 0;
-                    
-                    // Determine color intensity based on completion
-                    let bgClass = "bg-secondary/30 hover:bg-secondary/60 text-muted-foreground";
-                    if (dayData?.stats.totalBlocks > 0) {
-                      if (isPerfect) bgClass = "bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/20";
-                      else if (completionRate >= 0.8) bgClass = "bg-green-500 hover:bg-green-600 text-white shadow-sm";
-                      else if (completionRate >= 0.5) bgClass = "bg-green-400/80 hover:bg-green-500/80 text-white";
-                      else if (completionRate > 0) bgClass = "bg-green-200 dark:bg-green-900/40 text-green-900 dark:text-green-100";
-                    }
+            <div className="lg:col-span-5 xl:col-span-4 space-y-6">
+              <Card className="border-2 border-muted/50">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                  <CardTitle className="text-xl font-bold flex items-center gap-2">
+                    <CalendarIcon className="h-5 w-5 text-primary" />
+                    History
+                  </CardTitle>
+                  <div className="flex items-center gap-2 bg-secondary/50 p-1 rounded-lg">
+                    <Button variant="ghost" size="icon" onClick={prevMonth} className="h-8 w-8">
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    <span className="font-semibold text-sm min-w-[100px] text-center">
+                      {format(currentDate, "MMMM yyyy")}
+                    </span>
+                    <Button variant="ghost" size="icon" onClick={nextMonth} className="h-8 w-8">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-7 gap-2 text-center mb-2">
+                    {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((day) => (
+                      <div key={day} className="text-xs text-muted-foreground font-bold uppercase tracking-wider">
+                        {day}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-2">
+                    {dateRange.map((date, i) => {
+                      const dateStr = format(date, "yyyy-MM-dd");
+                      const dayData = historyData?.[dateStr];
+                      const completionRate = dayData?.stats.totalBlocks 
+                        ? dayData.stats.completedBlocks / dayData.stats.totalBlocks 
+                        : 0;
+                      
+                      const isSelected = isSameDay(date, selectedDate);
+                      const isPerfect = completionRate === 1 && dayData?.stats.totalBlocks > 0;
+                      
+                      // Determine color intensity based on completion
+                      let bgClass = "bg-secondary/30 hover:bg-secondary/60 text-muted-foreground";
+                      if (dayData?.stats.totalBlocks > 0) {
+                        if (isPerfect) bgClass = "bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/20";
+                        else if (completionRate >= 0.8) bgClass = "bg-green-500 hover:bg-green-600 text-white shadow-sm";
+                        else if (completionRate >= 0.5) bgClass = "bg-green-400/80 hover:bg-green-500/80 text-white";
+                        else if (completionRate > 0) bgClass = "bg-green-200 dark:bg-green-900/40 text-green-900 dark:text-green-100";
+                      }
 
-                    return (
-                      <motion.button
-                        key={date.toString()}
-                        whileHover={{ scale: 1.1, zIndex: 10 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setSelectedDate(date)}
-                        className={`
-                          aspect-square rounded-xl flex flex-col items-center justify-center text-sm relative transition-all duration-200
-                          ${bgClass}
-                          ${isSelected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-gray-900 scale-105 z-10 font-bold" : ""}
-                        `}
-                      >
-                        <span className="text-xs sm:text-sm">{format(date, "d")}</span>
-                        {isPerfect && (
-                          <motion.div 
-                            initial={{ scale: 0 }} 
-                            animate={{ scale: 1 }}
-                            className="absolute -top-1 -right-1"
-                          >
-                            <Star className="h-3 w-3 text-yellow-200 fill-yellow-200 drop-shadow-sm" />
-                          </motion.div>
-                        )}
-                        {dayData?.tasks?.length > 0 && !isPerfect && (
-                          <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-current opacity-50" />
-                        )}
-                      </motion.button>
-                    );
-                  })}
-                </div>
-              </CardContent>
-            </Card>
+                      return (
+                        <motion.button
+                          key={date.toString()}
+                          whileHover={{ scale: 1.1, zIndex: 10 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => setSelectedDate(date)}
+                          className={`
+                            aspect-square rounded-xl flex flex-col items-center justify-center text-sm relative transition-all duration-200
+                            ${bgClass}
+                            ${isSelected ? "ring-2 ring-primary ring-offset-2 dark:ring-offset-gray-900 scale-105 z-10 font-bold" : ""}
+                          `}
+                        >
+                          <span className="text-xs sm:text-sm">{format(date, "d")}</span>
+                          {isPerfect && (
+                            <motion.div 
+                              initial={{ scale: 0 }} 
+                              animate={{ scale: 1 }}
+                              className="absolute -top-1 -right-1"
+                            >
+                              <Star className="h-3 w-3 text-yellow-200 fill-yellow-200 drop-shadow-sm" />
+                            </motion.div>
+                          )}
+                          {dayData?.tasks?.length > 0 && !isPerfect && (
+                            <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-current opacity-50" />
+                          )}
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Monthly Goals & Notes */}
+              <Card className="border-2 border-muted/50">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-lg font-bold">Monthly Objectives</CardTitle>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => isEditingGoals ? handleSaveGoals() : setIsEditingGoals(true)}
+                  >
+                    {isEditingGoals ? <Save className="h-4 w-4 mr-2" /> : <Pencil className="h-4 w-4 mr-2" />}
+                    {isEditingGoals ? "Save" : "Edit"}
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Main Objectives</label>
+                    {isEditingGoals ? (
+                      <Textarea 
+                        value={objectives} 
+                        onChange={(e) => setObjectives(e.target.value)} 
+                        placeholder="What are your main goals for this month?"
+                        className="min-h-[100px]"
+                      />
+                    ) : (
+                      <div className="p-3 bg-muted/30 rounded-lg text-sm min-h-[100px] whitespace-pre-wrap">
+                        {objectives || <span className="text-muted-foreground italic">No objectives set.</span>}
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Notes</label>
+                    {isEditingGoals ? (
+                      <Textarea 
+                        value={notes} 
+                        onChange={(e) => setNotes(e.target.value)} 
+                        placeholder="Any notes, reflections, or reminders?"
+                        className="min-h-[100px]"
+                      />
+                    ) : (
+                      <div className="p-3 bg-muted/30 rounded-lg text-sm min-h-[100px] whitespace-pre-wrap">
+                        {notes || <span className="text-muted-foreground italic">No notes added.</span>}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Daily Detail Section */}
             <Card className="lg:col-span-7 xl:col-span-8 min-h-[500px] border-2 border-muted/50">
@@ -268,7 +367,7 @@ export default function HistoryView() {
                 </div>
               </CardHeader>
               <CardContent className="p-0">
-                <ScrollArea className="h-[600px]">
+                <ScrollArea className="h-[800px]">
                   <div className="p-6">
                     {!selectedDayData ? (
                       <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
@@ -313,7 +412,8 @@ export default function HistoryView() {
                                   initial={{ x: -20, opacity: 0 }}
                                   animate={{ x: 0, opacity: 1 }}
                                   transition={{ delay: i * 0.05 }}
-                                  className="relative pl-8"
+                                  className="relative pl-8 group cursor-pointer"
+                                  onClick={onNavigateToTimer}
                                 >
                                   <div className={`absolute -left-[23px] top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-4 border-background transition-colors duration-300 ${
                                     block.completed 
@@ -321,10 +421,10 @@ export default function HistoryView() {
                                       : "bg-gray-300 dark:bg-gray-600"
                                   }`} />
                                   
-                                  <div className={`p-4 rounded-xl border transition-all duration-300 hover:shadow-md ${
+                                  <div className={`p-4 rounded-xl border transition-all duration-300 hover:shadow-md group-hover:border-primary/50 ${
                                     block.completed 
                                       ? "bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/10 dark:to-emerald-900/10 border-green-200 dark:border-green-800" 
-                                      : "bg-card border-border hover:border-primary/30"
+                                      : "bg-card border-border"
                                   }`}>
                                     <div className="flex items-start justify-between mb-2">
                                       <div>
@@ -375,7 +475,8 @@ export default function HistoryView() {
                                   animate={{ y: 0, opacity: 1 }}
                                   transition={{ delay: 0.2 + (i * 0.05) }}
                                   whileHover={{ scale: 1.02 }}
-                                  className={`p-4 rounded-xl border flex items-center gap-3 transition-all ${
+                                  onClick={onNavigateToTimer}
+                                  className={`p-4 rounded-xl border flex items-center gap-3 transition-all cursor-pointer hover:border-primary/50 ${
                                     task.completed 
                                       ? "bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800 shadow-sm" 
                                       : "bg-card hover:shadow-sm"

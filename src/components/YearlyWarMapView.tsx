@@ -15,12 +15,14 @@ import {
 import { Loader2, Info } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 
 interface YearlyWarMapViewProps {
   year: number;
+  onMonthSelect?: (date: Date) => void;
 }
 
-export default function YearlyWarMapView({ year }: YearlyWarMapViewProps) {
+export default function YearlyWarMapView({ year, onMonthSelect }: YearlyWarMapViewProps) {
   const yearlyData = useQuery(api.history.getYearlyStats, { year });
 
   const yearStart = startOfYear(new Date(year, 0, 1));
@@ -96,11 +98,17 @@ export default function YearlyWarMapView({ year }: YearlyWarMapViewProps) {
           const startDay = getDay(startOfMonth(month));
 
           return (
-            <Card key={month.toString()} className="border-none shadow-sm bg-card/50">
+            <Card key={month.toString()} className="border-none shadow-sm bg-card/50 hover:shadow-md transition-shadow">
               <CardHeader className="p-3 pb-2">
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-center">
-                  {format(month, "MMMM")}
-                </CardTitle>
+                <Button 
+                  variant="ghost" 
+                  className="w-full hover:bg-primary/10 hover:text-primary"
+                  onClick={() => onMonthSelect?.(month)}
+                >
+                  <CardTitle className="text-sm font-bold uppercase tracking-wider text-center">
+                    {format(month, "MMMM")}
+                  </CardTitle>
+                </Button>
               </CardHeader>
               <CardContent className="p-3">
                 <div className="grid grid-cols-7 gap-1">

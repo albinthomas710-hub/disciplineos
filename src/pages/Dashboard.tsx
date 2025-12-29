@@ -378,7 +378,7 @@ export default function Dashboard() {
         {activeTab === "nottodo" && <NotToDoListView />}
         {activeTab === "entrepreneur" && <EntrepreneurOSView />}
         {activeTab === "failure" && <FailureWisdomView />}
-        {activeTab === "history" && <HistoryView />}
+        {activeTab === "history" && <HistoryView onNavigateToTimer={() => setActiveTab("timer")} />}
       </div>
 
       {/* Reflection Dialog */}

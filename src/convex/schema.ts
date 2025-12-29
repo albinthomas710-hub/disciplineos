@@ -1092,13 +1092,21 @@ const schema = defineSchema(
       frequency: v.optional(v.string()), // For recurring
       preventionStrategy: v.optional(v.string()), // For recurring
       source: v.optional(v.string()), // For external (e.g., "Steve Jobs")
-      tags: v.optional(v.array(v.string())),
+      tags: v.optional(v.array(v.string())), // Array of tags
       date: v.string(),
       relapseCount: v.optional(v.number()), // How many times repeated after logging
       lastRelapseDate: v.optional(v.string()), // When was the last time
       isFavorite: v.boolean(), // Mark important mistakes
     }).index("by_user", ["userId"])
       .index("by_user_and_favorite", ["userId", "isFavorite"]),
+
+    // Monthly Goals & Notes (War Map features)
+    monthlyGoals: defineTable({
+      userId: v.id("users"),
+      month: v.string(), // "2025-01"
+      mainObjectives: v.optional(v.string()),
+      notes: v.optional(v.string()),
+    }).index("by_user_and_month", ["userId", "month"]),
 
   },
   {

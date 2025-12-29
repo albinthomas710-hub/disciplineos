@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 
 export const getRange = query({
@@ -141,5 +141,48 @@ export const getYearlyStats = query({
     });
 
     return statsByDate;
+  },
+});
+
+export const getMonthlyGoals = query({
+  args: { month: v.string() },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return null;
+    return await ctx.db
+      .query("monthlyGoals")
+      .withIndex("by_user_and_month", (q) => q.eq("userId", user._id).eq("month", args.month))
+      .unique();
+  },
+});
+
+export const updateMonthlyGoals = mutation({
+  args: {
+    month: v.string(),
+    mainObjectives: v.optional(v.string()),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const existing = await ctx.db
+      .query("monthlyGoals")
+      .withIndex("by_user_and_month", (q) => q.eq("userId", user._id).eq("month", args.month))
+      .unique();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        mainObjectives: args.mainObjectives,
+        notes: args.notes,
+      });
+    } else {
+      await ctx.db.insert("monthlyGoals", {
+        userId: user._id,
+        month: args.month,
+        mainObjectives: args.mainObjectives || "",
+        notes: args.notes || "",
+      });
+    }
   },
 });
