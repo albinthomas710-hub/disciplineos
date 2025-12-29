@@ -130,7 +130,7 @@ export default function VectalView() {
                 <Target className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold">Vectal Daily Tasks</h2>
+                <h2 className="text-2xl font-bold">Daily Tasks</h2>
                 <p className="text-sm text-muted-foreground font-normal">
                   Complete all tasks to maintain your discipline streak
                 </p>
@@ -147,7 +147,7 @@ export default function VectalView() {
                 className="p-4 rounded-lg bg-gradient-to-r from-cyan-100 to-blue-100 dark:from-cyan-900/30 dark:to-blue-900/30 border border-cyan-300 dark:border-cyan-700"
               >
                 <p className="text-sm text-center italic text-cyan-900 dark:text-cyan-100">
-                  "Check your Vectal daily — small tasks completed consistently build the discipline that transforms your life."
+                  "Check your tasks daily — small tasks completed consistently build the discipline that transforms your life."
                 </p>
               </motion.div>
 

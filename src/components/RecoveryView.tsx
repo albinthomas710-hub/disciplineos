@@ -147,10 +147,10 @@ export default function RecoveryView() {
                     <Database className="h-4 w-4 text-cyan-500" />
                     <span>{account.dataCount.projects} Projects</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Database className="h-4 w-4 text-green-500" />
-                    <span>{account.dataCount.vectalTasks} Vectal Tasks</span>
-                  </div>
+          <div className="flex items-center gap-2">
+            <Database className="h-4 w-4 text-green-500" />
+            <span>{account.dataCount.dailyTasks} Daily Tasks</span>
+          </div>
                   <div className="flex items-center gap-2">
                     <Database className="h-4 w-4 text-indigo-500" />
                     <span>{account.dataCount.scriptures} Scriptures</span>

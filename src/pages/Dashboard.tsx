@@ -55,14 +55,14 @@ import HistoryView from "@/components/HistoryView";
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "vectal" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure" | "history">("timer");
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "tasks" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure" | "history">("timer");
   const [showReflection, setShowReflection] = useState(false);
   const [showBackup, setShowBackup] = useState(false);
 
   const activeTimetable = useQuery((api as any).timetables.getActive);
   const todayLogs = useQuery((api as any).completionLogs.getToday);
   const reflectionCheck = useQuery((api as any).reflectionTriggers.shouldShowReflection);
-  const vectalCheck = useQuery((api as any).vectal.checkDailyCompletion);
+  const tasksCheck = useQuery((api as any).vectal.checkDailyCompletion);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -84,18 +84,18 @@ export default function Dashboard() {
     }
   }, [reflectionCheck, showReflection]);
 
-  // New: Show alert if Vectal tasks are not completed
+  // New: Show alert if daily tasks are not completed
   useEffect(() => {
-    if (vectalCheck && !vectalCheck.allCompleted && vectalCheck.totalTasks > 0) {
-      const incompleteTasks = vectalCheck.totalTasks - vectalCheck.completedTasks;
+    if (tasksCheck && !tasksCheck.allCompleted && tasksCheck.totalTasks > 0) {
+      const incompleteTasks = tasksCheck.totalTasks - tasksCheck.completedTasks;
       if (incompleteTasks > 0) {
         toast.info(
-          `⚠️ Vectal Check: ${incompleteTasks} task${incompleteTasks > 1 ? 's' : ''} remaining today`,
+          `⚠️ Tasks Check: ${incompleteTasks} task${incompleteTasks > 1 ? 's' : ''} remaining today`,
           { duration: 5000 }
         );
       }
     }
-  }, [vectalCheck]);
+  }, [tasksCheck]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -256,12 +256,12 @@ export default function Dashboard() {
             Analytics
           </Button>
           <Button
-            variant={activeTab === "vectal" ? "default" : "ghost"}
-            onClick={() => setActiveTab("vectal")}
+            variant={activeTab === "tasks" ? "default" : "ghost"}
+            onClick={() => setActiveTab("tasks")}
             className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700"
           >
             <Target className="h-4 w-4 mr-2" />
-            Vectal
+            Tasks
           </Button>
           <Button
             variant={activeTab === "quotes" ? "default" : "ghost"}
@@ -367,7 +367,7 @@ export default function Dashboard() {
         {activeTab === "timer" && <ActiveTimerView />}
         {activeTab === "timetables" && <TimetableManager />}
         {activeTab === "analytics" && <AnalyticsView />}
-        {activeTab === "vectal" && <VectalView />}
+        {activeTab === "tasks" && <VectalView />}
         {activeTab === "quotes" && <QuotesView />}
         {activeTab === "projects" && <ProjectsView />}
         {activeTab === "manifest" && <ManifestationView />}

@@ -178,7 +178,7 @@ export function DataBackupDialog({ open, onOpenChange }: DataBackupDialogProps) 
     { value: "failureWisdom", label: "Mistake Vault" },
     { value: "prayers", label: "Prayers" },
     { value: "videoLibrary", label: "Video Library" },
-    { value: "vectal", label: "Vectal Tasks" },
+    { value: "vectal", label: "Daily Tasks" },
   ];
 
   const handleImportClick = () => {
