@@ -264,6 +264,7 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
             <div className="lg:col-span-7 xl:col-span-8 space-y-6">
               {/* Daily Metrics Card */}
               <DailyMetricsCard 
+                key={`metrics-${selectedDateStr}`}
                 dateStr={selectedDateStr}
                 initialMetrics={selectedDayData?.metrics}
                 hoursInvested={Math.round(selectedDayHours / 60 * 10) / 10}
@@ -271,6 +272,7 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
 
               {/* Daily Accountability Card */}
               <DailyAccountabilityCard 
+                key={`accountability-${selectedDateStr}`}
                 dateStr={selectedDateStr}
                 initialData={selectedDayData?.metrics}
               />

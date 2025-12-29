@@ -44,6 +44,7 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
   const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
+    if (isDirty) return;
     if (initialData) {
       if (initialData.productivityInventory && initialData.productivityInventory.length > 0) {
         setInventory(initialData.productivityInventory);

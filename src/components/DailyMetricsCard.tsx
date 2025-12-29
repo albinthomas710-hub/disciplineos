@@ -40,6 +40,7 @@ export default function DailyMetricsCard({ dateStr, initialMetrics, hoursInveste
 
   // Load initial data
   useEffect(() => {
+    if (isDirty) return;
     if (initialMetrics) {
       setFocusScore(initialMetrics.focusScore || 5);
       setOutputLog(initialMetrics.outputLog || "");
