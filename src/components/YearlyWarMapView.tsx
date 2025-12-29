@@ -40,6 +40,18 @@ export default function YearlyWarMapView({ year, onMonthSelect, onDaySelect }: Y
 
   const getDayStatus = (dateStr: string) => {
     const stats = yearlyData?.[dateStr];
+    
+    // If we have a daily rating (Verdict), prioritize that for coloring
+    if (stats?.dailyRating !== undefined && stats.dailyRating > 0) {
+      const rating = stats.dailyRating;
+      if (rating >= 90) return { label: `Legendary (${rating})`, color: "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]", text: "text-amber-600 dark:text-amber-400" };
+      if (rating >= 80) return { label: `Excellent (${rating})`, color: "bg-green-500", text: "text-green-600 dark:text-green-400" };
+      if (rating >= 60) return { label: `Good (${rating})`, color: "bg-blue-500", text: "text-blue-600 dark:text-blue-400" };
+      if (rating >= 40) return { label: `Average (${rating})`, color: "bg-purple-500", text: "text-purple-600 dark:text-purple-400" };
+      return { label: `Weak (${rating})`, color: "bg-red-500", text: "text-red-600 dark:text-red-400" };
+    }
+
+    // Fallback to block completion if no rating
     if (!stats || stats.total === 0) return { label: "No Activity", color: "bg-secondary/30", text: "text-muted-foreground" };
 
     const rate = stats.completed / stats.total;
@@ -58,7 +70,7 @@ export default function YearlyWarMapView({ year, onMonthSelect, onDaySelect }: Y
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
             <Info className="h-4 w-4" />
-            <span>War Map Key</span>
+            <span>War Map Key (Based on Daily Verdict or Completion)</span>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-1.5">
@@ -67,23 +79,23 @@ export default function YearlyWarMapView({ year, onMonthSelect, onDaySelect }: Y
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-sm bg-red-500" />
-              <span>Off Track</span>
+              <span>Weak / Off Track</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-sm bg-purple-500" />
-              <span>Progress</span>
+              <span>Average / Progress</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-sm bg-blue-500" />
-              <span>Momentum</span>
+              <span>Good / Momentum</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-sm bg-green-500" />
-              <span>High Perf.</span>
+              <span>Excellent</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-3 h-3 rounded-sm bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]" />
-              <span className="font-bold text-amber-600 dark:text-amber-400">Perfect</span>
+              <span className="font-bold text-amber-600 dark:text-amber-400">Legendary</span>
             </div>
           </div>
         </div>
@@ -149,9 +161,13 @@ export default function YearlyWarMapView({ year, onMonthSelect, onDaySelect }: Y
                               <div className={`w-2 h-2 rounded-full ${status.color}`} />
                               <span className={`font-medium ${status.text}`}>{status.label}</span>
                             </div>
-                            {stats && stats.total > 0 && (
+                            {stats && (stats.total > 0 || stats.dailyRating !== undefined) && (
                               <div className="text-muted-foreground">
-                                <p>{Math.round((stats.completed / stats.total) * 100)}% ({stats.completed}/{stats.total})</p>
+                                {stats.dailyRating !== undefined ? (
+                                  <p className="font-bold text-primary">Verdict: {stats.dailyRating}/100</p>
+                                ) : (
+                                  <p>{Math.round((stats.completed / stats.total) * 100)}% ({stats.completed}/{stats.total})</p>
+                                )}
                                 {(stats as any).timetableName && (
                                   <p className="text-[10px] opacity-80 mt-1 font-medium text-primary/80">
                                     {(stats as any).timetableName}

@@ -146,7 +146,10 @@ export const getRange = query({
             totalBlocks,
             timetableName: timetable.name,
             timetableId: timetable._id,
-            isOverride: !!override
+            isOverride: !!override,
+            // Add daily rating to stats for easy access
+            dailyRating: reflection?.dailyRating,
+            focusScore: reflection?.focusScore,
           },
           tags, // Add tags to the day data
           metrics: reflection ? {
@@ -169,7 +172,13 @@ export const getRange = query({
         // No timetable data available for this day
         historyByDate[dateStr] = {
           blocks: [],
-          stats: { completedBlocks: 0, totalBlocks: 0 },
+          stats: { 
+            completedBlocks: 0, 
+            totalBlocks: 0,
+            // Add daily rating to stats for easy access
+            dailyRating: reflection?.dailyRating,
+            focusScore: reflection?.focusScore,
+          },
           tags, // Add tags even if no timetable
           metrics: reflection ? {
             focusScore: reflection.focusScore,
@@ -367,14 +376,22 @@ export const getYearlyStats = query({
       )
       .collect();
 
-    // 3. Identify Timetables
+    // 3. Fetch Reflections (Daily Verdicts)
+    const reflections = await ctx.db
+      .query("reflections")
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id).gte("date", startDate).lte("date", endDate)
+      )
+      .collect();
+
+    // 4. Identify Timetables
     const logTimetableIds = new Set(logs.map(l => l.timetableId));
     if (user.activeTimetableId) {
       logTimetableIds.add(user.activeTimetableId);
     }
     overrides.forEach(o => logTimetableIds.add(o.timetableId));
 
-    // 4. Get Block Counts AND Names for each Timetable
+    // 5. Get Block Counts AND Names for each Timetable
     const timetableInfo = new Map<string, { count: number, name: string }>();
     await Promise.all(
       Array.from(logTimetableIds).map(async (tid) => {
@@ -395,19 +412,20 @@ export const getYearlyStats = query({
       })
     );
 
-    // 5. Calculate stats per day
-    const statsByDate: Record<string, { total: number; completed: number; timetableName?: string }> = {};
+    // 6. Calculate stats per day
+    const statsByDate: Record<string, { total: number; completed: number; timetableName?: string; dailyRating?: number; focusScore?: number }> = {};
 
-    // Helper to iterate all days in year (simplified to just iterate logs + overrides + fill gaps if needed, 
-    // but for yearly view we usually just map what we have. 
-    // However, to be accurate we should probably iterate days if we want to show "0/X" for days with no logs but an active timetable.
-    // For efficiency, we'll stick to days that have activity OR overrides.)
-    
-    const daysWithActivity = new Set([...logs.map(l => l.date), ...overrides.map(o => o.date)]);
+    // Iterate all days that have ANY activity (logs, overrides, OR reflections)
+    const daysWithActivity = new Set([
+      ...logs.map(l => l.date), 
+      ...overrides.map(o => o.date),
+      ...reflections.map(r => r.date)
+    ]);
     
     daysWithActivity.forEach(date => {
       const dayLogs = logs.filter(l => l.date === date);
       const override = overrides.find(o => o.date === date);
+      const reflection = reflections.find(r => r.date === date);
       
       let timetableId = null;
       if (override) {
@@ -415,26 +433,27 @@ export const getYearlyStats = query({
       } else if (dayLogs.length > 0) {
         timetableId = dayLogs[0].timetableId;
       } else if (user.activeTimetableId) {
-        // Note: For yearly view, assuming active timetable for ALL past days without logs might be noisy.
-        // But consistent with getRange. Let's stick to logs/overrides for now to keep it clean, 
-        // or maybe just logs + overrides.
-        // If we want to show "missed" days, we need to know if the user WAS active then.
-        // For now, let's prioritize explicit data.
         timetableId = user.activeTimetableId; 
       }
 
+      let total = 0;
+      let completed = 0;
+      let timetableName = undefined;
+
       if (timetableId && timetableInfo.has(timetableId)) {
         const info = timetableInfo.get(timetableId)!;
-        const completedCount = dayLogs.filter(l => l.completed && l.timetableId === timetableId).length;
-        // Note: If timetable changed (override), logs from other timetables are ignored for completion count
-        // to match the "view" of that day.
-        
-        statsByDate[date] = {
-          total: info.count,
-          completed: completedCount,
-          timetableName: info.name
-        };
+        total = info.count;
+        completed = dayLogs.filter(l => l.completed && l.timetableId === timetableId).length;
+        timetableName = info.name;
       }
+
+      statsByDate[date] = {
+        total,
+        completed,
+        timetableName,
+        dailyRating: reflection?.dailyRating,
+        focusScore: reflection?.focusScore
+      };
     });
 
     return statsByDate;

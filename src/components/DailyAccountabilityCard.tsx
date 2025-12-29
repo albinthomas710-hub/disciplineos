@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,33 +42,45 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
   const [distractions, setDistractions] = useState<string[]>([]);
   const [newDistraction, setNewDistraction] = useState("");
   const [isDirty, setIsDirty] = useState(false);
+  
+  // Track previous date to handle date switches correctly
+  const prevDateRef = useRef(dateStr);
 
   useEffect(() => {
-    // Always load initial data when date changes, but preserve user edits within the same date
-    if (initialData) {
-      if (initialData.productivityInventory && initialData.productivityInventory.length > 0) {
-        setInventory(initialData.productivityInventory);
-      } else {
-        setInventory([
-          { text: "", checked: false },
-          { text: "", checked: false },
-          { text: "", checked: false }
-        ]);
-      }
-      
-      if (initialData.improvements && initialData.improvements.length > 0) {
-        setImprovements(initialData.improvements);
-      } else {
-        setImprovements(["", "", ""]);
-      }
+    const dateChanged = prevDateRef.current !== dateStr;
+    
+    if (dateChanged) {
+      prevDateRef.current = dateStr;
+      setIsDirty(false);
+    }
 
-      setCallsBooked(initialData.callsBooked || 0);
-      setCallsConducted(initialData.callsConducted || 0);
-      setCallsClosed(initialData.callsClosed || 0);
-      setDistractions(initialData.distractions || []);
-    } else {
-      // Reset if no data - only if not dirty
-      if (!isDirty) {
+    // Load data if date changed OR if not dirty (to allow background updates but prevent overwriting user edits)
+    // We exclude isDirty from dependencies so that setting it to false (on save) doesn't trigger a reload of stale data
+    // We exclude isDirty from dependencies to prevent revert-on-save
+    if (dateChanged || !isDirty) {
+      if (initialData) {
+        if (initialData.productivityInventory && initialData.productivityInventory.length > 0) {
+          setInventory(initialData.productivityInventory);
+        } else {
+          setInventory([
+            { text: "", checked: false },
+            { text: "", checked: false },
+            { text: "", checked: false }
+          ]);
+        }
+        
+        if (initialData.improvements && initialData.improvements.length > 0) {
+          setImprovements(initialData.improvements);
+        } else {
+          setImprovements(["", "", ""]);
+        }
+
+        setCallsBooked(initialData.callsBooked || 0);
+        setCallsConducted(initialData.callsConducted || 0);
+        setCallsClosed(initialData.callsClosed || 0);
+        setDistractions(initialData.distractions || []);
+      } else {
+        // Reset if no data
         setInventory([
           { text: "", checked: false },
           { text: "", checked: false },
@@ -81,11 +93,7 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
         setDistractions([]);
       }
     }
-    // Reset isDirty when date changes
-    if (dateStr) {
-      setIsDirty(false);
-    }
-  }, [initialData, dateStr, isDirty]);
+  }, [initialData, dateStr]); // Removed isDirty from dependencies to prevent revert-on-save
 
   const handleSave = async () => {
     try {
