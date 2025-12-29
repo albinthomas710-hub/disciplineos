@@ -54,9 +54,8 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
       setIsDirty(false);
     }
 
-    // Load data if date changed OR if not dirty (to allow background updates but prevent overwriting user edits)
-    // We exclude isDirty from dependencies so that setting it to false (on save) doesn't trigger a reload of stale data
-    // We exclude isDirty from dependencies to prevent revert-on-save
+    // Always load data when date changes or if we are not in a dirty state
+    // This ensures we see the latest saved data when switching days
     if (dateChanged || !isDirty) {
       if (initialData) {
         if (initialData.productivityInventory && initialData.productivityInventory.length > 0) {
@@ -93,7 +92,7 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
         setDistractions([]);
       }
     }
-  }, [initialData, dateStr]); // Removed isDirty from dependencies to prevent revert-on-save
+  }, [initialData, dateStr]); // Removed isDirty to allow updates when saved
 
   const handleSave = async () => {
     try {
@@ -156,7 +155,8 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
   const addDistraction = () => {
     const trimmedDistraction = newDistraction.trim();
     if (trimmedDistraction) {
-      setDistractions([...distractions, trimmedDistraction]);
+      // Use functional update to ensure we have latest state
+      setDistractions(prev => [...prev, trimmedDistraction]);
       setNewDistraction("");
       setIsDirty(true);
     }
@@ -200,21 +200,18 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
               NO EXCUSES • TOTAL OWNERSHIP • RELENTLESS EXECUTION
             </p>
           </div>
-          {isDirty && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-            >
-              <Button 
+          {/* Always show save button if dirty, or if user wants to force save */}
+          <div className="flex gap-2">
+             <Button 
                 size="sm" 
                 onClick={handleSave} 
-                className="h-9 px-4 font-bold shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all"
+                disabled={!isDirty}
+                className={`h-9 px-4 font-bold shadow-lg transition-all ${isDirty ? 'shadow-primary/20 hover:shadow-primary/40 opacity-100' : 'opacity-50'}`}
               >
                 <Save className="h-4 w-4 mr-2" />
-                SAVE CHANGES
+                {isDirty ? "SAVE CHANGES" : "SAVED"}
               </Button>
-            </motion.div>
-          )}
+          </div>
         </div>
       </CardHeader>
       
