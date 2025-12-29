@@ -19,15 +19,7 @@ export const getRange = query({
       )
       .collect();
 
-    // 2. Fetch Vectal Logs (Tasks)
-    const vectalEntries = await ctx.db
-      .query("vectal")
-      .withIndex("by_user_and_date", (q) => 
-        q.eq("userId", user._id).gte("date", args.startDate).lte("date", args.endDate)
-      )
-      .collect();
-
-    // 3. Identify Timetables involved
+    // 2. Identify Timetables involved
     const logTimetableIds = new Set(logs.map(l => l.timetableId));
     if (user.activeTimetableId) {
       logTimetableIds.add(user.activeTimetableId);
@@ -117,7 +109,6 @@ export const getRange = query({
 
         historyByDate[dateStr] = {
           blocks: fullBlocks,
-          tasks: [], // Will fill next
           stats: {
             completedBlocks,
             totalBlocks,
@@ -128,17 +119,8 @@ export const getRange = query({
         // No timetable data available for this day
         historyByDate[dateStr] = {
           blocks: [],
-          tasks: [],
           stats: { completedBlocks: 0, totalBlocks: 0 }
         };
-      }
-    });
-
-    // 5. Merge Vectal Tasks
-    vectalEntries.forEach(entry => {
-      if (historyByDate[entry.date]) {
-        historyByDate[entry.date].tasks = entry.tasks;
-        historyByDate[entry.date].vectalCompleted = entry.allCompleted;
       }
     });
 

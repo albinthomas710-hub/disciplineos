@@ -103,8 +103,6 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
   const monthlyStats = historyData ? Object.values(historyData).reduce((acc: any, day: any) => {
     acc.completedBlocks += day.stats.completedBlocks || 0;
     acc.totalBlocks += day.stats.totalBlocks || 0;
-    acc.completedTasks += day.tasks?.filter((t: any) => t.completed).length || 0;
-    acc.totalTasks += day.tasks?.length || 0;
     
     // Calculate Perfect Days (100% completion with at least 1 block)
     if (day.stats.totalBlocks > 0 && day.stats.completedBlocks === day.stats.totalBlocks) {
@@ -112,7 +110,7 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
     }
     
     return acc;
-  }, { completedBlocks: 0, totalBlocks: 0, completedTasks: 0, totalTasks: 0, perfectDays: 0 }) : null;
+  }, { completedBlocks: 0, totalBlocks: 0, perfectDays: 0 }) : null;
 
   return (
     <div className="space-y-6">
@@ -135,7 +133,7 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
       ) : (
         <>
           {/* Header & Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-none shadow-lg relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10">
                 <Trophy className="h-24 w-24" />
@@ -171,26 +169,6 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
                       {monthlyStats?.perfectDays || 0}
                     </h3>
                     <p className="text-xs text-amber-100 mt-1">100% Execution</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white border-none shadow-lg relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Target className="h-24 w-24" />
-              </div>
-              <CardContent className="p-6 relative z-10">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm shadow-inner">
-                    <Target className="h-8 w-8 text-white" />
-                  </div>
-                  <div>
-                    <p className="text-emerald-100 font-medium text-sm">Tasks Crushed</p>
-                    <h3 className="text-3xl font-bold tracking-tight">
-                      {monthlyStats?.completedTasks || 0}
-                    </h3>
-                    <p className="text-xs text-emerald-200 mt-1">Vectal Tasks Done</p>
                   </div>
                 </div>
               </CardContent>
@@ -288,9 +266,6 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
                               <Star className="h-3 w-3 text-yellow-200 fill-yellow-200 drop-shadow-sm" />
                             </motion.div>
                           )}
-                          {dayData?.tasks?.length > 0 && !isPerfect && (
-                            <div className="absolute bottom-1.5 w-1 h-1 rounded-full bg-current opacity-50" />
-                          )}
                         </motion.button>
                       );
                     })}
@@ -364,10 +339,6 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
                       <div className="px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center gap-2 border border-green-200 dark:border-green-800">
                         <div className="w-2 h-2 rounded-full bg-green-500" />
                         <span>{selectedDayData.stats.completedBlocks} Blocks</span>
-                      </div>
-                      <div className="px-3 py-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 flex items-center gap-2 border border-blue-200 dark:border-blue-800">
-                        <div className="w-2 h-2 rounded-full bg-blue-500" />
-                        <span>{selectedDayData.tasks?.filter((t: any) => t.completed).length || 0} Tasks</span>
                       </div>
                     </div>
                   )}
@@ -459,46 +430,6 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
                                       </p>
                                     )}
                                   </div>
-                                </motion.div>
-                              ))
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Vectal Tasks */}
-                        <div>
-                          <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-blue-600 dark:text-blue-400">
-                            <ListTodo className="h-5 w-5" />
-                            Vectal Tasks
-                          </h3>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {(!selectedDayData.tasks || selectedDayData.tasks.length === 0) ? (
-                              <p className="text-sm text-muted-foreground col-span-2 italic">No tasks recorded.</p>
-                            ) : (
-                              selectedDayData.tasks.map((task: any, i: number) => (
-                                <motion.div
-                                  key={i}
-                                  initial={{ y: 10, opacity: 0 }}
-                                  animate={{ y: 0, opacity: 1 }}
-                                  transition={{ delay: 0.2 + (i * 0.05) }}
-                                  whileHover={{ scale: 1.02 }}
-                                  onClick={onNavigateToTimer}
-                                  className={`p-4 rounded-xl border flex items-center gap-3 transition-all cursor-pointer hover:border-primary/50 ${
-                                    task.completed 
-                                      ? "bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800 shadow-sm" 
-                                      : "bg-card hover:shadow-sm"
-                                  }`}
-                                >
-                                  {task.completed ? (
-                                    <div className="bg-blue-100 dark:bg-blue-900/50 p-1 rounded-full shrink-0">
-                                      <CheckCircle2 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                    </div>
-                                  ) : (
-                                    <Circle className="h-5 w-5 text-muted-foreground shrink-0" />
-                                  )}
-                                  <span className={`text-sm font-medium ${task.completed ? "line-through text-muted-foreground" : ""}`}>
-                                    {task.title}
-                                  </span>
                                 </motion.div>
                               ))
                             )}
