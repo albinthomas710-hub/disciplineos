@@ -102,6 +102,10 @@ const schema = defineSchema(
       focusScore: v.optional(v.number()), // 1-10
       outputLog: v.optional(v.string()), // Key results/outputs
       dailyRating: v.optional(v.number()), // 0-100
+      // Advanced Formula Fields
+      outputScore: v.optional(v.number()), // 0-100
+      workType: v.optional(v.string()), // "execution" | "thinking"
+      targetHours: v.optional(v.number()), // e.g. 6
     }).index("by_user_and_date", ["userId", "date"]),
 
     // User Settings

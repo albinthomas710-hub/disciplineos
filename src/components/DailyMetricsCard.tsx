@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Save, Target, Zap, Award, Clock } from "lucide-react";
-import { motion } from "framer-motion";
+import { Save, Target, Zap, Award, Clock, Calculator, Brain, Hammer } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface DailyMetricsCardProps {
   dateStr: string;
@@ -16,6 +18,9 @@ interface DailyMetricsCardProps {
     focusScore?: number;
     outputLog?: string;
     dailyRating?: number;
+    outputScore?: number;
+    workType?: string;
+    targetHours?: number;
   } | null;
   hoursInvested: number;
 }
@@ -23,31 +28,88 @@ interface DailyMetricsCardProps {
 export default function DailyMetricsCard({ dateStr, initialMetrics, hoursInvested }: DailyMetricsCardProps) {
   const updateMetrics = useMutation(api.history.updateDailyMetrics);
   
+  // State
   const [focusScore, setFocusScore] = useState(5);
   const [outputLog, setOutputLog] = useState("");
   const [dailyRating, setDailyRating] = useState(50);
+  const [outputScore, setOutputScore] = useState(50);
+  const [workType, setWorkType] = useState<"execution" | "thinking">("execution");
+  const [targetHours, setTargetHours] = useState(6);
   const [isDirty, setIsDirty] = useState(false);
+  const [showCalculator, setShowCalculator] = useState(true);
 
+  // Load initial data
   useEffect(() => {
     if (initialMetrics) {
       setFocusScore(initialMetrics.focusScore || 5);
       setOutputLog(initialMetrics.outputLog || "");
       setDailyRating(initialMetrics.dailyRating || 50);
+      setOutputScore(initialMetrics.outputScore || 50);
+      setWorkType((initialMetrics.workType as "execution" | "thinking") || "execution");
+      setTargetHours(initialMetrics.targetHours || 6);
     } else {
+      // Defaults
       setFocusScore(5);
       setOutputLog("");
       setDailyRating(50);
+      setOutputScore(50);
+      setWorkType("execution");
+      setTargetHours(6);
     }
     setIsDirty(false);
   }, [initialMetrics, dateStr]);
 
+  // Calculation Logic
+  const calculateRating = () => {
+    // 1. Hours Score (20%)
+    // Cap at 100% (if you work 8 hours but target is 6, you get 100, not 133)
+    const rawHoursScore = (hoursInvested / targetHours) * 100;
+    const hoursScore = Math.min(100, Math.max(0, rawHoursScore));
+
+    // 2. Focus Score (30%)
+    // Convert 1-10 to 0-100
+    const focusScoreCalc = focusScore * 10;
+
+    // 3. Output Score (50%)
+    // User inputs this directly (0-100) based on the scale
+    const outputScoreCalc = outputScore;
+
+    // Weighted Formula
+    let calculatedRating = (0.5 * outputScoreCalc) + (0.3 * focusScoreCalc) + (0.2 * hoursScore);
+
+    // Anti-Bullshit Safeguard: If Output Score < 40, Rating is capped at 50%
+    if (outputScoreCalc < 40) {
+      calculatedRating = Math.min(calculatedRating, 50);
+    }
+
+    return Math.round(calculatedRating);
+  };
+
+  // Auto-update rating when inputs change
+  useEffect(() => {
+    const newRating = calculateRating();
+    if (newRating !== dailyRating) {
+      setDailyRating(newRating);
+      setIsDirty(true);
+    }
+  }, [focusScore, outputScore, hoursInvested, targetHours, workType]);
+
   const handleSave = async () => {
+    // Validation for Thinking Days
+    if (workType === "thinking" && outputScore > 80 && outputLog.length < 20) {
+      toast.error("High score for Thinking Day requires written proof in Output Log.");
+      return;
+    }
+
     try {
       await updateMetrics({
         date: dateStr,
         focusScore,
         outputLog,
         dailyRating,
+        outputScore,
+        workType,
+        targetHours,
       });
       toast.success("Daily verdict saved");
       setIsDirty(false);
@@ -80,12 +142,23 @@ export default function DailyMetricsCard({ dateStr, initialMetrics, hoursInveste
             <Award className="h-5 w-5 text-primary" />
             Daily Verdict
           </CardTitle>
-          {isDirty && (
-            <Button size="sm" onClick={handleSave} className="h-8">
-              <Save className="h-4 w-4 mr-2" />
-              Save Verdict
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setShowCalculator(!showCalculator)}
+              className={showCalculator ? "bg-secondary/50" : ""}
+            >
+              <Calculator className="h-4 w-4 mr-2" />
+              Formula
             </Button>
-          )}
+            {isDirty && (
+              <Button size="sm" onClick={handleSave} className="h-8">
+                <Save className="h-4 w-4 mr-2" />
+                Save Verdict
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="p-6 space-y-6">
@@ -110,85 +183,200 @@ export default function DailyMetricsCard({ dateStr, initialMetrics, hoursInveste
           </div>
         </div>
 
-        {/* Inputs */}
-        <div className="space-y-6">
-          {/* Focus Slider */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <Zap className="h-4 w-4 text-yellow-500" />
-                Focus Level (Quality)
-              </label>
-              <span className="font-mono font-bold text-lg">{focusScore}/10</span>
-            </div>
-            <Slider
-              value={[focusScore]}
-              min={1}
-              max={10}
-              step={1}
-              onValueChange={(vals) => {
-                setFocusScore(vals[0]);
-                setIsDirty(true);
-              }}
-              className="py-2"
-            />
-            <div className="flex justify-between text-[10px] text-muted-foreground uppercase font-bold">
-              <span>Distracted</span>
-              <span>Deep Work</span>
-            </div>
-          </div>
-
-          {/* Output Log */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium flex items-center gap-2">
-              <Target className="h-4 w-4 text-green-500" />
-              Output Log (Results)
-            </label>
-            <Textarea
-              placeholder="What did you actually ship? (e.g. 3 videos, 5 leads, 1 offer)"
-              value={outputLog}
-              onChange={(e) => {
-                setOutputLog(e.target.value);
-                setIsDirty(true);
-              }}
-              className="min-h-[80px] text-sm resize-none bg-background/50"
-            />
-            <p className="text-xs text-muted-foreground">
-              Be honest. Output dominates everything.
-            </p>
-          </div>
-
-          {/* Rating Slider */}
-          <div className="space-y-3 pt-2 border-t">
-            <div className="flex justify-between items-center">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <Award className="h-4 w-4 text-primary" />
-                Final Rating (Verdict)
-              </label>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className={`${getRatingColor(dailyRating)} border-current`}>
-                  {getRatingLabel(dailyRating)}
-                </Badge>
-                <span className={`font-mono font-bold text-lg ${getRatingColor(dailyRating)}`}>
-                  {dailyRating}%
-                </span>
+        <AnimatePresence>
+          {showCalculator && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="bg-muted/30 rounded-xl p-4 border border-muted overflow-hidden"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="font-bold text-sm flex items-center gap-2">
+                  <Calculator className="h-4 w-4 text-primary" />
+                  Rating Calculator
+                </h4>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <span className="font-mono">Output(50%) + Focus(30%) + Hours(20%)</span>
+                </div>
               </div>
+
+              <div className="space-y-6">
+                {/* 1. Hours Input */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">1. Quantity (Hours)</label>
+                    <span className="text-xs font-mono">{Math.min(100, Math.round((hoursInvested / targetHours) * 100))}% Score</span>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                      <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-blue-500 transition-all duration-500" 
+                          style={{ width: `${Math.min(100, (hoursInvested / targetHours) * 100)}%` }}
+                        />
+                      </div>
+                      <div className="flex justify-between mt-1 text-[10px] text-muted-foreground">
+                        <span>0h</span>
+                        <span>Target: {targetHours}h</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs whitespace-nowrap">Target:</span>
+                      <Input 
+                        type="number" 
+                        value={targetHours} 
+                        onChange={(e) => {
+                          setTargetHours(Number(e.target.value));
+                          setIsDirty(true);
+                        }}
+                        className="w-16 h-7 text-xs"
+                        min={1}
+                        max={24}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Focus Input */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">2. Quality (Focus)</label>
+                    <span className="text-xs font-mono">{focusScore * 10}% Score</span>
+                  </div>
+                  <Slider
+                    value={[focusScore]}
+                    min={1}
+                    max={10}
+                    step={1}
+                    onValueChange={(vals) => {
+                      setFocusScore(vals[0]);
+                      setIsDirty(true);
+                    }}
+                    className="py-2"
+                  />
+                  <div className="flex justify-between text-[10px] text-muted-foreground uppercase font-bold">
+                    <span>Distracted (1)</span>
+                    <span>Deep Work (10)</span>
+                  </div>
+                </div>
+
+                {/* 3. Output Input */}
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">3. Results (Output)</label>
+                    <span className="text-xs font-mono">{outputScore}% Score</span>
+                  </div>
+                  
+                  <Tabs value={workType} onValueChange={(v) => {
+                    setWorkType(v as "execution" | "thinking");
+                    setIsDirty(true);
+                  }} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 h-8 mb-2">
+                      <TabsTrigger value="execution" className="text-xs">
+                        <Hammer className="h-3 w-3 mr-2" />
+                        Execution Day
+                      </TabsTrigger>
+                      <TabsTrigger value="thinking" className="text-xs">
+                        <Brain className="h-3 w-3 mr-2" />
+                        Thinking Day
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+
+                  <Slider
+                    value={[outputScore]}
+                    min={0}
+                    max={100}
+                    step={5}
+                    onValueChange={(vals) => {
+                      setOutputScore(vals[0]);
+                      setIsDirty(true);
+                    }}
+                    className="py-2"
+                  />
+                  
+                  <div className="bg-background/50 p-3 rounded-lg border border-border/50 text-xs space-y-1">
+                    {workType === "execution" ? (
+                      <>
+                        <div className="flex justify-between"><span>0%</span> <span className="text-muted-foreground">No output</span></div>
+                        <div className="flex justify-between"><span>50%</span> <span className="text-muted-foreground">Half of daily target</span></div>
+                        <div className="flex justify-between font-medium text-green-600"><span>100%</span> <span>Hit daily target (e.g. 10 DMs)</span></div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between"><span>0-20%</span> <span className="text-muted-foreground">Noise / Consumed content</span></div>
+                        <div className="flex justify-between"><span>30-50%</span> <span className="text-muted-foreground">Clarity gained / Problems identified</span></div>
+                        <div className="flex justify-between"><span>60-70%</span> <span className="text-muted-foreground">Plan defined / Priorities set</span></div>
+                        <div className="flex justify-between font-medium text-green-600"><span>80-90%</span> <span>Irreversible decision / Strategy locked</span></div>
+                      </>
+                    )}
+                  </div>
+                  
+                  {outputScore < 40 && (
+                    <div className="text-[10px] text-red-500 font-bold flex items-center gap-1 bg-red-500/10 p-2 rounded">
+                      <Target className="h-3 w-3" />
+                      Output &lt; 40% caps Rating at 50%. No fake productivity.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Output Log */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium flex items-center gap-2">
+            <Target className="h-4 w-4 text-green-500" />
+            Output Log (Proof)
+          </label>
+          <Textarea
+            placeholder={workType === "execution" 
+              ? "What did you ship? (e.g. 3 videos, 5 leads, 1 offer)" 
+              : "What decision did you make? What clarity did you gain? (REQUIRED for high scores)"}
+            value={outputLog}
+            onChange={(e) => {
+              setOutputLog(e.target.value);
+              setIsDirty(true);
+            }}
+            className={`min-h-[80px] text-sm resize-none bg-background/50 ${
+              workType === "thinking" && outputScore > 80 && outputLog.length < 20 ? "border-red-500 ring-1 ring-red-500/20" : ""
+            }`}
+          />
+          <p className="text-xs text-muted-foreground">
+            {workType === "thinking" 
+              ? "For thinking days, you MUST write the decision/clarity gained to claim a high score."
+              : "Be honest. Output dominates everything."}
+          </p>
+        </div>
+
+        {/* Final Rating Display */}
+        <div className="space-y-3 pt-2 border-t">
+          <div className="flex justify-between items-center">
+            <label className="text-sm font-medium flex items-center gap-2">
+              <Award className="h-4 w-4 text-primary" />
+              Final Rating (Calculated)
+            </label>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className={`${getRatingColor(dailyRating)} border-current`}>
+                {getRatingLabel(dailyRating)}
+              </Badge>
+              <span className={`font-mono font-bold text-lg ${getRatingColor(dailyRating)}`}>
+                {dailyRating}%
+              </span>
             </div>
-            <Slider
-              value={[dailyRating]}
-              min={0}
-              max={100}
-              step={5}
-              onValueChange={(vals) => {
-                setDailyRating(vals[0]);
-                setIsDirty(true);
-              }}
-              className="py-2"
+          </div>
+          <div className="h-2 bg-secondary rounded-full overflow-hidden">
+            <div 
+              className={`h-full transition-all duration-500 ${
+                dailyRating >= 90 ? "bg-amber-500" :
+                dailyRating >= 80 ? "bg-green-500" :
+                dailyRating >= 60 ? "bg-blue-500" :
+                dailyRating >= 40 ? "bg-orange-500" : "bg-red-500"
+              }`}
+              style={{ width: `${dailyRating}%` }}
             />
-            <div className="flex justify-between text-[10px] text-muted-foreground uppercase font-bold">
-              <span>Wasted Day</span>
-              <span>Legendary</span>
-            </div>
           </div>
         </div>
       </CardContent>

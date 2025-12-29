@@ -153,6 +153,9 @@ export const getRange = query({
             focusScore: reflection.focusScore,
             outputLog: reflection.outputLog,
             dailyRating: reflection.dailyRating,
+            outputScore: reflection.outputScore,
+            workType: reflection.workType,
+            targetHours: reflection.targetHours,
             _id: reflection._id
           } : null,
         };
@@ -166,6 +169,9 @@ export const getRange = query({
             focusScore: reflection.focusScore,
             outputLog: reflection.outputLog,
             dailyRating: reflection.dailyRating,
+            outputScore: reflection.outputScore,
+            workType: reflection.workType,
+            targetHours: reflection.targetHours,
             _id: reflection._id
           } : null,
         };
@@ -182,6 +188,9 @@ export const updateDailyMetrics = mutation({
     focusScore: v.number(),
     outputLog: v.string(),
     dailyRating: v.number(),
+    outputScore: v.optional(v.number()),
+    workType: v.optional(v.string()),
+    targetHours: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -199,6 +208,9 @@ export const updateDailyMetrics = mutation({
         focusScore: args.focusScore,
         outputLog: args.outputLog,
         dailyRating: args.dailyRating,
+        outputScore: args.outputScore,
+        workType: args.workType,
+        targetHours: args.targetHours,
       });
     } else {
       await ctx.db.insert("reflections", {
@@ -210,6 +222,9 @@ export const updateDailyMetrics = mutation({
         focusScore: args.focusScore,
         outputLog: args.outputLog,
         dailyRating: args.dailyRating,
+        outputScore: args.outputScore,
+        workType: args.workType,
+        targetHours: args.targetHours,
       });
     }
   },
