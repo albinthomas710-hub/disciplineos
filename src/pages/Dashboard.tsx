@@ -50,11 +50,12 @@ import NotToDoListView from "@/components/NotToDoListView";
 import { EntrepreneurOSView } from "@/components/EntrepreneurOSView";
 import { FailureWisdomView } from "@/components/FailureWisdomView";
 import { DataBackupDialog } from "@/components/DataBackupDialog";
+import HistoryView from "@/components/HistoryView";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "vectal" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure">("timer");
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "vectal" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure" | "history">("timer");
   const [showReflection, setShowReflection] = useState(false);
   const [showBackup, setShowBackup] = useState(false);
 
@@ -343,6 +344,14 @@ export default function Dashboard() {
             Mistake Vault
           </Button>
           <Button
+            variant={activeTab === "history" ? "default" : "ghost"}
+            onClick={() => setActiveTab("history")}
+            className="cursor-pointer bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            History
+          </Button>
+          <Button
             variant="ghost"
             onClick={() => setShowBackup(true)}
             className="cursor-pointer bg-gradient-to-r from-slate-600 to-gray-600 text-white hover:from-slate-700 hover:to-gray-700"
@@ -369,6 +378,7 @@ export default function Dashboard() {
         {activeTab === "nottodo" && <NotToDoListView />}
         {activeTab === "entrepreneur" && <EntrepreneurOSView />}
         {activeTab === "failure" && <FailureWisdomView />}
+        {activeTab === "history" && <HistoryView />}
       </div>
 
       {/* Reflection Dialog */}

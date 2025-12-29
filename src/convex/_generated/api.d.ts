@@ -22,6 +22,7 @@ import type * as entrepreneurActions from "../entrepreneurActions.js";
 import type * as entrepreneurOS from "../entrepreneurOS.js";
 import type * as failureWisdom from "../failureWisdom.js";
 import type * as hardDeadlines from "../hardDeadlines.js";
+import type * as history from "../history.js";
 import type * as holyVideos from "../holyVideos.js";
 import type * as http from "../http.js";
 import type * as ideas from "../ideas.js";
@@ -75,6 +76,7 @@ declare const fullApi: ApiFromModules<{
   entrepreneurOS: typeof entrepreneurOS;
   failureWisdom: typeof failureWisdom;
   hardDeadlines: typeof hardDeadlines;
+  history: typeof history;
   holyVideos: typeof holyVideos;
   http: typeof http;
   ideas: typeof ideas;
