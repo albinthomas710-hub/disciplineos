@@ -131,9 +131,22 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
     if (day.stats.totalBlocks > 0 && day.stats.completedBlocks === day.stats.totalBlocks) {
       acc.perfectDays += 1;
     }
+
+    // Calculate actual time invested
+    if (day.blocks) {
+      day.blocks.forEach((block: any) => {
+        if (block.completed && block.startTime && block.endTime) {
+          const [h1, m1] = block.startTime.split(':').map(Number);
+          const [h2, m2] = block.endTime.split(':').map(Number);
+          let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+          if (diff < 0) diff += 1440; // Handle midnight crossing
+          acc.totalMinutes += diff;
+        }
+      });
+    }
     
     return acc;
-  }, { completedBlocks: 0, totalBlocks: 0, perfectDays: 0 }) : null;
+  }, { completedBlocks: 0, totalBlocks: 0, perfectDays: 0, totalMinutes: 0 }) : null;
 
   return (
     <div className="space-y-6">
@@ -209,9 +222,9 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
                   <div>
                     <p className="text-blue-100 font-medium text-sm">Time Invested</p>
                     <h3 className="text-3xl font-bold tracking-tight">
-                      {monthlyStats ? Math.round(monthlyStats.completedBlocks * 0.5) : 0}h
+                      {monthlyStats ? Math.round(monthlyStats.totalMinutes / 60) : 0}h
                     </h3>
-                    <p className="text-xs text-blue-200 mt-1">Approx. Deep Work</p>
+                    <p className="text-xs text-blue-200 mt-1">Actual Deep Work</p>
                   </div>
                 </div>
               </CardContent>
