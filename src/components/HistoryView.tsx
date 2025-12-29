@@ -28,6 +28,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import YearlyWarMapView from "./YearlyWarMapView";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface HistoryViewProps {
   onNavigateToTimer?: () => void;
@@ -56,6 +63,10 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
 
   const monthlyGoals = useQuery(api.history.getMonthlyGoals, { month: currentMonthStr });
   const updateMonthlyGoals = useMutation(api.history.updateMonthlyGoals);
+  
+  // Fetch all timetables for the dropdown
+  const allTimetables = useQuery(api.timetables.list);
+  const setDayTimetable = useMutation(api.history.setDayTimetable);
 
   // Sync monthly goals when data loads
   useEffect(() => {
@@ -84,6 +95,18 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   const selectedDayData = historyData?.[selectedDateStr];
+
+  const handleTimetableChange = async (timetableId: string) => {
+    try {
+      await setDayTimetable({
+        date: selectedDateStr,
+        timetableId: timetableId as any,
+      });
+      toast.success("Timetable updated for this day");
+    } catch (error) {
+      toast.error("Failed to update timetable");
+    }
+  };
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
@@ -330,15 +353,41 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
                       {format(selectedDate, "EEEE, MMMM do")}
                     </CardTitle>
                     <div className="flex flex-col gap-1 mt-1">
-                      {selectedDayData?.stats.timetableName && (
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs font-normal bg-primary/5 border-primary/20 text-primary">
-                            <CalendarIcon className="h-3 w-3 mr-1" />
-                            {selectedDayData.stats.timetableName}
+                      <div className="flex items-center gap-2">
+                        {allTimetables ? (
+                          <Select 
+                            value={selectedDayData?.stats.timetableId || ""} 
+                            onValueChange={handleTimetableChange}
+                          >
+                            <SelectTrigger className="h-7 text-xs w-auto min-w-[140px] bg-background border-primary/20 text-primary">
+                              <div className="flex items-center gap-1">
+                                <CalendarIcon className="h-3 w-3 mr-1" />
+                                <SelectValue placeholder="Select Timetable" />
+                              </div>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {allTimetables.map((tt) => (
+                                <SelectItem key={tt._id} value={tt._id}>
+                                  {tt.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
+                          selectedDayData?.stats.timetableName && (
+                            <Badge variant="outline" className="text-xs font-normal bg-primary/5 border-primary/20 text-primary">
+                              <CalendarIcon className="h-3 w-3 mr-1" />
+                              {selectedDayData.stats.timetableName}
+                            </Badge>
+                          )
+                        )}
+                        {selectedDayData?.stats.isOverride && (
+                          <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
+                            Manual Override
                           </Badge>
-                        </div>
-                      )}
-                      <p className="text-muted-foreground flex items-center gap-2 text-sm">
+                        )}
+                      </div>
+                      <p className="text-muted-foreground flex items-center gap-2 text-sm mt-1">
                         <Sparkles className="h-4 w-4 text-amber-500" />
                         Make it Satisfying: Review your wins
                       </p>

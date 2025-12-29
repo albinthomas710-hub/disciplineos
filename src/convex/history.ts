@@ -19,11 +19,21 @@ export const getRange = query({
       )
       .collect();
 
-    // 2. Identify Timetables involved
+    // 2. Fetch Timetable Overrides
+    const overrides = await ctx.db
+      .query("dailyTimetableOverrides")
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id).gte("date", args.startDate).lte("date", args.endDate)
+      )
+      .collect();
+
+    // 3. Identify Timetables involved
     const logTimetableIds = new Set(logs.map(l => l.timetableId));
     if (user.activeTimetableId) {
       logTimetableIds.add(user.activeTimetableId);
     }
+    // Add overridden timetables
+    overrides.forEach(o => logTimetableIds.add(o.timetableId));
     
     // Fetch all timetables involved
     const timetablesMap = new Map();
@@ -63,10 +73,14 @@ export const getRange = query({
     dateArray.forEach(dateStr => {
       // Find logs for this date
       const dayLogs = logs.filter(l => l.date === dateStr);
+      const override = overrides.find(o => o.date === dateStr);
       
       // Determine Timetable ID
       let timetableId = null;
-      if (dayLogs.length > 0) {
+      
+      if (override) {
+        timetableId = override.timetableId;
+      } else if (dayLogs.length > 0) {
         timetableId = dayLogs[0].timetableId; // Use the one from logs
       } else if (user.activeTimetableId) {
         timetableId = user.activeTimetableId; // Fallback to active
@@ -112,7 +126,9 @@ export const getRange = query({
           stats: {
             completedBlocks,
             totalBlocks,
-            timetableName: timetable.name
+            timetableName: timetable.name,
+            timetableId: timetable._id,
+            isOverride: !!override
           }
         };
       } else {
@@ -147,13 +163,22 @@ export const getYearlyStats = query({
       )
       .collect();
 
-    // 2. Identify Timetables
+    // 2. Fetch Overrides
+    const overrides = await ctx.db
+      .query("dailyTimetableOverrides")
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id).gte("date", startDate).lte("date", endDate)
+      )
+      .collect();
+
+    // 3. Identify Timetables
     const logTimetableIds = new Set(logs.map(l => l.timetableId));
     if (user.activeTimetableId) {
       logTimetableIds.add(user.activeTimetableId);
     }
+    overrides.forEach(o => logTimetableIds.add(o.timetableId));
 
-    // 3. Get Block Counts AND Names for each Timetable
+    // 4. Get Block Counts AND Names for each Timetable
     const timetableInfo = new Map<string, { count: number, name: string }>();
     await Promise.all(
       Array.from(logTimetableIds).map(async (tid) => {
@@ -174,25 +199,77 @@ export const getYearlyStats = query({
       })
     );
 
-    // 4. Calculate stats per day
+    // 5. Calculate stats per day
     const statsByDate: Record<string, { total: number; completed: number; timetableName?: string }> = {};
 
-    logs.forEach((log) => {
-      if (!statsByDate[log.date]) {
-        const info = timetableInfo.get(log.timetableId);
-        const total = info?.count || 0;
-        statsByDate[log.date] = { 
-          total, 
-          completed: 0,
-          timetableName: info?.name
-        };
+    // Helper to iterate all days in year (simplified to just iterate logs + overrides + fill gaps if needed, 
+    // but for yearly view we usually just map what we have. 
+    // However, to be accurate we should probably iterate days if we want to show "0/X" for days with no logs but an active timetable.
+    // For efficiency, we'll stick to days that have activity OR overrides.)
+    
+    const daysWithActivity = new Set([...logs.map(l => l.date), ...overrides.map(o => o.date)]);
+    
+    daysWithActivity.forEach(date => {
+      const dayLogs = logs.filter(l => l.date === date);
+      const override = overrides.find(o => o.date === date);
+      
+      let timetableId = null;
+      if (override) {
+        timetableId = override.timetableId;
+      } else if (dayLogs.length > 0) {
+        timetableId = dayLogs[0].timetableId;
+      } else if (user.activeTimetableId) {
+        // Note: For yearly view, assuming active timetable for ALL past days without logs might be noisy.
+        // But consistent with getRange. Let's stick to logs/overrides for now to keep it clean, 
+        // or maybe just logs + overrides.
+        // If we want to show "missed" days, we need to know if the user WAS active then.
+        // For now, let's prioritize explicit data.
+        timetableId = user.activeTimetableId; 
       }
-      if (log.completed) {
-        statsByDate[log.date].completed++;
+
+      if (timetableId && timetableInfo.has(timetableId)) {
+        const info = timetableInfo.get(timetableId)!;
+        const completedCount = dayLogs.filter(l => l.completed && l.timetableId === timetableId).length;
+        // Note: If timetable changed (override), logs from other timetables are ignored for completion count
+        // to match the "view" of that day.
+        
+        statsByDate[date] = {
+          total: info.count,
+          completed: completedCount,
+          timetableName: info.name
+        };
       }
     });
 
     return statsByDate;
+  },
+});
+
+export const setDayTimetable = mutation({
+  args: {
+    date: v.string(),
+    timetableId: v.id("timetables"),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const existing = await ctx.db
+      .query("dailyTimetableOverrides")
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id).eq("date", args.date)
+      )
+      .unique();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, { timetableId: args.timetableId });
+    } else {
+      await ctx.db.insert("dailyTimetableOverrides", {
+        userId: user._id,
+        date: args.date,
+        timetableId: args.timetableId,
+      });
+    }
   },
 });
 

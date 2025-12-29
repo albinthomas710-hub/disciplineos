@@ -55,6 +55,14 @@ const schema = defineSchema(
       .index("by_user", ["userId"])
       .index("by_user_and_active", ["userId", "isActive"]),
 
+    // Daily Timetable Overrides - Explicitly set which timetable applies to a specific date
+    dailyTimetableOverrides: defineTable({
+      userId: v.id("users"),
+      date: v.string(), // "2025-01-11"
+      timetableId: v.id("timetables"),
+    })
+      .index("by_user_and_date", ["userId", "date"]),
+
     // Time Blocks - individual activities in a timetable
     timeBlocks: defineTable({
       timetableId: v.id("timetables"),
