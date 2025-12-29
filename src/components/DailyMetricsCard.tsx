@@ -40,7 +40,7 @@ export default function DailyMetricsCard({ dateStr, initialMetrics, hoursInveste
 
   // Load initial data
   useEffect(() => {
-    if (isDirty) return;
+    // Always load data when date changes
     if (initialMetrics) {
       setFocusScore(initialMetrics.focusScore || 5);
       setOutputLog(initialMetrics.outputLog || "");
@@ -49,7 +49,7 @@ export default function DailyMetricsCard({ dateStr, initialMetrics, hoursInveste
       setWorkType((initialMetrics.workType as "execution" | "thinking") || "execution");
       setTargetHours(initialMetrics.targetHours || 6);
     } else {
-      // Defaults
+      // Defaults for new days
       setFocusScore(5);
       setOutputLog("");
       setDailyRating(50);
@@ -57,6 +57,7 @@ export default function DailyMetricsCard({ dateStr, initialMetrics, hoursInveste
       setWorkType("execution");
       setTargetHours(6);
     }
+    // Reset isDirty when date changes
     setIsDirty(false);
   }, [initialMetrics, dateStr]);
 
