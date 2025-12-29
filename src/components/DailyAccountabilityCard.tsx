@@ -159,6 +159,18 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
     setIsDirty(true);
   };
 
+  const getInventoryPlaceholder = (index: number) => {
+    if (index === 0) return "e.g. Recorded 4 short-form videos";
+    if (index === 1) return "e.g. Sent 12 outbound DMs";
+    return `Action that moved the needle ${index + 1}...`;
+  };
+
+  const getImprovementPlaceholder = (index: number) => {
+    if (index === 0) return "e.g. Plan tomorrow the night before";
+    if (index === 1) return "e.g. Start deep work before checking messages";
+    return `Improvement ${index + 1}...`;
+  };
+
   return (
     <Card className="border-2 border-muted/50 overflow-hidden">
       <CardHeader className="bg-muted/10 pb-4">
@@ -178,12 +190,17 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
       <CardContent className="p-6 space-y-8">
         
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-bold flex items-center gap-2">
-              <span className="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
-              Productivity Inventory
-            </label>
-            <span className="text-xs text-muted-foreground">Proof List (Not To-Do)</span>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-bold flex items-center gap-2">
+                <span className="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center text-xs">1</span>
+                Productivity Inventory
+              </label>
+              <span className="text-xs text-muted-foreground font-medium">Proof List (Not To-Do)</span>
+            </div>
+            <p className="text-xs text-muted-foreground pl-8">
+              👉 What specific actions today directly moved your main goal forward?
+            </p>
           </div>
           <div className="space-y-2 pl-8">
             {inventory.map((item, i) => (
@@ -195,7 +212,7 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
                 <Input 
                   value={item.text}
                   onChange={(e) => updateInventory(i, 'text', e.target.value)}
-                  placeholder={`Action that moved the needle ${i + 1}...`}
+                  placeholder={getInventoryPlaceholder(i)}
                   className="h-8 text-sm"
                 />
                 <Button 
@@ -223,12 +240,17 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
         </div>
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-bold flex items-center gap-2">
-              <span className="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
-              How could I improve?
-            </label>
-            <span className="text-xs text-muted-foreground">Process Improvement</span>
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-bold flex items-center gap-2">
+                <span className="bg-primary/10 text-primary w-6 h-6 rounded-full flex items-center justify-center text-xs">2</span>
+                How could I improve?
+              </label>
+              <span className="text-xs text-muted-foreground font-medium">Process Improvement</span>
+            </div>
+            <p className="text-xs text-muted-foreground pl-8">
+              👉 What ONE thing would have made today better if fixed?
+            </p>
           </div>
           <div className="space-y-2 pl-8">
             {improvements.map((imp, i) => (
@@ -236,7 +258,7 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
                 <Input 
                   value={imp}
                   onChange={(e) => updateImprovement(i, e.target.value)}
-                  placeholder={`Improvement ${i + 1} (e.g. Start deep work earlier)`}
+                  placeholder={getImprovementPlaceholder(i)}
                   className="h-8 text-sm"
                 />
                 <Button 
