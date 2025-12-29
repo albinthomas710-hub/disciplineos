@@ -98,6 +98,10 @@ const schema = defineSchema(
       didWell: v.string(),
       brokeDispline: v.string(),
       improvement: v.string(),
+      // New Daily Verdict Fields
+      focusScore: v.optional(v.number()), // 1-10
+      outputLog: v.optional(v.string()), // Key results/outputs
+      dailyRating: v.optional(v.number()), // 0-100
     }).index("by_user_and_date", ["userId", "date"]),
 
     // User Settings

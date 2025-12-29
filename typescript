@@ -1,53 +1,11 @@
-export const getRange = query({
-  date: 'date',
-  year: 'year',
-  month: 'month',
-  day: 'day',
-  week: 'week',
-  hour: 'hour',
-  minute: 'minute',
-  second: 'second',
-  timezone: 'timezone',
-});
-
-export const getYearlyStats = (logs, timetableCounts) => {
-  const statsByDate = {};
-  logs.forEach((log) => {
-    if (!statsByDate[log.date]) {
-      const total = timetableCounts.get(log.timetableId) || 0;
-      statsByDate[log.date] = { total, completed: 0 };
+  // Calculate hours invested for selected day
+  const selectedDayHours = selectedDayData?.blocks?.reduce((acc: number, block: any) => {
+    if (block.completed && block.startTime && block.endTime) {
+      const [h1, m1] = block.startTime.split(':').map(Number);
+      const [h2, m2] = block.endTime.split(':').map(Number);
+      let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+      if (diff < 0) diff += 1440;
+      return acc + diff;
     }
-    if (log.completed) {
-      statsByDate[log.date].completed++;
-    }
-  });
-  return statsByDate;
-};
-
-export const getMonthlyGoals = (logs, timetableCounts) => {
-  const statsByDate = {};
-  logs.forEach((log) => {
-    if (!statsByDate[log.date]) {
-      const total = timetableCounts.get(log.timetableId) || 0;
-      statsByDate[log.date] = { total, completed: 0 };
-    }
-    if (log.completed) {
-      statsByDate[log.date].completed++;
-    }
-  });
-  return statsByDate;
-};
-
-export const updateMonthlyGoals = (logs, timetableCounts) => {
-  const statsByDate = {};
-  logs.forEach((log) => {
-    if (!statsByDate[log.date]) {
-      const total = timetableCounts.get(log.timetableId) || 0;
-      statsByDate[log.date] = { total, completed: 0 };
-    }
-    if (log.completed) {
-      statsByDate[log.date].completed++;
-    }
-  });
-  return statsByDate;
-};
+    return acc;
+  }, 0) || 0;

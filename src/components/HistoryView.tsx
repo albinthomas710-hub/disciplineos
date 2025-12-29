@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import YearlyWarMapView from "./YearlyWarMapView";
 import DayTagsManager from "./DayTagsManager";
+import DailyMetricsCard from "./DailyMetricsCard";
 import { 
   Select,
   SelectContent,
@@ -151,6 +152,18 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
     
     return acc;
   }, { completedBlocks: 0, totalBlocks: 0, perfectDays: 0, totalMinutes: 0 }) : null;
+
+  // Calculate hours invested for selected day
+  const selectedDayHours = selectedDayData?.blocks?.reduce((acc: number, block: any) => {
+    if (block.completed && block.startTime && block.endTime) {
+      const [h1, m1] = block.startTime.split(':').map(Number);
+      const [h2, m2] = block.endTime.split(':').map(Number);
+      let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+      if (diff < 0) diff += 1440;
+      return acc + diff;
+    }
+    return acc;
+  }, 0) || 0;
 
   return (
     <div className="space-y-6">
@@ -387,161 +400,170 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
             </div>
 
             {/* Daily Detail Section */}
-            <Card className="lg:col-span-7 xl:col-span-8 min-h-[500px] border-2 border-muted/50">
-              <CardHeader className="border-b bg-muted/10">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div>
-                    <CardTitle className="text-2xl flex items-center gap-2">
-                      {format(selectedDate, "EEEE, MMMM do")}
-                    </CardTitle>
-                    <div className="flex flex-col gap-1 mt-1">
-                      <div className="flex items-center gap-2">
-                        {allTimetables ? (
-                          <Select 
-                            value={selectedDayData?.stats.timetableId || ""} 
-                            onValueChange={handleTimetableChange}
-                          >
-                            <SelectTrigger className="h-7 text-xs w-auto min-w-[140px] bg-background border-primary/20 text-primary">
-                              <div className="flex items-center gap-1">
-                                <CalendarIcon className="h-3 w-3 mr-1" />
-                                <SelectValue placeholder="Select Timetable" />
-                              </div>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {allTimetables.map((tt) => (
-                                <SelectItem key={tt._id} value={tt._id}>
-                                  {tt.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        ) : (
-                          selectedDayData?.stats.timetableName && (
-                            <Badge variant="outline" className="text-xs font-normal bg-primary/5 border-primary/20 text-primary">
-                              <CalendarIcon className="h-3 w-3 mr-1" />
-                              {selectedDayData.stats.timetableName}
-                            </Badge>
-                          )
-                        )}
-                        {selectedDayData?.stats.isOverride && (
-                          <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
-                            Manual Override
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-muted-foreground flex items-center gap-2 text-sm mt-1">
-                        <Sparkles className="h-4 w-4 text-amber-500" />
-                        Make it Satisfying: Review your wins
-                      </p>
-                    </div>
-                  </div>
-                  {selectedDayData && (
-                    <div className="flex gap-3 text-sm font-medium">
-                      <div className="px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center gap-2 border border-green-200 dark:border-green-800">
-                        <div className="w-2 h-2 rounded-full bg-green-500" />
-                        <span>{selectedDayData.stats.completedBlocks} Blocks</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[800px]">
-                  <div className="p-6">
-                    {!selectedDayData ? (
-                      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
-                        <div className="bg-muted/50 p-6 rounded-full mb-4">
-                          <CalendarIcon className="h-12 w-12 opacity-20" />
-                        </div>
-                        <p className="text-lg font-medium">No activity recorded</p>
-                        <p className="text-sm opacity-70">Start your timer to build your history</p>
-                      </div>
-                    ) : (
-                      <div className="space-y-8">
-                        {/* Perfect Day Banner */}
-                        {selectedDayData.stats.totalBlocks > 0 && selectedDayData.stats.completedBlocks === selectedDayData.stats.totalBlocks && (
-                          <motion.div 
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex items-center gap-4"
-                          >
-                            <div className="bg-amber-500 p-2 rounded-full text-white shadow-lg shadow-amber-500/30">
-                              <Trophy className="h-6 w-6" />
-                            </div>
-                            <div>
-                              <h4 className="font-bold text-amber-800 dark:text-amber-200">Perfect Day!</h4>
-                              <p className="text-sm text-amber-700 dark:text-amber-300">You completed 100% of your scheduled blocks. Outstanding discipline.</p>
-                            </div>
-                          </motion.div>
-                        )}
+            <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+              {/* Daily Metrics Card */}
+              <DailyMetricsCard 
+                dateStr={selectedDateStr}
+                initialMetrics={selectedDayData?.metrics}
+                hoursInvested={Math.round(selectedDayHours / 60 * 10) / 10}
+              />
 
-                        {/* Time Blocks Timeline */}
-                        <div>
-                          <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
-                            <Clock className="h-5 w-5" />
-                            Time Blocks Timeline
-                          </h3>
-                          <div className="space-y-6 relative pl-4 border-l-2 border-indigo-100 dark:border-indigo-900 ml-2">
-                            {selectedDayData.blocks.length === 0 ? (
-                              <p className="text-sm text-muted-foreground pl-4 italic">No time blocks logged.</p>
-                            ) : (
-                              selectedDayData.blocks.map((block: any, i: number) => (
-                                <motion.div
-                                  key={i}
-                                  initial={{ x: -20, opacity: 0 }}
-                                  animate={{ x: 0, opacity: 1 }}
-                                  transition={{ delay: i * 0.05 }}
-                                  className="relative pl-8 group cursor-pointer"
-                                  onClick={onNavigateToTimer}
-                                >
-                                  <div className={`absolute -left-[23px] top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-4 border-background transition-colors duration-300 ${
-                                    block.completed 
-                                      ? "bg-green-500 ring-2 ring-green-200 dark:ring-green-900" 
-                                      : "bg-gray-300 dark:bg-gray-600"
-                                  }`} />
-                                  
-                                  <div className={`p-4 rounded-xl border transition-all duration-300 hover:shadow-md group-hover:border-primary/50 ${
-                                    block.completed 
-                                      ? "bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/10 dark:to-emerald-900/10 border-green-200 dark:border-green-800" 
-                                      : "bg-card border-border"
-                                  }`}>
-                                    <div className="flex items-start justify-between mb-2">
-                                      <div>
-                                        <h4 className={`font-bold text-base ${block.completed ? "text-green-800 dark:text-green-200" : ""}`}>
-                                          {block.blockTitle}
-                                        </h4>
-                                        <div className="flex items-center gap-2 mt-1.5">
-                                          <Badge variant="secondary" className="text-xs font-mono bg-background/50">
-                                            {block.startTime} - {block.endTime}
-                                          </Badge>
-                                          <Badge variant="outline" className="text-xs border-primary/20 text-primary">
-                                            {block.category}
-                                          </Badge>
-                                        </div>
-                                      </div>
-                                      {block.completed && (
-                                        <div className="bg-green-100 dark:bg-green-900/50 p-1.5 rounded-full">
-                                          <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
-                                        </div>
-                                      )}
-                                    </div>
-                                    {block.blockDescription && (
-                                      <p className="text-sm text-muted-foreground mt-2 pl-1 border-l-2 border-primary/10">
-                                        {block.blockDescription}
-                                      </p>
-                                    )}
-                                  </div>
-                                </motion.div>
-                              ))
-                            )}
-                          </div>
+              <Card className="min-h-[500px] border-2 border-muted/50">
+                <CardHeader className="border-b bg-muted/10">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <CardTitle className="text-2xl flex items-center gap-2">
+                        {format(selectedDate, "EEEE, MMMM do")}
+                      </CardTitle>
+                      <div className="flex flex-col gap-1 mt-1">
+                        <div className="flex items-center gap-2">
+                          {allTimetables ? (
+                            <Select 
+                              value={selectedDayData?.stats.timetableId || ""} 
+                              onValueChange={handleTimetableChange}
+                            >
+                              <SelectTrigger className="h-7 text-xs w-auto min-w-[140px] bg-background border-primary/20 text-primary">
+                                <div className="flex items-center gap-1">
+                                  <CalendarIcon className="h-3 w-3 mr-1" />
+                                  <SelectValue placeholder="Select Timetable" />
+                                </div>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {allTimetables.map((tt) => (
+                                  <SelectItem key={tt._id} value={tt._id}>
+                                    {tt.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            selectedDayData?.stats.timetableName && (
+                              <Badge variant="outline" className="text-xs font-normal bg-primary/5 border-primary/20 text-primary">
+                                <CalendarIcon className="h-3 w-3 mr-1" />
+                                {selectedDayData.stats.timetableName}
+                              </Badge>
+                            )
+                          )}
+                          {selectedDayData?.stats.isOverride && (
+                            <Badge variant="secondary" className="text-[10px] h-5 px-1.5">
+                              Manual Override
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-muted-foreground flex items-center gap-2 text-sm mt-1">
+                          <Sparkles className="h-4 w-4 text-amber-500" />
+                          Make it Satisfying: Review your wins
+                        </p>
+                      </div>
+                    </div>
+                    {selectedDayData && (
+                      <div className="flex gap-3 text-sm font-medium">
+                        <div className="px-3 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 flex items-center gap-2 border border-green-200 dark:border-green-800">
+                          <div className="w-2 h-2 rounded-full bg-green-500" />
+                          <span>{selectedDayData.stats.completedBlocks} Blocks</span>
                         </div>
                       </div>
                     )}
                   </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <ScrollArea className="h-[800px]">
+                    <div className="p-6">
+                      {!selectedDayData ? (
+                        <div className="flex flex-col items-center justify-center h-64 text-muted-foreground">
+                          <div className="bg-muted/50 p-6 rounded-full mb-4">
+                            <CalendarIcon className="h-12 w-12 opacity-20" />
+                          </div>
+                          <p className="text-lg font-medium">No activity recorded</p>
+                          <p className="text-sm opacity-70">Start your timer to build your history</p>
+                        </div>
+                      ) : (
+                        <div className="space-y-8">
+                          {/* Perfect Day Banner */}
+                          {selectedDayData.stats.totalBlocks > 0 && selectedDayData.stats.completedBlocks === selectedDayData.stats.totalBlocks && (
+                            <motion.div 
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="bg-gradient-to-r from-amber-100 to-orange-100 dark:from-amber-900/20 dark:to-orange-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4 flex items-center gap-4"
+                            >
+                              <div className="bg-amber-500 p-2 rounded-full text-white shadow-lg shadow-amber-500/30">
+                                <Trophy className="h-6 w-6" />
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-amber-800 dark:text-amber-200">Perfect Day!</h4>
+                                <p className="text-sm text-amber-700 dark:text-amber-300">You completed 100% of your scheduled blocks. Outstanding discipline.</p>
+                              </div>
+                            </motion.div>
+                          )}
+
+                          {/* Time Blocks Timeline */}
+                          <div>
+                            <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-600 dark:text-indigo-400">
+                              <Clock className="h-5 w-5" />
+                              Time Blocks Timeline
+                            </h3>
+                            <div className="space-y-6 relative pl-4 border-l-2 border-indigo-100 dark:border-indigo-900 ml-2">
+                              {selectedDayData.blocks.length === 0 ? (
+                                <p className="text-sm text-muted-foreground pl-4 italic">No time blocks logged.</p>
+                              ) : (
+                                selectedDayData.blocks.map((block: any, i: number) => (
+                                  <motion.div
+                                    key={i}
+                                    initial={{ x: -20, opacity: 0 }}
+                                    animate={{ x: 0, opacity: 1 }}
+                                    transition={{ delay: i * 0.05 }}
+                                    className="relative pl-8 group cursor-pointer"
+                                    onClick={onNavigateToTimer}
+                                  >
+                                    <div className={`absolute -left-[23px] top-1/2 -translate-y-1/2 w-5 h-5 rounded-full border-4 border-background transition-colors duration-300 ${
+                                      block.completed 
+                                        ? "bg-green-500 ring-2 ring-green-200 dark:ring-green-900" 
+                                        : "bg-gray-300 dark:bg-gray-600"
+                                    }`} />
+                                    
+                                    <div className={`p-4 rounded-xl border transition-all duration-300 hover:shadow-md group-hover:border-primary/50 ${
+                                      block.completed 
+                                        ? "bg-gradient-to-r from-green-50/80 to-emerald-50/80 dark:from-green-900/10 dark:to-emerald-900/10 border-green-200 dark:border-green-800" 
+                                        : "bg-card border-border"
+                                    }`}>
+                                      <div className="flex items-start justify-between mb-2">
+                                        <div>
+                                          <h4 className={`font-bold text-base ${block.completed ? "text-green-800 dark:text-green-200" : ""}`}>
+                                            {block.blockTitle}
+                                          </h4>
+                                          <div className="flex items-center gap-2 mt-1.5">
+                                            <Badge variant="secondary" className="text-xs font-mono bg-background/50">
+                                              {block.startTime} - {block.endTime}
+                                            </Badge>
+                                            <Badge variant="outline" className="text-xs border-primary/20 text-primary">
+                                              {block.category}
+                                            </Badge>
+                                          </div>
+                                        </div>
+                                        {block.completed && (
+                                          <div className="bg-green-100 dark:bg-green-900/50 p-1.5 rounded-full">
+                                            <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+                                          </div>
+                                        )}
+                                      </div>
+                                      {block.blockDescription && (
+                                        <p className="text-sm text-muted-foreground mt-2 pl-1 border-l-2 border-primary/10">
+                                          {block.blockDescription}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </motion.div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </>
       )}

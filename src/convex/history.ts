@@ -69,6 +69,14 @@ export const getRange = query({
       )
       .collect();
 
+    // Fetch Reflections (Daily Metrics) for the range
+    const reflections = await ctx.db
+      .query("reflections")
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id).gte("date", args.startDate).lte("date", args.endDate)
+      )
+      .collect();
+
     // Helper to generate date range array
     const start = new Date(args.startDate);
     const end = new Date(args.endDate);
@@ -83,6 +91,7 @@ export const getRange = query({
       const dayLogs = logs.filter(l => l.date === dateStr);
       const override = overrides.find(o => o.date === dateStr);
       const tags = dayTags.filter(t => t.date === dateStr).map(t => t.tagId);
+      const reflection = reflections.find(r => r.date === dateStr);
       
       // Determine Timetable ID
       let timetableId = null;
@@ -140,6 +149,12 @@ export const getRange = query({
             isOverride: !!override
           },
           tags, // Add tags to the day data
+          metrics: reflection ? {
+            focusScore: reflection.focusScore,
+            outputLog: reflection.outputLog,
+            dailyRating: reflection.dailyRating,
+            _id: reflection._id
+          } : null,
         };
       } else {
         // No timetable data available for this day
@@ -147,11 +162,56 @@ export const getRange = query({
           blocks: [],
           stats: { completedBlocks: 0, totalBlocks: 0 },
           tags, // Add tags even if no timetable
+          metrics: reflection ? {
+            focusScore: reflection.focusScore,
+            outputLog: reflection.outputLog,
+            dailyRating: reflection.dailyRating,
+            _id: reflection._id
+          } : null,
         };
       }
     });
 
     return historyByDate;
+  },
+});
+
+export const updateDailyMetrics = mutation({
+  args: {
+    date: v.string(),
+    focusScore: v.number(),
+    outputLog: v.string(),
+    dailyRating: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const existing = await ctx.db
+      .query("reflections")
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id).eq("date", args.date)
+      )
+      .unique();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        focusScore: args.focusScore,
+        outputLog: args.outputLog,
+        dailyRating: args.dailyRating,
+      });
+    } else {
+      await ctx.db.insert("reflections", {
+        userId: user._id,
+        date: args.date,
+        didWell: "",
+        brokeDispline: "",
+        improvement: "",
+        focusScore: args.focusScore,
+        outputLog: args.outputLog,
+        dailyRating: args.dailyRating,
+      });
+    }
   },
 });
 
