@@ -44,7 +44,7 @@ export default function YearlyWarMapView({ year, onMonthSelect, onDaySelect }: Y
 
     const rate = stats.completed / stats.total;
     
-    if (rate === 1) return { label: "Perfect Day", color: "bg-amber-500", text: "text-amber-600 dark:text-amber-400" };
+    if (rate >= 1) return { label: "Perfect Day", color: "bg-amber-500", text: "text-amber-600 dark:text-amber-400" };
     if (rate >= 0.8) return { label: "High Performance", color: "bg-green-500", text: "text-green-600 dark:text-green-400" };
     if (rate >= 0.6) return { label: "Building Momentum", color: "bg-blue-500", text: "text-blue-600 dark:text-blue-400" };
     if (rate >= 0.4) return { label: "Making Progress", color: "bg-purple-500", text: "text-purple-600 dark:text-purple-400" };
@@ -150,9 +150,14 @@ export default function YearlyWarMapView({ year, onMonthSelect, onDaySelect }: Y
                               <span className={`font-medium ${status.text}`}>{status.label}</span>
                             </div>
                             {stats && stats.total > 0 && (
-                              <p className="text-muted-foreground">
-                                {Math.round((stats.completed / stats.total) * 100)}% ({stats.completed}/{stats.total})
-                              </p>
+                              <div className="text-muted-foreground">
+                                <p>{Math.round((stats.completed / stats.total) * 100)}% ({stats.completed}/{stats.total})</p>
+                                {(stats as any).timetableName && (
+                                  <p className="text-[10px] opacity-80 mt-1 font-medium text-primary/80">
+                                    {(stats as any).timetableName}
+                                  </p>
+                                )}
+                              </div>
                             )}
                           </TooltipContent>
                         </Tooltip>

@@ -153,26 +153,39 @@ export const getYearlyStats = query({
       logTimetableIds.add(user.activeTimetableId);
     }
 
-    // 3. Get Block Counts for each Timetable
-    const timetableCounts = new Map<string, number>();
+    // 3. Get Block Counts AND Names for each Timetable
+    const timetableInfo = new Map<string, { count: number, name: string }>();
     await Promise.all(
       Array.from(logTimetableIds).map(async (tid) => {
-        const blocks = await ctx.db
-          .query("timeBlocks")
-          .withIndex("by_timetable", (q) => q.eq("timetableId", tid))
-          .collect();
-        timetableCounts.set(tid, blocks.length);
+        const [blocks, timetable] = await Promise.all([
+          ctx.db
+            .query("timeBlocks")
+            .withIndex("by_timetable", (q) => q.eq("timetableId", tid))
+            .collect(),
+          ctx.db.get(tid)
+        ]);
+        
+        if (timetable) {
+          timetableInfo.set(tid, { 
+            count: blocks.length, 
+            name: timetable.name 
+          });
+        }
       })
     );
 
     // 4. Calculate stats per day
-    const statsByDate: Record<string, { total: number; completed: number }> = {};
+    const statsByDate: Record<string, { total: number; completed: number; timetableName?: string }> = {};
 
     logs.forEach((log) => {
       if (!statsByDate[log.date]) {
-        // Initialize with the FULL timetable count, not just log count
-        const total = timetableCounts.get(log.timetableId) || 0;
-        statsByDate[log.date] = { total, completed: 0 };
+        const info = timetableInfo.get(log.timetableId);
+        const total = info?.count || 0;
+        statsByDate[log.date] = { 
+          total, 
+          completed: 0,
+          timetableName: info?.name
+        };
       }
       if (log.completed) {
         statsByDate[log.date].completed++;

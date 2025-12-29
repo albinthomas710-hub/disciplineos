@@ -329,10 +329,20 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
                     <CardTitle className="text-2xl flex items-center gap-2">
                       {format(selectedDate, "EEEE, MMMM do")}
                     </CardTitle>
-                    <p className="text-muted-foreground mt-1 flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-amber-500" />
-                      Make it Satisfying: Review your wins
-                    </p>
+                    <div className="flex flex-col gap-1 mt-1">
+                      {selectedDayData?.stats.timetableName && (
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs font-normal bg-primary/5 border-primary/20 text-primary">
+                            <CalendarIcon className="h-3 w-3 mr-1" />
+                            {selectedDayData.stats.timetableName}
+                          </Badge>
+                        </div>
+                      )}
+                      <p className="text-muted-foreground flex items-center gap-2 text-sm">
+                        <Sparkles className="h-4 w-4 text-amber-500" />
+                        Make it Satisfying: Review your wins
+                      </p>
+                    </div>
                   </div>
                   {selectedDayData && (
                     <div className="flex gap-3 text-sm font-medium">
