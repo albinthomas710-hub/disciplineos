@@ -160,6 +160,7 @@ export const getRange = query({
             improvements: reflection.improvements,
             callsBooked: reflection.callsBooked,
             callsConducted: reflection.callsConducted,
+            callsClosed: reflection.callsClosed,
             distractions: reflection.distractions,
             _id: reflection._id
           } : null,
@@ -181,6 +182,7 @@ export const getRange = query({
             improvements: reflection.improvements,
             callsBooked: reflection.callsBooked,
             callsConducted: reflection.callsConducted,
+            callsClosed: reflection.callsClosed,
             distractions: reflection.distractions,
             _id: reflection._id
           } : null,
@@ -205,6 +207,7 @@ export const updateDailyMetrics = mutation({
     improvements: v.optional(v.array(v.string())),
     callsBooked: v.optional(v.number()),
     callsConducted: v.optional(v.number()),
+    callsClosed: v.optional(v.number()),
     distractions: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
@@ -232,6 +235,7 @@ export const updateDailyMetrics = mutation({
       if (args.improvements !== undefined) updateFields.improvements = args.improvements;
       if (args.callsBooked !== undefined) updateFields.callsBooked = args.callsBooked;
       if (args.callsConducted !== undefined) updateFields.callsConducted = args.callsConducted;
+      if (args.callsClosed !== undefined) updateFields.callsClosed = args.callsClosed;
       if (args.distractions !== undefined) updateFields.distractions = args.distractions;
 
       await ctx.db.patch(existing._id, updateFields);
@@ -252,6 +256,7 @@ export const updateDailyMetrics = mutation({
         improvements: args.improvements,
         callsBooked: args.callsBooked,
         callsConducted: args.callsConducted,
+        callsClosed: args.callsClosed,
         distractions: args.distractions,
       });
     }

@@ -108,6 +108,7 @@ const schema = defineSchema(
       improvements: v.optional(v.array(v.string())),
       callsBooked: v.optional(v.number()),
       callsConducted: v.optional(v.number()),
+      callsClosed: v.optional(v.number()),
       distractions: v.optional(v.array(v.string())),
     })
     .index("by_user_and_date", ["userId", "date"]),

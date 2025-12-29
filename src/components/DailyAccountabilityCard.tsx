@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { Save, ListTodo, TrendingUp, Phone, Plus, X } from "lucide-react";
+import { Save, ListTodo, TrendingUp, Phone, Plus, X, DollarSign, Trash2 } from "lucide-react";
 
 interface DailyAccountabilityCardProps {
   dateStr: string;
@@ -15,6 +15,7 @@ interface DailyAccountabilityCardProps {
     improvements?: string[];
     callsBooked?: number;
     callsConducted?: number;
+    callsClosed?: number;
     distractions?: string[];
     focusScore?: number;
     outputLog?: string;
@@ -36,6 +37,7 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
   const [improvements, setImprovements] = useState<string[]>(["", "", ""]);
   const [callsBooked, setCallsBooked] = useState(0);
   const [callsConducted, setCallsConducted] = useState(0);
+  const [callsClosed, setCallsClosed] = useState(0);
   const [distractions, setDistractions] = useState<string[]>([]);
   const [newDistraction, setNewDistraction] = useState("");
   const [isDirty, setIsDirty] = useState(false);
@@ -43,9 +45,7 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
   useEffect(() => {
     if (initialData) {
       if (initialData.productivityInventory && initialData.productivityInventory.length > 0) {
-        const loaded = [...initialData.productivityInventory];
-        while (loaded.length < 3) loaded.push({ text: "", checked: false });
-        setInventory(loaded);
+        setInventory(initialData.productivityInventory);
       } else {
         setInventory([
           { text: "", checked: false },
@@ -55,15 +55,14 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
       }
       
       if (initialData.improvements && initialData.improvements.length > 0) {
-        const loaded = [...initialData.improvements];
-        while (loaded.length < 3) loaded.push("");
-        setImprovements(loaded);
+        setImprovements(initialData.improvements);
       } else {
         setImprovements(["", "", ""]);
       }
 
       setCallsBooked(initialData.callsBooked || 0);
       setCallsConducted(initialData.callsConducted || 0);
+      setCallsClosed(initialData.callsClosed || 0);
       setDistractions(initialData.distractions || []);
     } else {
       // Reset if no data
@@ -75,6 +74,7 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
       setImprovements(["", "", ""]);
       setCallsBooked(0);
       setCallsConducted(0);
+      setCallsClosed(0);
       setDistractions([]);
     }
     setIsDirty(false);
@@ -95,6 +95,7 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
         improvements: improvements,
         callsBooked,
         callsConducted,
+        callsClosed,
         distractions,
       });
       toast.success("Accountability saved");
@@ -112,9 +113,33 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
     setIsDirty(true);
   };
 
+  const addInventoryItem = () => {
+    setInventory([...inventory, { text: "", checked: false }]);
+    setIsDirty(true);
+  };
+
+  const removeInventoryItem = (index: number) => {
+    const newInv = [...inventory];
+    newInv.splice(index, 1);
+    setInventory(newInv);
+    setIsDirty(true);
+  };
+
   const updateImprovement = (index: number, value: string) => {
     const newImp = [...improvements];
     newImp[index] = value;
+    setImprovements(newImp);
+    setIsDirty(true);
+  };
+
+  const addImprovementItem = () => {
+    setImprovements([...improvements, ""]);
+    setIsDirty(true);
+  };
+
+  const removeImprovementItem = (index: number) => {
+    const newImp = [...improvements];
+    newImp.splice(index, 1);
     setImprovements(newImp);
     setIsDirty(true);
   };
@@ -162,7 +187,7 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
           </div>
           <div className="space-y-2 pl-8">
             {inventory.map((item, i) => (
-              <div key={i} className="flex items-center gap-3">
+              <div key={i} className="flex items-center gap-3 group">
                 <Checkbox 
                   checked={item.checked} 
                   onCheckedChange={(c) => updateInventory(i, 'checked', c)}
@@ -173,8 +198,24 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
                   placeholder={`Action that moved the needle ${i + 1}...`}
                   className="h-8 text-sm"
                 />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                  onClick={() => removeInventoryItem(i)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
             ))}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={addInventoryItem}
+              className="w-full border-dashed text-muted-foreground hover:text-primary"
+            >
+              <Plus className="h-4 w-4 mr-2" /> Add Item
+            </Button>
             <p className="text-xs text-muted-foreground italic">
               "If you can't fill at least 1 box, the day was weak — no excuses."
             </p>
@@ -191,14 +232,31 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
           </div>
           <div className="space-y-2 pl-8">
             {improvements.map((imp, i) => (
-              <Input 
-                key={i}
-                value={imp}
-                onChange={(e) => updateImprovement(i, e.target.value)}
-                placeholder={`Improvement ${i + 1} (e.g. Start deep work earlier)`}
-                className="h-8 text-sm"
-              />
+              <div key={i} className="flex items-center gap-3 group">
+                <Input 
+                  value={imp}
+                  onChange={(e) => updateImprovement(i, e.target.value)}
+                  placeholder={`Improvement ${i + 1} (e.g. Start deep work earlier)`}
+                  className="h-8 text-sm"
+                />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                  onClick={() => removeImprovementItem(i)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             ))}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={addImprovementItem}
+              className="w-full border-dashed text-muted-foreground hover:text-primary"
+            >
+              <Plus className="h-4 w-4 mr-2" /> Add Improvement
+            </Button>
           </div>
         </div>
 
@@ -237,6 +295,23 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
                       value={callsConducted}
                       onChange={(e) => {
                         setCallsConducted(parseInt(e.target.value) || 0);
+                        setIsDirty(true);
+                      }}
+                      className="w-16 h-8 text-center font-bold"
+                    />
+                  </div>
+                </div>
+                <div className="h-8 w-px bg-border" />
+                <div className="flex-1 text-center">
+                  <span className="text-xs uppercase text-muted-foreground font-bold block mb-1">Closed</span>
+                  <div className="flex items-center justify-center gap-2">
+                    <DollarSign className="h-4 w-4 text-yellow-500" />
+                    <Input 
+                      type="number" 
+                      min={0}
+                      value={callsClosed}
+                      onChange={(e) => {
+                        setCallsClosed(parseInt(e.target.value) || 0);
                         setIsDirty(true);
                       }}
                       className="w-16 h-8 text-center font-bold"
