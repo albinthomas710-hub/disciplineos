@@ -197,9 +197,9 @@ export const getRange = query({
 export const updateDailyMetrics = mutation({
   args: {
     date: v.string(),
-    focusScore: v.number(),
-    outputLog: v.string(),
-    dailyRating: v.number(),
+    focusScore: v.optional(v.number()),
+    outputLog: v.optional(v.string()),
+    dailyRating: v.optional(v.number()),
     outputScore: v.optional(v.number()),
     workType: v.optional(v.string()),
     targetHours: v.optional(v.number()),
@@ -222,14 +222,14 @@ export const updateDailyMetrics = mutation({
       .unique();
 
     if (existing) {
-      const updateFields: any = {
-        focusScore: args.focusScore,
-        outputLog: args.outputLog,
-        dailyRating: args.dailyRating,
-        outputScore: args.outputScore,
-        workType: args.workType,
-        targetHours: args.targetHours,
-      };
+      const updateFields: any = {};
+      
+      if (args.focusScore !== undefined) updateFields.focusScore = args.focusScore;
+      if (args.outputLog !== undefined) updateFields.outputLog = args.outputLog;
+      if (args.dailyRating !== undefined) updateFields.dailyRating = args.dailyRating;
+      if (args.outputScore !== undefined) updateFields.outputScore = args.outputScore;
+      if (args.workType !== undefined) updateFields.workType = args.workType;
+      if (args.targetHours !== undefined) updateFields.targetHours = args.targetHours;
       
       if (args.productivityInventory !== undefined) updateFields.productivityInventory = args.productivityInventory;
       if (args.improvements !== undefined) updateFields.improvements = args.improvements;
@@ -246,9 +246,9 @@ export const updateDailyMetrics = mutation({
         didWell: "",
         brokeDispline: "",
         improvement: "",
-        focusScore: args.focusScore,
-        outputLog: args.outputLog,
-        dailyRating: args.dailyRating,
+        focusScore: args.focusScore ?? 5,
+        outputLog: args.outputLog ?? "",
+        dailyRating: args.dailyRating ?? 50,
         outputScore: args.outputScore,
         workType: args.workType,
         targetHours: args.targetHours,

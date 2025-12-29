@@ -85,13 +85,7 @@ export default function DailyAccountabilityCard({ dateStr, initialData }: DailyA
     try {
       await updateMetrics({
         date: dateStr,
-        focusScore: initialData?.focusScore || 5,
-        outputLog: initialData?.outputLog || "",
-        dailyRating: initialData?.dailyRating || 50,
-        outputScore: initialData?.outputScore,
-        workType: initialData?.workType,
-        targetHours: initialData?.targetHours,
-        
+        // Only update accountability fields to prevent overwriting metrics
         productivityInventory: inventory,
         improvements: improvements,
         callsBooked,
