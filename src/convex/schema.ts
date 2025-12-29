@@ -94,19 +94,23 @@ const schema = defineSchema(
     // Daily Reflections
     reflections: defineTable({
       userId: v.id("users"),
-      date: v.string(), // "2025-01-11"
+      date: v.string(), // YYYY-MM-DD
       didWell: v.string(),
       brokeDispline: v.string(),
       improvement: v.string(),
-      // New Daily Verdict Fields
-      focusScore: v.optional(v.number()), // 1-10
-      outputLog: v.optional(v.string()), // Key results/outputs
-      dailyRating: v.optional(v.number()), // 0-100
-      // Advanced Formula Fields
-      outputScore: v.optional(v.number()), // 0-100
-      workType: v.optional(v.string()), // "execution" | "thinking"
-      targetHours: v.optional(v.number()), // e.g. 6
-    }).index("by_user_and_date", ["userId", "date"]),
+      focusScore: v.number(),
+      outputLog: v.string(),
+      dailyRating: v.number(),
+      outputScore: v.optional(v.number()),
+      workType: v.optional(v.string()),
+      targetHours: v.optional(v.number()),
+      productivityInventory: v.optional(v.array(v.object({ text: v.string(), checked: v.boolean() }))),
+      improvements: v.optional(v.array(v.string())),
+      callsBooked: v.optional(v.number()),
+      callsConducted: v.optional(v.number()),
+      distractions: v.optional(v.array(v.string())),
+    })
+    .index("by_user_and_date", ["userId", "date"]),
 
     // User Settings
     userSettings: defineTable({

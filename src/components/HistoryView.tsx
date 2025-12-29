@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import YearlyWarMapView from "./YearlyWarMapView";
 import DayTagsManager from "./DayTagsManager";
 import DailyMetricsCard from "./DailyMetricsCard";
+import DailyAccountabilityCard from "./DailyAccountabilityCard";
 import { 
   Select,
   SelectContent,
@@ -406,6 +407,12 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
                 dateStr={selectedDateStr}
                 initialMetrics={selectedDayData?.metrics}
                 hoursInvested={Math.round(selectedDayHours / 60 * 10) / 10}
+              />
+
+              {/* Daily Accountability Card */}
+              <DailyAccountabilityCard 
+                dateStr={selectedDateStr}
+                initialData={selectedDayData?.metrics}
               />
 
               <Card className="min-h-[500px] border-2 border-muted/50">

@@ -71,6 +71,9 @@ export const save = mutation({
         didWell: args.didWell,
         brokeDispline: args.brokeDispline,
         improvement: args.improvement,
+        focusScore: 0,
+        outputLog: "",
+        dailyRating: 0,
       });
     }
   },

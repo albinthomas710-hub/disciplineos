@@ -70,6 +70,9 @@ export const dismissReflection = mutation({
       didWell: "[Skipped]",
       brokeDispline: "[Skipped]",
       improvement: "[Skipped]",
+      focusScore: 0,
+      outputLog: "[Skipped]",
+      dailyRating: 0,
     });
   },
 });

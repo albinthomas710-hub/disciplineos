@@ -156,6 +156,11 @@ export const getRange = query({
             outputScore: reflection.outputScore,
             workType: reflection.workType,
             targetHours: reflection.targetHours,
+            productivityInventory: reflection.productivityInventory,
+            improvements: reflection.improvements,
+            callsBooked: reflection.callsBooked,
+            callsConducted: reflection.callsConducted,
+            distractions: reflection.distractions,
             _id: reflection._id
           } : null,
         };
@@ -172,6 +177,11 @@ export const getRange = query({
             outputScore: reflection.outputScore,
             workType: reflection.workType,
             targetHours: reflection.targetHours,
+            productivityInventory: reflection.productivityInventory,
+            improvements: reflection.improvements,
+            callsBooked: reflection.callsBooked,
+            callsConducted: reflection.callsConducted,
+            distractions: reflection.distractions,
             _id: reflection._id
           } : null,
         };
@@ -191,6 +201,11 @@ export const updateDailyMetrics = mutation({
     outputScore: v.optional(v.number()),
     workType: v.optional(v.string()),
     targetHours: v.optional(v.number()),
+    productivityInventory: v.optional(v.array(v.object({ text: v.string(), checked: v.boolean() }))),
+    improvements: v.optional(v.array(v.string())),
+    callsBooked: v.optional(v.number()),
+    callsConducted: v.optional(v.number()),
+    distractions: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -204,14 +219,22 @@ export const updateDailyMetrics = mutation({
       .unique();
 
     if (existing) {
-      await ctx.db.patch(existing._id, {
+      const updateFields: any = {
         focusScore: args.focusScore,
         outputLog: args.outputLog,
         dailyRating: args.dailyRating,
         outputScore: args.outputScore,
         workType: args.workType,
         targetHours: args.targetHours,
-      });
+      };
+      
+      if (args.productivityInventory !== undefined) updateFields.productivityInventory = args.productivityInventory;
+      if (args.improvements !== undefined) updateFields.improvements = args.improvements;
+      if (args.callsBooked !== undefined) updateFields.callsBooked = args.callsBooked;
+      if (args.callsConducted !== undefined) updateFields.callsConducted = args.callsConducted;
+      if (args.distractions !== undefined) updateFields.distractions = args.distractions;
+
+      await ctx.db.patch(existing._id, updateFields);
     } else {
       await ctx.db.insert("reflections", {
         userId: user._id,
@@ -225,6 +248,11 @@ export const updateDailyMetrics = mutation({
         outputScore: args.outputScore,
         workType: args.workType,
         targetHours: args.targetHours,
+        productivityInventory: args.productivityInventory,
+        improvements: args.improvements,
+        callsBooked: args.callsBooked,
+        callsConducted: args.callsConducted,
+        distractions: args.distractions,
       });
     }
   },

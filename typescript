@@ -1,11 +1,21 @@
-  // Calculate hours invested for selected day
-  const selectedDayHours = selectedDayData?.blocks?.reduce((acc: number, block: any) => {
-    if (block.completed && block.startTime && block.endTime) {
-      const [h1, m1] = block.startTime.split(':').map(Number);
-      const [h2, m2] = block.endTime.split(':').map(Number);
-      let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
-      if (diff < 0) diff += 1440;
-      return acc + diff;
-    }
-    return acc;
-  }, 0) || 0;
+      focusScore: v.number(),
+      outputLog: v.string(),
+      dailyRating: v.number(),
+
+      const updateFields: any = {
+        focusScore: args.focusScore,
+        outputLog: args.outputLog,
+        dailyRating: args.dailyRating,
+        outputScore: args.outputScore,
+        workType: args.workType,
+        targetHours: args.targetHours,
+      };
+      if (args.productivityInventory !== undefined) updateFields.productivityInventory = args.productivityInventory;
+      if (args.improvements !== undefined) updateFields.improvements = args.improvements;
+      if (args.callsBooked !== undefined) updateFields.callsBooked = args.callsBooked;
+      if (args.callsConducted !== undefined) updateFields.callsConducted = args.callsConducted;
+      if (args.distractions !== undefined) updateFields.distractions = args.distractions;
+
+      if (existing) {
+        await ctx.db.patch(existing._id, updateFields);
+      }
