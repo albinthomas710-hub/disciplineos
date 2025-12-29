@@ -56,17 +56,31 @@ export default function HistoryCalendar({
           {dateRange.map((date) => {
             const dateStr = format(date, "yyyy-MM-dd");
             const dayData = historyData?.[dateStr];
+            
+            // Prioritize Daily Verdict (Rating) for visualization
+            const dailyRating = dayData?.stats?.dailyRating;
+            
             const completionRate = dayData?.stats.totalBlocks 
               ? dayData.stats.completedBlocks / dayData.stats.totalBlocks 
               : 0;
             
             const isSelected = isSameDay(date, selectedDate);
-            const isPerfect = completionRate === 1 && dayData?.stats.totalBlocks > 0;
+            // Perfect if rating is 100 OR completion is 100%
+            const isPerfect = (dailyRating === 100) || (completionRate === 1 && dayData?.stats.totalBlocks > 0);
             const dayTags = dayData?.tags || [];
             
-            // Determine color intensity based on completion
+            // Determine color intensity based on Verdict (primary) or Completion (fallback)
             let bgClass = "bg-secondary/30 hover:bg-secondary/60 text-muted-foreground";
-            if (dayData?.stats.totalBlocks > 0) {
+            
+            if (dailyRating !== undefined && dailyRating > 0) {
+              // Verdict-based coloring (Matches War Map)
+              if (dailyRating >= 90) bgClass = "bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/20";
+              else if (dailyRating >= 80) bgClass = "bg-green-500 hover:bg-green-600 text-white shadow-sm";
+              else if (dailyRating >= 60) bgClass = "bg-blue-500 hover:bg-blue-600 text-white";
+              else if (dailyRating >= 40) bgClass = "bg-orange-500 hover:bg-orange-600 text-white";
+              else bgClass = "bg-red-500 hover:bg-red-600 text-white";
+            } else if (dayData?.stats.totalBlocks > 0) {
+              // Fallback to Block Completion
               if (isPerfect) bgClass = "bg-gradient-to-br from-amber-400 to-orange-500 text-white shadow-md shadow-orange-200 dark:shadow-orange-900/20";
               else if (completionRate >= 0.8) bgClass = "bg-green-500 hover:bg-green-600 text-white shadow-sm";
               else if (completionRate >= 0.5) bgClass = "bg-green-400/80 hover:bg-green-500/80 text-white";

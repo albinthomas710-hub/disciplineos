@@ -154,12 +154,15 @@ export default function DailyMetricsCard({ dateStr, initialMetrics, hoursInveste
               <Calculator className="h-4 w-4 mr-2" />
               Formula
             </Button>
-            {isDirty && (
-              <Button size="sm" onClick={handleSave} className="h-8">
-                <Save className="h-4 w-4 mr-2" />
-                Save Verdict
-              </Button>
-            )}
+            <Button 
+              size="sm" 
+              onClick={handleSave} 
+              disabled={!isDirty}
+              className={`h-8 transition-all ${isDirty ? 'opacity-100 shadow-md' : 'opacity-70 bg-secondary text-secondary-foreground'}`}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {isDirty ? "Save Verdict" : "Saved"}
+            </Button>
           </div>
         </div>
       </CardHeader>
