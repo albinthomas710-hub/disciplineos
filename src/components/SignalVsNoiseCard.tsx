@@ -276,24 +276,47 @@ export default function SignalVsNoiseCard({
             
             <div className="pl-15 space-y-2">
               <motion.div 
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="relative overflow-hidden rounded-lg bg-red-50/50 dark:bg-red-950/10 p-3 border-l-2 border-red-600 mb-2 shadow-sm"
+                initial={{ opacity: 0, x: -20, filter: "blur(5px)" }}
+                animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
+                className="relative overflow-hidden rounded-lg bg-red-50/50 dark:bg-red-950/10 p-3 border-l-2 border-red-600 mb-2 shadow-sm group"
               >
                 <div className="relative z-10 space-y-1.5">
                     <div className="flex flex-col gap-1">
-                        <p className="text-[11px] font-medium leading-relaxed text-foreground/90">
+                        <motion.p 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.6 }}
+                          className="text-[11px] font-medium leading-relaxed text-foreground/90"
+                        >
                             <span className="font-black text-red-600 dark:text-red-400 uppercase tracking-wider">Signal:</span> The 3-5 tasks for the next 24h that <span className="italic font-bold">move the mission forward</span>.
-                        </p>
-                        <p className="text-[11px] font-medium leading-relaxed text-foreground/90">
+                        </motion.p>
+                        <motion.p 
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.8 }}
+                          className="text-[11px] font-medium leading-relaxed text-foreground/90"
+                        >
                             <span className="font-black text-gray-600 dark:text-gray-400 uppercase tracking-wider">Noise:</span> If it doesn't move the mission, it is Noise—<span className="italic font-bold">no matter how urgent</span>.
-                        </p>
+                        </motion.p>
                     </div>
-                    <p className="text-[11px] font-black text-red-700 dark:text-red-300 pt-1 border-t border-red-200 dark:border-red-800/30 mt-1">
-                        THE LAW: 80% Signal. 20% Noise. Devote energy to Signal FIRST. Noise is forbidden until Signal is complete.
-                    </p>
+                    <motion.div 
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 1.0, duration: 0.5 }}
+                      className="pt-1 border-t border-red-200 dark:border-red-800/30 mt-1"
+                    >
+                      <p className="text-[11px] font-black text-red-700 dark:text-red-300 animate-pulse">
+                          THE LAW: 80% Signal. 20% Noise. Devote energy to Signal FIRST. Noise is forbidden until Signal is complete.
+                      </p>
+                    </motion.div>
                 </div>
+                {/* Subtle background pulse */}
+                <motion.div 
+                  className="absolute inset-0 bg-red-500/5"
+                  animate={{ opacity: [0, 0.5, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                />
               </motion.div>
 
               <div className="text-xs text-muted-foreground space-y-1.5 bg-background/40 p-3 rounded-lg border border-red-500/10 backdrop-blur-sm">
