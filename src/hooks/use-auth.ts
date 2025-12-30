@@ -14,10 +14,12 @@ export function useAuth() {
   // This effect updates the loading state once auth is loaded and user data is available
   // It ensures we only show content when both authentication state and user data are ready
   useEffect(() => {
-    if (!isAuthLoading && user !== undefined) {
+    if (!isAuthLoading) {
+      // Only check if auth is loaded, don't depend on user to prevent infinite loops
+      // User can be undefined for unauthenticated users
       setIsLoading(false);
     }
-  }, [isAuthLoading, user]);
+  }, [isAuthLoading]); // Removed 'user' from dependencies to prevent infinite loop
 
   return {
     isLoading,
