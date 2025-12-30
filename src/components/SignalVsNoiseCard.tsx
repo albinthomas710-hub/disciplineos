@@ -21,7 +21,9 @@ import {
   X,
   Radio,
   Volume2,
-  VolumeX
+  VolumeX,
+  Lock,
+  ShieldAlert
 } from "lucide-react";
 import { 
   Select,
@@ -69,6 +71,7 @@ export default function SignalVsNoiseCard({
 }: SignalVsNoiseCardProps) {
   const updateMetrics = useMutation(api.history.updateDailyMetrics);
   
+  // Initialize with props or empty arrays to prevent infinite re-renders
   const [signalTasks, setSignalTasks] = useState<SignalTask[]>(initialSignalTasks || []);
   const [noiseTasks, setNoiseTasks] = useState<NoiseTask[]>(initialNoiseTasks || []);
   const [newTask, setNewTask] = useState("");
@@ -86,6 +89,9 @@ export default function SignalVsNoiseCard({
   const signalCompleted = signalTasks.filter(t => t.completed).length;
   const signalTotal = signalTasks.length;
   const signalRate = signalTotal > 0 ? Math.round((signalCompleted / signalTotal) * 100) : 0;
+  
+  // Dark Psychology: Lock Noise until Signal is done
+  const isNoiseLocked = signalTasks.some(t => !t.completed);
 
   const addTask = () => {
     if (!newTask.trim()) {
@@ -125,6 +131,14 @@ export default function SignalVsNoiseCard({
         t.id === id ? { ...t, completed: !t.completed, completedAt: !t.completed ? Date.now() : undefined } : t
       ));
     } else {
+      // Enforce Discipline: Cannot touch noise if signal is pending
+      if (isNoiseLocked) {
+        toast.error("DISCIPLINE CHECK: Complete ALL Signal tasks before touching Noise.", {
+          icon: <Lock className="h-4 w-4" />,
+          className: "bg-red-500 text-white border-none font-bold"
+        });
+        return;
+      }
       setNoiseTasks(noiseTasks.map(t => 
         t.id === id ? { ...t, completed: !t.completed, completedAt: !t.completed ? Date.now() : undefined } : t
       ));
@@ -164,37 +178,37 @@ export default function SignalVsNoiseCard({
   const getImportanceConfig = (importance: string) => {
     const configs: Record<string, { label: string; color: string; icon: any; gradient: string }> = {
       the_one_thing: { 
-        label: "THE ONE THING", 
+        label: "THE ONE THING (Most Important)", 
         color: "text-red-600 dark:text-red-400", 
         icon: Flame,
         gradient: "from-red-600 via-orange-600 to-yellow-600"
       },
       high_signal: { 
-        label: "High Signal", 
+        label: "High Importance (Signal)", 
         color: "text-orange-600 dark:text-orange-400", 
         icon: Zap,
         gradient: "from-orange-500 to-red-500"
       },
       medium_signal: { 
-        label: "Medium Signal", 
+        label: "Medium Importance (Signal)", 
         color: "text-blue-600 dark:text-blue-400", 
         icon: TrendingUp,
         gradient: "from-blue-500 to-indigo-500"
       },
       low_signal: { 
-        label: "Low Signal", 
+        label: "Low Importance (Signal)", 
         color: "text-green-600 dark:text-green-400", 
         icon: Target,
         gradient: "from-green-500 to-emerald-500"
       },
       high_noise: { 
-        label: "High Noise", 
+        label: "High Noise (Delegate/Delay)", 
         color: "text-yellow-600 dark:text-yellow-400", 
         icon: AlertTriangle,
         gradient: "from-yellow-500 to-amber-500"
       },
       low_noise: { 
-        label: "Low Noise", 
+        label: "Low Noise (Ignore)", 
         color: "text-gray-600 dark:text-gray-400", 
         icon: VolumeX,
         gradient: "from-gray-500 to-slate-500"
@@ -247,7 +261,7 @@ export default function SignalVsNoiseCard({
               <p className="text-sm font-bold text-red-700 dark:text-red-300">
                 80% Signal. 20% Noise. That's the only way forward.
               </p>
-              <div className="flex items-center gap-4 text-xs">
+              <div className="flex flex-wrap items-center gap-4 text-xs">
                 <div className="flex items-center gap-1.5">
                   <Radio className="h-3 w-3 text-green-600" />
                   <span className="font-medium">Signal: Moves the mission forward</span>
@@ -256,6 +270,9 @@ export default function SignalVsNoiseCard({
                   <Volume2 className="h-3 w-3 text-gray-600" />
                   <span className="font-medium">Noise: Everything else</span>
                 </div>
+                <Badge variant="outline" className="bg-background/50 backdrop-blur-sm border-primary/20">
+                  Target: 3-5 Signal Tasks
+                </Badge>
               </div>
             </div>
           </div>
@@ -363,9 +380,9 @@ export default function SignalVsNoiseCard({
                 {taskType === "signal" ? (
                   <>
                     <SelectItem value="the_one_thing">🔥 THE ONE THING</SelectItem>
-                    <SelectItem value="high_signal">⚡ High Signal</SelectItem>
-                    <SelectItem value="medium_signal">📈 Medium Signal</SelectItem>
-                    <SelectItem value="low_signal">🎯 Low Signal</SelectItem>
+                    <SelectItem value="high_signal">⚡ High Importance</SelectItem>
+                    <SelectItem value="medium_signal">📈 Medium Importance</SelectItem>
+                    <SelectItem value="low_signal">🎯 Low Importance</SelectItem>
                   </>
                 ) : (
                   <>
@@ -380,7 +397,7 @@ export default function SignalVsNoiseCard({
               value={newTask}
               onChange={(e) => setNewTask(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addTask()}
-              placeholder="Task description..."
+              placeholder="Brain dump your task here..."
               className="col-span-1"
             />
           </div>
@@ -471,6 +488,19 @@ export default function SignalVsNoiseCard({
             </span>
           </div>
 
+          {isNoiseLocked && noiseTasks.length > 0 && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              className="mb-3 p-3 bg-red-100/50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-3"
+            >
+              <Lock className="h-5 w-5 text-red-500" />
+              <p className="text-xs font-bold text-red-700 dark:text-red-300">
+                NOISE LOCKED: Complete all Signal tasks first.
+              </p>
+            </motion.div>
+          )}
+
           {noiseTasks.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground italic bg-muted/20 rounded-xl">
               No noise tasks. Good - focus on signal.
@@ -490,17 +520,17 @@ export default function SignalVsNoiseCard({
                       task.completed 
                         ? 'bg-gray-50 dark:bg-gray-900/20 border-gray-500' 
                         : 'bg-gray-100 dark:bg-gray-800/20 border-gray-300 dark:border-gray-700'
-                    }`}
+                    } ${isNoiseLocked ? 'opacity-50 grayscale' : ''}`}
                   >
                     <div className="flex items-start gap-3">
                       <button
                         onClick={() => toggleTask(task.id, "noise")}
-                        className="mt-1 flex-shrink-0"
+                        className={`mt-1 flex-shrink-0 ${isNoiseLocked ? 'cursor-not-allowed' : ''}`}
                       >
                         {task.completed ? (
                           <CheckCircle2 className="h-6 w-6 text-gray-600" />
                         ) : (
-                          <Circle className="h-6 w-6 text-gray-400 hover:text-gray-600 transition-colors" />
+                          isNoiseLocked ? <Lock className="h-5 w-5 text-red-400" /> : <Circle className="h-6 w-6 text-gray-400 hover:text-gray-600 transition-colors" />
                         )}
                       </button>
 
