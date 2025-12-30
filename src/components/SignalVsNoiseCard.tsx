@@ -261,18 +261,13 @@ export default function SignalVsNoiseCard({
               <p className="text-sm font-bold text-red-700 dark:text-red-300">
                 80% Signal. 20% Noise. That's the only way forward.
               </p>
-              <div className="flex flex-wrap items-center gap-4 text-xs">
-                <div className="flex items-center gap-1.5">
-                  <Radio className="h-3 w-3 text-green-600" />
-                  <span className="font-medium">Signal: Moves the mission forward</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <Volume2 className="h-3 w-3 text-gray-600" />
-                  <span className="font-medium">Noise: Everything else</span>
-                </div>
-                <Badge variant="outline" className="bg-background/50 backdrop-blur-sm border-primary/20">
-                  Target: 3-5 Signal Tasks
-                </Badge>
+              <div className="text-xs text-muted-foreground space-y-1.5 bg-background/40 p-3 rounded-lg border border-red-500/10 backdrop-blur-sm">
+                <p className="leading-relaxed">
+                  <span className="font-black text-green-600 uppercase">Signal Definition:</span> The 3-5 most important things you <span className="italic">must</span> get done in the next 24 hours.
+                </p>
+                <p className="leading-relaxed">
+                  <span className="font-black text-red-600 uppercase">The Law:</span> First devote time and energy to Signal tasks. Only touch Noise tasks once <span className="underline decoration-red-500/50">ALL</span> Signal tasks are completed.
+                </p>
               </div>
             </div>
           </div>
