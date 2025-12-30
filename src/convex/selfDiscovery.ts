@@ -373,6 +373,47 @@ export const markWeaknessFixed = mutation({
   },
 });
 
+// Update personality traits manually
+export const updatePersonalityTraits = mutation({
+  args: {
+    consistency: v.number(),
+    resilience: v.number(),
+    ambition: v.number(),
+    discipline: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const profile = await ctx.db
+      .query("selfDiscovery")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .first();
+
+    if (profile) {
+      await ctx.db.patch(profile._id, {
+        personalityTraits: {
+          consistency: args.consistency,
+          resilience: args.resilience,
+          ambition: args.ambition,
+          discipline: args.discipline,
+        },
+      });
+    } else {
+      await ctx.db.insert("selfDiscovery", {
+        userId: user._id,
+        personalityTraits: {
+          consistency: args.consistency,
+          resilience: args.resilience,
+          ambition: args.ambition,
+          discipline: args.discipline,
+        },
+        lastAnalyzed: Date.now(),
+      });
+    }
+  },
+});
+
 // Get recent journal entries
 export const getJournalEntries = query({
   args: { limit: v.optional(v.number()) },
