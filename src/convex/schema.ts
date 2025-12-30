@@ -70,6 +70,7 @@ const schema = defineSchema(
       gratitude: v.optional(v.string()),
       greatToday: v.optional(v.string()),
       affirmations: v.optional(v.string()),
+      wholeDayJournal: v.optional(v.string()),
       mood: v.optional(v.number()),
       tags: v.optional(v.array(v.string())),
       isPrivate: v.boolean(),

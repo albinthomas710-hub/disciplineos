@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Trash2, Heart, Target, Sparkles, Save, Lock } from "lucide-react";
+import { BookOpen, Trash2, Heart, Target, Sparkles, Save, Lock, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
 
@@ -19,10 +19,11 @@ export default function JournalSection() {
   const [gratitude, setGratitude] = useState("");
   const [greatToday, setGreatToday] = useState("");
   const [affirmations, setAffirmations] = useState("");
+  const [wholeDayJournal, setWholeDayJournal] = useState("");
   const [mood, setMood] = useState(5);
 
   const handleSaveJournal = async () => {
-    if (!gratitude.trim() && !greatToday.trim() && !affirmations.trim()) {
+    if (!gratitude.trim() && !greatToday.trim() && !affirmations.trim() && !wholeDayJournal.trim()) {
       toast.error("Please fill in at least one section");
       return;
     }
@@ -35,12 +36,14 @@ export default function JournalSection() {
         gratitude: gratitude.trim(),
         greatToday: greatToday.trim(),
         affirmations: affirmations.trim(),
+        wholeDayJournal: wholeDayJournal.trim(),
         mood: mood,
       });
       
       setGratitude("");
       setGreatToday("");
       setAffirmations("");
+      setWholeDayJournal("");
       setMood(5);
       setShowJournal(false);
       toast.success("Journal entry immortalized 🔒", { id: toastId });
@@ -155,6 +158,23 @@ export default function JournalSection() {
                     </div>
                   </div>
 
+                  {/* Section 4: Whole Day Journal */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2 text-purple-800 dark:text-purple-300 font-bold text-base">
+                      <FileText className="h-4 w-4 text-emerald-500" />
+                      4. Whole Day Journal
+                    </Label>
+                    <p className="text-xs text-muted-foreground italic">
+                      "What happened today? What did you do? The complete story..."
+                    </p>
+                    <Textarea
+                      value={wholeDayJournal}
+                      onChange={(e) => setWholeDayJournal(e.target.value)}
+                      placeholder="Log your entire day here..."
+                      className="min-h-[150px] border-purple-200 dark:border-purple-800 focus:border-emerald-500 transition-colors bg-white/50 dark:bg-purple-950/30"
+                    />
+                  </div>
+
                   {/* Mood Slider */}
                   <div className="pt-2">
                     <div className="flex justify-between items-center mb-2">
@@ -241,8 +261,14 @@ export default function JournalSection() {
                           <p className="font-serif italic text-purple-900 dark:text-purple-100 line-clamp-2">{entry.affirmations}</p>
                         </div>
                       )}
+                      {entry.wholeDayJournal && (
+                        <div className="text-sm">
+                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase block mb-0.5">Whole Day Journal</span>
+                          <p className="text-muted-foreground line-clamp-3">{entry.wholeDayJournal}</p>
+                        </div>
+                      )}
                       {/* Fallback for old entries */}
-                      {!entry.gratitude && !entry.greatToday && !entry.affirmations && (
+                      {!entry.gratitude && !entry.greatToday && !entry.affirmations && !entry.wholeDayJournal && (
                         <div className="text-sm">
                           <p className="text-muted-foreground">{entry.response}</p>
                         </div>
