@@ -275,7 +275,12 @@ export default function SignalVsNoiseCard({
             </CardTitle>
             
             <div className="pl-15 space-y-2">
-              <div className="relative overflow-hidden rounded-lg bg-red-50/50 dark:bg-red-950/10 p-3 border-l-2 border-red-600 mb-2">
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="relative overflow-hidden rounded-lg bg-red-50/50 dark:bg-red-950/10 p-3 border-l-2 border-red-600 mb-2 shadow-sm"
+              >
                 <div className="relative z-10 space-y-1.5">
                     <div className="flex flex-col gap-1">
                         <p className="text-[11px] font-medium leading-relaxed text-foreground/90">
@@ -289,7 +294,7 @@ export default function SignalVsNoiseCard({
                         THE LAW: 80% Signal. 20% Noise. Devote energy to Signal FIRST. Noise is forbidden until Signal is complete.
                     </p>
                 </div>
-              </div>
+              </motion.div>
 
               <div className="text-xs text-muted-foreground space-y-1.5 bg-background/40 p-3 rounded-lg border border-red-500/10 backdrop-blur-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -424,7 +429,7 @@ export default function SignalVsNoiseCard({
                   </SelectContent>
                 </Select>
 
-                <Select value={taskImportance} onValueChange={(v: any) => setTaskImportance(v)}>
+                <Select key={taskType} value={taskImportance} onValueChange={(v: any) => setTaskImportance(v)}>
                   <SelectTrigger className="w-[180px]">
                     <SelectValue />
                   </SelectTrigger>
@@ -521,7 +526,7 @@ export default function SignalVsNoiseCard({
                           variant="ghost"
                           size="icon"
                           onClick={() => removeTask(task.id, "signal")}
-                          className="flex-shrink-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-8 w-8"
+                          className="flex-shrink-0 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 h-8 w-8 transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -611,7 +616,7 @@ export default function SignalVsNoiseCard({
                           variant="ghost"
                           size="icon"
                           onClick={() => removeTask(task.id, "noise")}
-                          className="flex-shrink-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-8 w-8"
+                          className="flex-shrink-0 text-blue-500 hover:text-blue-700 hover:bg-blue-100 dark:hover:bg-blue-900/30 h-8 w-8 transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
