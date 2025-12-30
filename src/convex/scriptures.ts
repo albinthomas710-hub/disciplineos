@@ -81,31 +81,61 @@ export const create = mutation({
   },
 });
 
-// Update scripture
-export const update = mutation({
+export const addScripture = mutation({
   args: {
-    scriptureId: v.id("scriptures"),
-    reference: v.string(),
     text: v.string(),
-    translation: v.optional(v.string()),
-    category: v.optional(v.string()),
-    notes: v.optional(v.string()),
+    reference: v.optional(v.string()),
+    reflection: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    isFavorite: v.optional(v.boolean()),
+    // Removed translation
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
     if (!user) throw new Error("Not authenticated");
 
-    const scripture = await ctx.db.get(args.scriptureId);
+    const today = new Date().toISOString().split("T")[0];
+
+    await ctx.db.insert("scriptures", {
+      userId: user._id,
+      date: today,
+      text: args.text.trim(),
+      reference: args.reference?.trim(),
+      reflection: args.reflection?.trim(),
+      tags: args.tags || [],
+      isFavorite: args.isFavorite || false,
+      isPrivate: true,
+      // Removed translation
+    });
+  },
+});
+
+export const updateScripture = mutation({
+  args: {
+    id: v.id("scriptures"),
+    text: v.string(),
+    reference: v.optional(v.string()),
+    reflection: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+    isFavorite: v.optional(v.boolean()),
+    // Removed translation
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const scripture = await ctx.db.get(args.id);
     if (!scripture || scripture.userId !== user._id) {
       throw new Error("Scripture not found or unauthorized");
     }
 
-    await ctx.db.patch(args.scriptureId, {
-      reference: args.reference.trim(),
+    await ctx.db.patch(args.id, {
       text: args.text.trim(),
-      translation: args.translation?.trim(),
-      category: args.category?.trim(),
-      notes: args.notes?.trim(),
+      reference: args.reference?.trim(),
+      reflection: args.reflection?.trim(),
+      tags: args.tags || [],
+      isFavorite: args.isFavorite || false,
+      // Removed translation
     });
   },
 });

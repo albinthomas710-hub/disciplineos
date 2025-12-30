@@ -78,3 +78,59 @@ export const save = mutation({
     }
   },
 });
+
+export const updateReflection = mutation({
+  args: {
+    id: v.id("reflections"),
+    didWell: v.optional(v.string()),
+    improvements: v.optional(v.any()),
+    focusScore: v.optional(v.number()),
+    outputLog: v.optional(v.string()),
+    dailyRating: v.optional(v.number()),
+    outputScore: v.optional(v.number()),
+    workType: v.optional(v.string()),
+    targetHours: v.optional(v.number()),
+    productivityInventory: v.optional(v.any()),
+    callsBooked: v.optional(v.number()),
+    callsConducted: v.optional(v.number()),
+    callsClosed: v.optional(v.number()),
+    distractions: v.optional(v.any()),
+    tomorrowPlan: v.optional(v.string()),
+    signalTasks: v.optional(v.any()),
+    noiseTasks: v.optional(v.any()),
+    signalCompletionRate: v.optional(v.number()),
+    theOneThingCompleted: v.optional(v.boolean()),
+    brokeDispline: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const reflection = await ctx.db.get(args.id);
+    if (!reflection || reflection.userId !== user._id) {
+      throw new Error("Reflection not found or unauthorized");
+    }
+
+    await ctx.db.patch(args.id, {
+      didWell: args.didWell,
+      improvements: args.improvements,
+      focusScore: args.focusScore,
+      outputLog: args.outputLog,
+      dailyRating: args.dailyRating,
+      outputScore: args.outputScore,
+      workType: args.workType,
+      targetHours: args.targetHours,
+      productivityInventory: args.productivityInventory,
+      callsBooked: args.callsBooked,
+      callsConducted: args.callsConducted,
+      callsClosed: args.callsClosed,
+      distractions: args.distractions,
+      tomorrowPlan: args.tomorrowPlan,
+      signalTasks: args.signalTasks,
+      noiseTasks: args.noiseTasks,
+      signalCompletionRate: args.signalCompletionRate,
+      theOneThingCompleted: args.theOneThingCompleted,
+      brokeDispline: args.brokeDispline,
+    });
+  },
+});

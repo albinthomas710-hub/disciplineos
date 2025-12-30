@@ -575,3 +575,41 @@ export const updateMonthlyGoals = mutation({
     }
   },
 });
+
+export const createMonthlyGoal = mutation({
+  args: {
+    month: v.string(),
+    mainObjectives: v.string(),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const existing = await ctx.db
+      .query("monthlyGoals")
+      .withIndex("by_user_and_month", (q) =>
+        q.eq("userId", user._id).eq("month", args.month)
+      )
+      .first();
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        mainObjectives: args.mainObjectives,
+        notes: args.notes || "",
+      });
+    } else {
+      await ctx.db.insert("monthlyGoals", {
+        userId: user._id,
+        month: args.month,
+        mainObjectives: args.mainObjectives,
+        notes: args.notes || "",
+        // Added required fields
+        goal: "Monthly Objectives", 
+        category: "General",
+        isPrivate: true,
+        date: new Date().toISOString().split("T")[0],
+      });
+    }
+  },
+});
