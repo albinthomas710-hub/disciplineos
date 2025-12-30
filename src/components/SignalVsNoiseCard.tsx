@@ -25,7 +25,8 @@ import {
   Lock,
   ShieldAlert,
   BrainCircuit,
-  ArrowRight
+  ArrowRight,
+  Trash2
 } from "lucide-react";
 import { 
   Select,
@@ -503,12 +504,14 @@ export default function SignalVsNoiseCard({
                           </p>
                         </div>
 
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => removeTask(task.id, "signal")}
-                          className="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors"
+                          className="flex-shrink-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-8 w-8"
                         >
-                          <X className="h-5 w-5" />
-                        </button>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </motion.div>
                   );
@@ -591,12 +594,14 @@ export default function SignalVsNoiseCard({
                           </p>
                         </div>
 
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => removeTask(task.id, "noise")}
-                          className="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors"
+                          className="flex-shrink-0 text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 h-8 w-8"
                         >
-                          <X className="h-5 w-5" />
-                        </button>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </motion.div>
                   );
