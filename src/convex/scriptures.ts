@@ -65,13 +65,16 @@ export const create = mutation({
 
     const scriptureId = await ctx.db.insert("scriptures", {
       userId: user._id,
+      date: new Date().toISOString().split("T")[0],
       reference: args.reference.trim(),
       text: args.text.trim(),
-      translation: args.translation?.trim(),
-      category: args.category?.trim(),
-      notes: args.notes?.trim(),
+      // translation removed as it is not in schema
+      // category removed as it is not in schema (or mapped to tags if needed, but schema doesn't have category)
+      // notes removed as it is not in schema (mapped to reflection?)
+      reflection: args.notes?.trim(), // Mapping notes to reflection as best fit
       isFavorite: false,
-      createdAt: Date.now(),
+      isPrivate: true,
+      tags: args.category ? [args.category.trim()] : [],
     });
 
     // Update prayer streak

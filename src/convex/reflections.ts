@@ -62,18 +62,33 @@ export const save = mutation({
       await ctx.db.patch(existing._id, {
         didWell: args.didWell,
         brokeDispline: args.brokeDispline,
-        improvement: args.improvement,
+        improvements: [args.improvement],
       });
     } else {
       await ctx.db.insert("reflections", {
         userId: user._id,
         date: today,
+        type: "daily",
+        answers: {},
         didWell: args.didWell,
         brokeDispline: args.brokeDispline,
-        improvement: args.improvement,
+        improvements: [args.improvement],
         focusScore: 0,
         outputLog: "",
         dailyRating: 0,
+        outputScore: 0,
+        workType: "N/A",
+        targetHours: 0,
+        productivityInventory: {},
+        callsBooked: 0,
+        callsConducted: 0,
+        callsClosed: 0,
+        distractions: [],
+        tomorrowPlan: "",
+        signalTasks: [],
+        noiseTasks: [],
+        signalCompletionRate: 0,
+        theOneThingCompleted: false,
       });
     }
   },

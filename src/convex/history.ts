@@ -292,9 +292,10 @@ export const updateDailyMetrics = mutation({
       await ctx.db.insert("reflections", {
         userId: user._id,
         date: args.date,
+        type: "daily",
+        answers: {},
         didWell: "",
         brokeDispline: "",
-        improvement: "",
         focusScore: args.focusScore ?? 5,
         outputLog: args.outputLog ?? "",
         dailyRating: args.dailyRating ?? 50,
@@ -571,6 +572,10 @@ export const updateMonthlyGoals = mutation({
         month: args.month,
         mainObjectives: args.mainObjectives || "",
         notes: args.notes || "",
+        goal: "Monthly Objectives",
+        category: "General",
+        isPrivate: true,
+        date: new Date().toISOString().split("T")[0],
       });
     }
   },
