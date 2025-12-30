@@ -23,7 +23,9 @@ import {
   Volume2,
   VolumeX,
   Lock,
-  ShieldAlert
+  ShieldAlert,
+  BrainCircuit,
+  ArrowRight
 } from "lucide-react";
 import { 
   Select,
@@ -79,6 +81,9 @@ export default function SignalVsNoiseCard({
   const [taskImportance, setTaskImportance] = useState<SignalImportance | NoiseImportance>("high_signal");
   const [isSaved, setIsSaved] = useState(true);
 
+  // Brain Dump Mode State
+  const [brainDumpMode, setBrainDumpMode] = useState(false);
+
   useEffect(() => {
     setSignalTasks(initialSignalTasks || []);
     setNoiseTasks(initialNoiseTasks || []);
@@ -92,6 +97,16 @@ export default function SignalVsNoiseCard({
   
   // Dark Psychology: Lock Noise until Signal is done
   const isNoiseLocked = signalTasks.some(t => !t.completed);
+
+  // Fix: Reset importance when type changes to prevent invalid states
+  const handleTypeChange = (type: "signal" | "noise") => {
+    setTaskType(type);
+    if (type === "signal") {
+      setTaskImportance("high_signal");
+    } else {
+      setTaskImportance("high_noise");
+    }
+  };
 
   const addTask = () => {
     if (!newTask.trim()) {
@@ -123,6 +138,7 @@ export default function SignalVsNoiseCard({
 
     setNewTask("");
     setIsSaved(false);
+    // Keep focus or mode logic if needed
   };
 
   const toggleTask = (id: string, type: "signal" | "noise") => {
@@ -259,15 +275,32 @@ export default function SignalVsNoiseCard({
             
             <div className="pl-15 space-y-2">
               <p className="text-sm font-bold text-red-700 dark:text-red-300">
-                80% Signal. 20% Noise. That's the only way forward.
+                80% Signal. 20% Noise. The Protocol.
               </p>
               <div className="text-xs text-muted-foreground space-y-1.5 bg-background/40 p-3 rounded-lg border border-red-500/10 backdrop-blur-sm">
-                <p className="leading-relaxed">
-                  <span className="font-black text-green-600 uppercase">Signal Definition:</span> The 3-5 most important things you <span className="italic">must</span> get done in the next 24 hours.
-                </p>
-                <p className="leading-relaxed">
-                  <span className="font-black text-red-600 uppercase">The Law:</span> First devote time and energy to Signal tasks. Only touch Noise tasks once <span className="underline decoration-red-500/50">ALL</span> Signal tasks are completed.
-                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                    <span className="font-black text-foreground uppercase text-[10px] tracking-wider flex items-center gap-1">
+                      <div className="w-4 h-4 rounded-full bg-foreground text-background flex items-center justify-center text-[10px]">1</div>
+                      Capture & Label
+                    </span>
+                    <p className="opacity-80">Write down every task. Label as Signal (Mission Critical) or Noise (Maintenance).</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="font-black text-red-600 uppercase text-[10px] tracking-wider flex items-center gap-1">
+                      <div className="w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[10px]">2</div>
+                      Prioritize
+                    </span>
+                    <p className="opacity-80">Identify THE ONE THING. Then High/Med/Low Signal. Then Noise.</p>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="font-black text-green-600 uppercase text-[10px] tracking-wider flex items-center gap-1">
+                      <div className="w-4 h-4 rounded-full bg-green-600 text-white flex items-center justify-center text-[10px]">3</div>
+                      Execute
+                    </span>
+                    <p className="opacity-80">Signal tasks FIRST. Noise is LOCKED until Signal is done.</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -349,210 +382,228 @@ export default function SignalVsNoiseCard({
       </CardHeader>
 
       <CardContent className="p-6 space-y-6 relative">
-        {/* Add Task Section */}
-        <div className="space-y-3 p-4 bg-white/50 dark:bg-black/20 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700">
-          <div className="flex items-center gap-2">
-            <Plus className="h-4 w-4 text-primary" />
-            <span className="text-sm font-bold">Add New Task</span>
+        {/* Step 1: Capture & Label */}
+        <div className="space-y-3 p-5 bg-white/50 dark:bg-black/20 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-700 relative overflow-hidden">
+          <div className="absolute top-0 left-0 bg-gray-200 dark:bg-gray-800 px-3 py-1 rounded-br-lg text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Step 1: Capture & Label
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <Select value={taskType} onValueChange={(v: any) => setTaskType(v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="signal">📡 Signal</SelectItem>
-                <SelectItem value="noise">📢 Noise</SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="mt-4 flex flex-col gap-3">
+            <div className="flex flex-col md:flex-row gap-3">
+              <div className="flex-1">
+                <Input
+                  value={newTask}
+                  onChange={(e) => setNewTask(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addTask()}
+                  placeholder="Write down a task..."
+                  className="h-10 text-base"
+                />
+              </div>
+              <div className="flex gap-2">
+                <Select value={taskType} onValueChange={(v: any) => handleTypeChange(v)}>
+                  <SelectTrigger className="w-[110px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="signal">📡 Signal</SelectItem>
+                    <SelectItem value="noise">📢 Noise</SelectItem>
+                  </SelectContent>
+                </Select>
 
-            <Select value={taskImportance} onValueChange={(v: any) => setTaskImportance(v)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {taskType === "signal" ? (
-                  <>
-                    <SelectItem value="the_one_thing">🔥 THE ONE THING</SelectItem>
-                    <SelectItem value="high_signal">⚡ High Importance</SelectItem>
-                    <SelectItem value="medium_signal">📈 Medium Importance</SelectItem>
-                    <SelectItem value="low_signal">🎯 Low Importance</SelectItem>
-                  </>
-                ) : (
-                  <>
-                    <SelectItem value="high_noise">⚠️ High Noise</SelectItem>
-                    <SelectItem value="low_noise">🔇 Low Noise</SelectItem>
-                  </>
-                )}
-              </SelectContent>
-            </Select>
-
-            <Input
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addTask()}
-              placeholder="Brain dump your task here..."
-              className="col-span-1"
-            />
+                <Select value={taskImportance} onValueChange={(v: any) => setTaskImportance(v)}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {taskType === "signal" ? (
+                      <>
+                        <SelectItem value="the_one_thing">🔥 THE ONE THING</SelectItem>
+                        <SelectItem value="high_signal">⚡ High Importance</SelectItem>
+                        <SelectItem value="medium_signal">📈 Medium Importance</SelectItem>
+                        <SelectItem value="low_signal">🎯 Low Importance</SelectItem>
+                      </>
+                    ) : (
+                      <>
+                        <SelectItem value="high_noise">⚠️ High Noise</SelectItem>
+                        <SelectItem value="low_noise">🔇 Low Noise</SelectItem>
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <Button onClick={addTask} className="w-full" size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add to {taskType === 'signal' ? 'Signal' : 'Noise'} List
+            </Button>
           </div>
-
-          <Button onClick={addTask} className="w-full" size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Add Task
-          </Button>
         </div>
 
-        {/* Signal Tasks */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 pb-2 border-b-2 border-green-500/30">
-            <Radio className="h-5 w-5 text-green-600" />
-            <h3 className="text-lg font-black text-green-700 dark:text-green-300">
-              SIGNAL TASKS ({signalTasks.length})
-            </h3>
+        {/* Step 2: Execution Lists */}
+        <div className="space-y-6">
+          {/* Signal Tasks */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b-2 border-green-500/30">
+              <div className="flex items-center gap-2">
+                <Radio className="h-5 w-5 text-green-600" />
+                <h3 className="text-lg font-black text-green-700 dark:text-green-300">
+                  SIGNAL TASKS ({signalTasks.length})
+                </h3>
+              </div>
+              <Badge variant="outline" className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200">
+                PRIORITY 1
+              </Badge>
+            </div>
+
+            {signalTasks.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground italic bg-muted/20 rounded-xl border border-dashed">
+                <Target className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                No signal tasks yet. <br/>
+                <span className="text-xs">Add tasks above and label them as Signal.</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {signalTasks.map((task) => {
+                  const config = getImportanceConfig(task.importance);
+                  const Icon = config.icon;
+                  
+                  return (
+                    <motion.div
+                      key={task.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        task.completed 
+                          ? 'bg-green-50 dark:bg-green-900/20 border-green-500' 
+                          : `bg-gradient-to-r ${config.gradient} bg-opacity-10 border-${config.color.split('-')[1]}-500`
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <button
+                          onClick={() => toggleTask(task.id, "signal")}
+                          className="mt-1 flex-shrink-0"
+                        >
+                          {task.completed ? (
+                            <CheckCircle2 className="h-6 w-6 text-green-600" />
+                          ) : (
+                            <Circle className="h-6 w-6 text-gray-400 hover:text-green-600 transition-colors" />
+                          )}
+                        </button>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Icon className={`h-4 w-4 ${config.color}`} />
+                            <Badge variant="outline" className={`text-xs ${config.color} border-current`}>
+                              {config.label}
+                            </Badge>
+                          </div>
+                          <p className={`text-sm font-medium ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
+                            {task.task}
+                          </p>
+                        </div>
+
+                        <button
+                          onClick={() => removeTask(task.id, "signal")}
+                          className="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {signalTasks.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground italic bg-muted/20 rounded-xl">
-              No signal tasks yet. Add THE ONE THING that moves the needle.
+          {/* Noise Tasks */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b-2 border-gray-500/30">
+              <div className="flex items-center gap-2">
+                <Volume2 className="h-5 w-5 text-gray-600" />
+                <h3 className="text-lg font-black text-gray-700 dark:text-gray-300">
+                  NOISE TASKS ({noiseTasks.length})
+                </h3>
+              </div>
+              <Badge variant="outline" className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200">
+                PRIORITY 2
+              </Badge>
             </div>
-          ) : (
-            <div className="space-y-2">
-              {signalTasks.map((task) => {
-                const config = getImportanceConfig(task.importance);
-                const Icon = config.icon;
-                
-                return (
-                  <motion.div
-                    key={task.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      task.completed 
-                        ? 'bg-green-50 dark:bg-green-900/20 border-green-500' 
-                        : `bg-gradient-to-r ${config.gradient} bg-opacity-10 border-${config.color.split('-')[1]}-500`
-                    }`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <button
-                        onClick={() => toggleTask(task.id, "signal")}
-                        className="mt-1 flex-shrink-0"
-                      >
-                        {task.completed ? (
-                          <CheckCircle2 className="h-6 w-6 text-green-600" />
-                        ) : (
-                          <Circle className="h-6 w-6 text-gray-400 hover:text-green-600 transition-colors" />
-                        )}
-                      </button>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Icon className={`h-4 w-4 ${config.color}`} />
-                          <Badge variant="outline" className={`text-xs ${config.color} border-current`}>
-                            {config.label}
-                          </Badge>
+            {isNoiseLocked && noiseTasks.length > 0 && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                className="mb-3 p-3 bg-red-100/50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-3"
+              >
+                <Lock className="h-5 w-5 text-red-500" />
+                <p className="text-xs font-bold text-red-700 dark:text-red-300">
+                  NOISE LOCKED: Complete all Signal tasks first.
+                </p>
+              </motion.div>
+            )}
+
+            {noiseTasks.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground italic bg-muted/20 rounded-xl border border-dashed">
+                <VolumeX className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                No noise tasks. <br/>
+                <span className="text-xs">If a task doesn't move the needle, add it here.</span>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {noiseTasks.map((task) => {
+                  const config = getImportanceConfig(task.importance);
+                  const Icon = config.icon;
+                  
+                  return (
+                    <motion.div
+                      key={task.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        task.completed 
+                          ? 'bg-gray-50 dark:bg-gray-900/20 border-gray-500' 
+                          : 'bg-gray-100 dark:bg-gray-800/20 border-gray-300 dark:border-gray-700'
+                      } ${isNoiseLocked ? 'opacity-50 grayscale' : ''}`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <button
+                          onClick={() => toggleTask(task.id, "noise")}
+                          className={`mt-1 flex-shrink-0 ${isNoiseLocked ? 'cursor-not-allowed' : ''}`}
+                        >
+                          {task.completed ? (
+                            <CheckCircle2 className="h-6 w-6 text-gray-600" />
+                          ) : (
+                            isNoiseLocked ? <Lock className="h-5 w-5 text-red-400" /> : <Circle className="h-6 w-6 text-gray-400 hover:text-gray-600 transition-colors" />
+                          )}
+                        </button>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Icon className={`h-4 w-4 ${config.color}`} />
+                            <Badge variant="outline" className={`text-xs ${config.color} border-current`}>
+                              {config.label}
+                            </Badge>
+                          </div>
+                          <p className={`text-sm font-medium ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
+                            {task.task}
+                          </p>
                         </div>
-                        <p className={`text-sm font-medium ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
-                          {task.task}
-                        </p>
+
+                        <button
+                          onClick={() => removeTask(task.id, "noise")}
+                          className="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors"
+                        >
+                          <X className="h-5 w-5" />
+                        </button>
                       </div>
-
-                      <button
-                        onClick={() => removeTask(task.id, "signal")}
-                        className="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Noise Tasks */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-2 pb-2 border-b-2 border-gray-500/30">
-            <Volume2 className="h-5 w-5 text-gray-600" />
-            <h3 className="text-lg font-black text-gray-700 dark:text-gray-300">
-              NOISE TASKS ({noiseTasks.length})
-            </h3>
-            <span className="text-xs text-muted-foreground italic">
-              (Only touch after ALL signal tasks are done)
-            </span>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-
-          {isNoiseLocked && noiseTasks.length > 0 && (
-            <motion.div 
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              className="mb-3 p-3 bg-red-100/50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-center gap-3"
-            >
-              <Lock className="h-5 w-5 text-red-500" />
-              <p className="text-xs font-bold text-red-700 dark:text-red-300">
-                NOISE LOCKED: Complete all Signal tasks first.
-              </p>
-            </motion.div>
-          )}
-
-          {noiseTasks.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground italic bg-muted/20 rounded-xl">
-              No noise tasks. Good - focus on signal.
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {noiseTasks.map((task) => {
-                const config = getImportanceConfig(task.importance);
-                const Icon = config.icon;
-                
-                return (
-                  <motion.div
-                    key={task.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    className={`p-4 rounded-xl border-2 transition-all ${
-                      task.completed 
-                        ? 'bg-gray-50 dark:bg-gray-900/20 border-gray-500' 
-                        : 'bg-gray-100 dark:bg-gray-800/20 border-gray-300 dark:border-gray-700'
-                    } ${isNoiseLocked ? 'opacity-50 grayscale' : ''}`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <button
-                        onClick={() => toggleTask(task.id, "noise")}
-                        className={`mt-1 flex-shrink-0 ${isNoiseLocked ? 'cursor-not-allowed' : ''}`}
-                      >
-                        {task.completed ? (
-                          <CheckCircle2 className="h-6 w-6 text-gray-600" />
-                        ) : (
-                          isNoiseLocked ? <Lock className="h-5 w-5 text-red-400" /> : <Circle className="h-6 w-6 text-gray-400 hover:text-gray-600 transition-colors" />
-                        )}
-                      </button>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Icon className={`h-4 w-4 ${config.color}`} />
-                          <Badge variant="outline" className={`text-xs ${config.color} border-current`}>
-                            {config.label}
-                          </Badge>
-                        </div>
-                        <p className={`text-sm font-medium ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
-                          {task.task}
-                        </p>
-                      </div>
-
-                      <button
-                        onClick={() => removeTask(task.id, "noise")}
-                        className="flex-shrink-0 text-red-500 hover:text-red-700 transition-colors"
-                      >
-                        <X className="h-5 w-5" />
-                      </button>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
         </div>
 
         {/* Save Button */}
