@@ -41,6 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import TomorrowPlanCard from "./TomorrowPlanCard";
+import SignalVsNoiseCard from "./SignalVsNoiseCard";
 
 interface HistoryViewProps {
   onNavigateToTimer?: () => void;
@@ -268,6 +269,16 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
               <TomorrowPlanCard 
                 dateStr={selectedDateStr}
                 tomorrowPlan={selectedDayData?.metrics?.tomorrowPlan}
+                isToday={isSelectedDateToday}
+              />
+
+              {/* Signal vs Noise Card - THE ONE THING tracker */}
+              <SignalVsNoiseCard 
+                key={`signal-${selectedDateStr}`}
+                dateStr={selectedDateStr}
+                initialSignalTasks={selectedDayData?.metrics?.signalTasks}
+                initialNoiseTasks={selectedDayData?.metrics?.noiseTasks}
+                theOneThingCompleted={selectedDayData?.metrics?.theOneThingCompleted}
                 isToday={isSelectedDateToday}
               />
 

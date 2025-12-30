@@ -21,6 +21,31 @@ export const reflections = defineTable({
   callsClosed: v.optional(v.number()),
   distractions: v.optional(v.array(v.string())),
   tomorrowPlan: v.optional(v.string()), // Plan for the next day
+  // Signal vs Noise - The ONE Thing tracking
+  signalTasks: v.optional(v.array(v.object({
+    id: v.string(),
+    task: v.string(),
+    importance: v.union(
+      v.literal("the_one_thing"), // The needle mover
+      v.literal("high_signal"),   // Critical signal
+      v.literal("medium_signal"), // Important signal
+      v.literal("low_signal")     // Minor signal
+    ),
+    completed: v.boolean(),
+    completedAt: v.optional(v.number()),
+  }))),
+  noiseTasks: v.optional(v.array(v.object({
+    id: v.string(),
+    task: v.string(),
+    importance: v.union(
+      v.literal("high_noise"),   // Urgent but not important
+      v.literal("low_noise")     // Neither urgent nor important
+    ),
+    completed: v.boolean(),
+    completedAt: v.optional(v.number()),
+  }))),
+  signalCompletionRate: v.optional(v.number()), // % of signal tasks completed
+  theOneThingCompleted: v.optional(v.boolean()), // Did they do THE ONE THING?
 })
 .index("by_user_and_date", ["userId", "date"]);
 

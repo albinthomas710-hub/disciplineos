@@ -166,6 +166,10 @@ export const getRange = query({
             callsClosed: reflection.callsClosed,
             distractions: reflection.distractions,
             tomorrowPlan: reflection.tomorrowPlan,
+            signalTasks: reflection.signalTasks,
+            noiseTasks: reflection.noiseTasks,
+            signalCompletionRate: reflection.signalCompletionRate,
+            theOneThingCompleted: reflection.theOneThingCompleted,
             _id: reflection._id
           } : null,
         };
@@ -195,6 +199,10 @@ export const getRange = query({
             callsClosed: reflection.callsClosed,
             distractions: reflection.distractions,
             tomorrowPlan: reflection.tomorrowPlan,
+            signalTasks: reflection.signalTasks,
+            noiseTasks: reflection.noiseTasks,
+            signalCompletionRate: reflection.signalCompletionRate,
+            theOneThingCompleted: reflection.theOneThingCompleted,
             _id: reflection._id
           } : null,
         };
@@ -221,6 +229,30 @@ export const updateDailyMetrics = mutation({
     callsClosed: v.optional(v.number()),
     distractions: v.optional(v.array(v.string())),
     tomorrowPlan: v.optional(v.string()),
+    signalTasks: v.optional(v.array(v.object({
+      id: v.string(),
+      task: v.string(),
+      importance: v.union(
+        v.literal("the_one_thing"),
+        v.literal("high_signal"),
+        v.literal("medium_signal"),
+        v.literal("low_signal")
+      ),
+      completed: v.boolean(),
+      completedAt: v.optional(v.number()),
+    }))),
+    noiseTasks: v.optional(v.array(v.object({
+      id: v.string(),
+      task: v.string(),
+      importance: v.union(
+        v.literal("high_noise"),
+        v.literal("low_noise")
+      ),
+      completed: v.boolean(),
+      completedAt: v.optional(v.number()),
+    }))),
+    signalCompletionRate: v.optional(v.number()),
+    theOneThingCompleted: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -250,6 +282,10 @@ export const updateDailyMetrics = mutation({
       if (args.callsClosed !== undefined) updateFields.callsClosed = args.callsClosed;
       if (args.distractions !== undefined) updateFields.distractions = args.distractions;
       if (args.tomorrowPlan !== undefined) updateFields.tomorrowPlan = args.tomorrowPlan;
+      if (args.signalTasks !== undefined) updateFields.signalTasks = args.signalTasks;
+      if (args.noiseTasks !== undefined) updateFields.noiseTasks = args.noiseTasks;
+      if (args.signalCompletionRate !== undefined) updateFields.signalCompletionRate = args.signalCompletionRate;
+      if (args.theOneThingCompleted !== undefined) updateFields.theOneThingCompleted = args.theOneThingCompleted;
 
       await ctx.db.patch(existing._id, updateFields);
     } else {
@@ -272,6 +308,10 @@ export const updateDailyMetrics = mutation({
         callsClosed: args.callsClosed,
         distractions: args.distractions,
         tomorrowPlan: args.tomorrowPlan,
+        signalTasks: args.signalTasks,
+        noiseTasks: args.noiseTasks,
+        signalCompletionRate: args.signalCompletionRate,
+        theOneThingCompleted: args.theOneThingCompleted,
       });
     }
   },
