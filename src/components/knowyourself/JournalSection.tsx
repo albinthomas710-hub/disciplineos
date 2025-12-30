@@ -137,20 +137,20 @@ export default function JournalSection() {
                   </div>
 
                   {/* Section 3: Affirmations - Masterpiece Design */}
-                  <div className="relative p-1 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shadow-lg">
-                    <div className="bg-black/90 rounded-lg p-4 space-y-3">
-                      <Label className="flex items-center gap-2 text-transparent bg-clip-text bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200 font-black text-lg tracking-wide">
-                        <Sparkles className="h-5 w-5 text-purple-300" />
+                  <div className="relative p-0.5 rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shadow-lg">
+                    <div className="bg-white/90 dark:bg-black/60 rounded-[10px] p-4 space-y-3 backdrop-blur-sm">
+                      <Label className="flex items-center gap-2 text-indigo-700 dark:text-indigo-300 font-black text-lg tracking-wide">
+                        <Sparkles className="h-5 w-5 text-purple-500" />
                         3. DAILY AFFIRMATIONS
                       </Label>
-                      <p className="text-xs text-purple-300/70 font-medium tracking-wider uppercase">
+                      <p className="text-xs text-muted-foreground font-medium tracking-wider uppercase">
                         Speak it into existence. This is your reality.
                       </p>
                       <Textarea
                         value={affirmations}
                         onChange={(e) => setAffirmations(e.target.value)}
                         placeholder="I AM..."
-                        className="min-h-[120px] border-2 border-purple-500/30 focus:border-purple-400 bg-purple-950/20 text-purple-100 placeholder:text-purple-700/50 font-serif text-lg leading-relaxed shadow-inner selection:bg-purple-500/30"
+                        className="min-h-[120px] border-2 border-purple-200 dark:border-purple-800 focus:border-purple-500 bg-white/50 dark:bg-purple-950/30 text-foreground placeholder:text-muted-foreground/50 font-serif text-lg leading-relaxed shadow-inner"
                       />
                     </div>
                   </div>
