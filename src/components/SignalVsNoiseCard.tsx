@@ -62,8 +62,8 @@ interface SignalVsNoiseCardProps {
 
 export default function SignalVsNoiseCard({ 
   dateStr, 
-  initialSignalTasks = [], 
-  initialNoiseTasks = [],
+  initialSignalTasks, 
+  initialNoiseTasks,
   theOneThingCompleted = false,
   isToday 
 }: SignalVsNoiseCardProps) {
@@ -77,8 +77,8 @@ export default function SignalVsNoiseCard({
   const [isSaved, setIsSaved] = useState(true);
 
   useEffect(() => {
-    setSignalTasks(initialSignalTasks);
-    setNoiseTasks(initialNoiseTasks);
+    setSignalTasks(initialSignalTasks || []);
+    setNoiseTasks(initialNoiseTasks || []);
     setIsSaved(true);
   }, [dateStr, initialSignalTasks, initialNoiseTasks]);
 

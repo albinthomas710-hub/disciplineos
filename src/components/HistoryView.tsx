@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { motion, AnimatePresence } from "framer-motion";
@@ -134,42 +134,46 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
   };
 
   // Calculate monthly stats
-  const monthlyStats = historyData ? Object.values(historyData).reduce((acc: any, day: any) => {
-    acc.completedBlocks += day.stats.completedBlocks || 0;
-    acc.totalBlocks += day.stats.totalBlocks || 0;
-    
-    // Calculate Perfect Days (100% completion with at least 1 block)
-    if (day.stats.totalBlocks > 0 && day.stats.completedBlocks === day.stats.totalBlocks) {
-      acc.perfectDays += 1;
-    }
+  const monthlyStats = useMemo(() => {
+    return historyData ? Object.values(historyData).reduce((acc: any, day: any) => {
+      acc.completedBlocks += day.stats.completedBlocks || 0;
+      acc.totalBlocks += day.stats.totalBlocks || 0;
+      
+      // Calculate Perfect Days (100% completion with at least 1 block)
+      if (day.stats.totalBlocks > 0 && day.stats.completedBlocks === day.stats.totalBlocks) {
+        acc.perfectDays += 1;
+      }
 
-    // Calculate actual time invested
-    if (day.blocks) {
-      day.blocks.forEach((block: any) => {
-        if (block.completed && block.startTime && block.endTime) {
-          const [h1, m1] = block.startTime.split(':').map(Number);
-          const [h2, m2] = block.endTime.split(':').map(Number);
-          let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
-          if (diff < 0) diff += 1440; // Handle midnight crossing
-          acc.totalMinutes += diff;
-        }
-      });
-    }
-    
-    return acc;
-  }, { completedBlocks: 0, totalBlocks: 0, perfectDays: 0, totalMinutes: 0 }) : null;
+      // Calculate actual time invested
+      if (day.blocks) {
+        day.blocks.forEach((block: any) => {
+          if (block.completed && block.startTime && block.endTime) {
+            const [h1, m1] = block.startTime.split(':').map(Number);
+            const [h2, m2] = block.endTime.split(':').map(Number);
+            let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+            if (diff < 0) diff += 1440; // Handle midnight crossing
+            acc.totalMinutes += diff;
+          }
+        });
+      }
+      
+      return acc;
+    }, { completedBlocks: 0, totalBlocks: 0, perfectDays: 0, totalMinutes: 0 }) : null;
+  }, [historyData]);
 
   // Calculate hours invested for selected day
-  const selectedDayHours = selectedDayData?.blocks?.reduce((acc: number, block: any) => {
-    if (block.completed && block.startTime && block.endTime) {
-      const [h1, m1] = block.startTime.split(':').map(Number);
-      const [h2, m2] = block.endTime.split(':').map(Number);
-      let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
-      if (diff < 0) diff += 1440;
-      return acc + diff;
-    }
-    return acc;
-  }, 0) || 0;
+  const selectedDayHours = useMemo(() => {
+    return selectedDayData?.blocks?.reduce((acc: number, block: any) => {
+      if (block.completed && block.startTime && block.endTime) {
+        const [h1, m1] = block.startTime.split(':').map(Number);
+        const [h2, m2] = block.endTime.split(':').map(Number);
+        let diff = (h2 * 60 + m2) - (h1 * 60 + m1);
+        if (diff < 0) diff += 1440;
+        return acc + diff;
+      }
+      return acc;
+    }, 0) || 0;
+  }, [selectedDayData]);
 
   return (
     <div className="space-y-6">
