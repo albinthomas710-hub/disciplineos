@@ -165,6 +165,7 @@ export const getRange = query({
             callsConducted: reflection.callsConducted,
             callsClosed: reflection.callsClosed,
             distractions: reflection.distractions,
+            tomorrowPlan: reflection.tomorrowPlan,
             _id: reflection._id
           } : null,
         };
@@ -193,6 +194,7 @@ export const getRange = query({
             callsConducted: reflection.callsConducted,
             callsClosed: reflection.callsClosed,
             distractions: reflection.distractions,
+            tomorrowPlan: reflection.tomorrowPlan,
             _id: reflection._id
           } : null,
         };
@@ -218,6 +220,7 @@ export const updateDailyMetrics = mutation({
     callsConducted: v.optional(v.number()),
     callsClosed: v.optional(v.number()),
     distractions: v.optional(v.array(v.string())),
+    tomorrowPlan: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -246,6 +249,7 @@ export const updateDailyMetrics = mutation({
       if (args.callsConducted !== undefined) updateFields.callsConducted = args.callsConducted;
       if (args.callsClosed !== undefined) updateFields.callsClosed = args.callsClosed;
       if (args.distractions !== undefined) updateFields.distractions = args.distractions;
+      if (args.tomorrowPlan !== undefined) updateFields.tomorrowPlan = args.tomorrowPlan;
 
       await ctx.db.patch(existing._id, updateFields);
     } else {
@@ -267,6 +271,7 @@ export const updateDailyMetrics = mutation({
         callsConducted: args.callsConducted,
         callsClosed: args.callsClosed,
         distractions: args.distractions,
+        tomorrowPlan: args.tomorrowPlan,
       });
     }
   },

@@ -40,6 +40,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import TomorrowPlanCard from "./TomorrowPlanCard";
 
 interface HistoryViewProps {
   onNavigateToTimer?: () => void;
@@ -103,6 +104,7 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
 
   const selectedDateStr = format(selectedDate, "yyyy-MM-dd");
   const selectedDayData = historyData?.[selectedDateStr];
+  const isSelectedDateToday = isSameDay(selectedDate, new Date());
 
   const handleTimetableChange = async (timetableId: string) => {
     try {
@@ -262,6 +264,13 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
 
             {/* Daily Detail Section */}
             <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+              {/* Tomorrow's Plan Card - Shows at top for psychological impact */}
+              <TomorrowPlanCard 
+                dateStr={selectedDateStr}
+                tomorrowPlan={selectedDayData?.metrics?.tomorrowPlan}
+                isToday={isSelectedDateToday}
+              />
+
               {/* Daily Metrics Card */}
               <DailyMetricsCard 
                 key={`metrics-${selectedDateStr}`}

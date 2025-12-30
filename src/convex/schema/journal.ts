@@ -20,6 +20,7 @@ export const reflections = defineTable({
   callsConducted: v.optional(v.number()),
   callsClosed: v.optional(v.number()),
   distractions: v.optional(v.array(v.string())),
+  tomorrowPlan: v.optional(v.string()), // Plan for the next day
 })
 .index("by_user_and_date", ["userId", "date"]);
 
