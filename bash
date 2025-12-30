@@ -1,1 +1,1 @@
-rm -f src/components/FailureWisdomViewNew.tsx
+read_file "src/main.tsx"
