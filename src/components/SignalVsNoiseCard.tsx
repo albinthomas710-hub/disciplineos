@@ -275,9 +275,22 @@ export default function SignalVsNoiseCard({
             </CardTitle>
             
             <div className="pl-15 space-y-2">
-              <p className="text-sm font-bold text-red-700 dark:text-red-300">
-                80% Signal. 20% Noise. The Protocol.
-              </p>
+              <div className="relative overflow-hidden rounded-lg bg-red-50/50 dark:bg-red-950/10 p-3 border-l-2 border-red-600 mb-2">
+                <div className="relative z-10 space-y-1.5">
+                    <div className="flex flex-col gap-1">
+                        <p className="text-[11px] font-medium leading-relaxed text-foreground/90">
+                            <span className="font-black text-red-600 dark:text-red-400 uppercase tracking-wider">Signal:</span> The 3-5 tasks for the next 24h that <span className="italic font-bold">move the mission forward</span>.
+                        </p>
+                        <p className="text-[11px] font-medium leading-relaxed text-foreground/90">
+                            <span className="font-black text-gray-600 dark:text-gray-400 uppercase tracking-wider">Noise:</span> If it doesn't move the mission, it is Noise—<span className="italic font-bold">no matter how urgent</span>.
+                        </p>
+                    </div>
+                    <p className="text-[11px] font-black text-red-700 dark:text-red-300 pt-1 border-t border-red-200 dark:border-red-800/30 mt-1">
+                        THE LAW: 80% Signal. 20% Noise. Devote energy to Signal FIRST. Noise is forbidden until Signal is complete.
+                    </p>
+                </div>
+              </div>
+
               <div className="text-xs text-muted-foreground space-y-1.5 bg-background/40 p-3 rounded-lg border border-red-500/10 backdrop-blur-sm">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-1">
