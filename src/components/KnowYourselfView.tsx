@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,26 +9,20 @@ import {
   Loader2,
   RefreshCw,
   Lightbulb,
-  BookOpen,
-  Trash2,
-  Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Id } from "@/convex/_generated/dataModel";
 import PersonalityTraitsGrid from "./knowyourself/PersonalityTraitsGrid";
 import StrengthsWeaknessesCards from "./knowyourself/StrengthsWeaknessesCards";
 import TimeDistributionCard from "./knowyourself/TimeDistributionCard";
+import JournalSection from "./knowyourself/JournalSection";
 
 export default function KnowYourselfView() {
   const profile = useQuery((api as any).selfDiscovery.getProfile);
-  const journalEntries = useQuery((api as any).selfDiscovery.getJournalEntries, { limit: 5 });
   const insights = useQuery((api as any).selfDiscovery.getInsights);
   
   const initializeProfile = useMutation((api as any).selfDiscovery.initializeProfile);
   const analyzePatterns = useMutation((api as any).selfDiscovery.analyzePatterns);
-  const addJournalEntry = useMutation((api as any).selfDiscovery.addJournalEntry);
-  const deleteJournalEntry = useMutation((api as any).selfDiscovery.deleteJournalEntry);
   const addStrength = useMutation((api as any).selfDiscovery.addStrength);
   const removeStrength = useMutation((api as any).selfDiscovery.removeStrength);
   const addWeakness = useMutation((api as any).selfDiscovery.addWeakness);
@@ -41,9 +33,6 @@ export default function KnowYourselfView() {
   const deleteTimeCategory = useMutation((api as any).selfDiscovery.deleteTimeCategory);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showJournal, setShowJournal] = useState(false);
-  const [journalResponse, setJournalResponse] = useState("");
-  const [journalMood, setJournalMood] = useState(5);
   const [showAddStrength, setShowAddStrength] = useState(false);
   const [showAddWeakness, setShowAddWeakness] = useState(false);
   const [newStrength, setNewStrength] = useState("");
@@ -53,24 +42,6 @@ export default function KnowYourselfView() {
   const [newTimePercentage, setNewTimePercentage] = useState(0);
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editPercentage, setEditPercentage] = useState(0);
-
-  const weeklyPrompts = [
-    "What patterns do you notice in your most productive days?",
-    "When do you feel most energized? What activities drain you?",
-    "What beliefs about yourself are holding you back?",
-    "If you could change one habit, what would it be and why?",
-    "What does success mean to you, truly?",
-  ];
-
-  const handleDeleteJournal = async (entryId: Id<"selfReflectionJournal">) => {
-    const toastId = toast.loading("Deleting journal entry...");
-    try {
-      await deleteJournalEntry({ entryId });
-      toast.success("Journal entry deleted", { id: toastId });
-    } catch (error) {
-      toast.error("Failed to delete entry", { id: toastId });
-    }
-  };
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
@@ -82,28 +53,6 @@ export default function KnowYourselfView() {
       toast.error("Failed to analyze patterns", { id: toastId });
     } finally {
       setIsAnalyzing(false);
-    }
-  };
-
-  const handleSaveJournal = async () => {
-    if (!journalResponse.trim()) {
-      toast.error("Please write something first");
-      return;
-    }
-
-    const toastId = toast.loading("Saving journal entry...");
-    try {
-      await addJournalEntry({
-        prompt: weeklyPrompts[0],
-        response: journalResponse,
-        mood: journalMood,
-      });
-      setJournalResponse("");
-      setJournalMood(5);
-      setShowJournal(false);
-      toast.success("Journal entry saved! 📝", { id: toastId });
-    } catch (error) {
-      toast.error("Failed to save entry", { id: toastId });
     }
   };
 
@@ -347,118 +296,8 @@ export default function KnowYourselfView() {
         onDeleteTimeCategory={handleDeleteTimeCategory}
       />
 
-      {/* Self-Reflection Journal - Dark Psychology: Commitment & Consistency */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.4 }}
-      >
-        <Card className="border-2 border-purple-300 dark:border-purple-700 bg-gradient-to-br from-purple-50 via-fuchsia-50 to-pink-50 dark:from-purple-950 dark:via-fuchsia-950 dark:to-pink-950 shadow-xl hover:shadow-2xl transition-all duration-300">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-br from-purple-600 to-pink-600 p-2.5 rounded-xl shadow-lg">
-                  <BookOpen className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-black bg-gradient-to-r from-purple-700 via-fuchsia-700 to-pink-700 dark:from-purple-400 dark:via-fuchsia-400 dark:to-pink-400 bg-clip-text text-transparent">
-                    Self-Reflection Journal
-                  </h3>
-                  <p className="text-xs text-purple-600 dark:text-purple-400 font-semibold">
-                    {journalEntries?.length || 0} entries • Private & secure
-                  </p>
-                </div>
-              </div>
-              <Button
-                onClick={() => setShowJournal(!showJournal)}
-                variant="outline"
-                className="cursor-pointer border-2 border-purple-400 dark:border-purple-600 hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-all duration-300"
-              >
-                {showJournal ? "Cancel" : "New Entry"}
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <AnimatePresence>
-              {showJournal && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="space-y-4 p-4 border-2 border-purple-300 dark:border-purple-700 rounded-xl bg-white dark:bg-purple-950/50 shadow-inner">
-                    <div>
-                      <Label className="text-purple-700 dark:text-purple-400 font-bold text-sm mb-2 block">
-                        {weeklyPrompts[0]}
-                      </Label>
-                      <Textarea
-                        value={journalResponse}
-                        onChange={(e) => setJournalResponse(e.target.value)}
-                        placeholder="Write your honest thoughts..."
-                        className="mt-2 min-h-[150px] border-2 border-purple-200 dark:border-purple-800 focus:border-purple-500 dark:focus:border-purple-500 transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <Label className="font-semibold">Mood (1-10)</Label>
-                      <input
-                        type="range"
-                        min="1"
-                        max="10"
-                        value={journalMood}
-                        onChange={(e) => setJournalMood(Number(e.target.value))}
-                        className="w-full mt-2"
-                      />
-                      <p className="text-center text-sm text-muted-foreground mt-1 font-bold">{journalMood}/10</p>
-                    </div>
-                    <Button
-                      onClick={handleSaveJournal}
-                      className="w-full cursor-pointer bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      Save Entry
-                    </Button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {journalEntries && journalEntries.length > 0 && (
-              <div className="space-y-3">
-                <h4 className="font-bold text-sm text-purple-700 dark:text-purple-400">Recent Entries</h4>
-                <AnimatePresence>
-                  {journalEntries.map((entry: any, i: number) => (
-                    <motion.div
-                      key={entry._id}
-                      initial={{ x: -20, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      exit={{ x: -20, opacity: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="p-3 border-2 border-purple-200 dark:border-purple-800 rounded-xl hover:border-purple-400 dark:hover:border-purple-600 transition-all duration-200 group bg-white dark:bg-purple-950/30"
-                    >
-                      <div className="flex items-start justify-between mb-2">
-                        <p className="text-xs text-muted-foreground font-semibold">{entry.date}</p>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDeleteJournal(entry._id)}
-                          className="cursor-pointer h-8 w-8 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-100 dark:hover:bg-red-900/50 transition-all duration-200"
-                        >
-                          <Trash2 className="h-4 w-4 text-red-600" />
-                        </Button>
-                      </div>
-                      <p className="text-xs font-bold text-purple-700 dark:text-purple-400 mb-2">{entry.prompt}</p>
-                      <p className="text-sm">{entry.response}</p>
-                      {entry.mood && (
-                        <p className="text-xs text-muted-foreground mt-2 font-semibold">Mood: {entry.mood}/10</p>
-                      )}
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
+      {/* Self-Reflection Journal - Replaced with new component */}
+      <JournalSection />
 
       {/* Pattern Insights - Dark Psychology: FOMO & Exclusivity */}
       {insights && insights.length > 0 && (
