@@ -438,8 +438,6 @@ export const addMorningJournal = mutation({
     gratitude: v.string(),
     greatToday: v.string(),
     affirmations: v.string(),
-    whereAmINow: v.string(),
-    whoToBecome: v.string(),
     mood: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -454,8 +452,6 @@ export const addMorningJournal = mutation({
       gratitude: args.gratitude.trim(),
       greatToday: args.greatToday.trim(),
       affirmations: args.affirmations.trim(),
-      whereAmINow: args.whereAmINow.trim(),
-      whoToBecome: args.whoToBecome.trim(),
       mood: args.mood,
     });
   },
@@ -465,6 +461,8 @@ export const addMorningJournal = mutation({
 export const addEveningJournal = mutation({
   args: {
     wholeDayJournal: v.string(),
+    whereAmINow: v.string(),
+    whoToBecome: v.string(),
     mood: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
@@ -477,6 +475,8 @@ export const addEveningJournal = mutation({
       userId: user._id,
       date: today,
       wholeDayJournal: args.wholeDayJournal.trim(),
+      whereAmINow: args.whereAmINow.trim(),
+      whoToBecome: args.whoToBecome.trim(),
       mood: args.mood,
     });
   },

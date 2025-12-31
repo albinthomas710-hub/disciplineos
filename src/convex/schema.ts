@@ -40,8 +40,6 @@ const schema = defineSchema(
       gratitude: v.string(),
       greatToday: v.string(),
       affirmations: v.string(),
-      whereAmINow: v.string(),
-      whoToBecome: v.string(),
       mood: v.optional(v.number()),
     }).index("by_user_and_date", ["userId", "date"]),
 
@@ -49,6 +47,8 @@ const schema = defineSchema(
       userId: v.id("users"),
       date: v.string(),
       wholeDayJournal: v.string(),
+      whereAmINow: v.string(),
+      whoToBecome: v.string(),
       mood: v.optional(v.number()),
     }).index("by_user_and_date", ["userId", "date"]),
 

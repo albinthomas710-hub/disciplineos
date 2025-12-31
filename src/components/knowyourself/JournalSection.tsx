@@ -26,16 +26,16 @@ export default function JournalSection() {
   const [gratitude, setGratitude] = useState("");
   const [greatToday, setGreatToday] = useState("");
   const [affirmations, setAffirmations] = useState("");
-  const [whereAmINow, setWhereAmINow] = useState("");
-  const [whoToBecome, setWhoToBecome] = useState("");
   const [morningMood, setMorningMood] = useState(5);
 
   // Evening journal fields
   const [wholeDayJournal, setWholeDayJournal] = useState("");
+  const [whereAmINow, setWhereAmINow] = useState("");
+  const [whoToBecome, setWhoToBecome] = useState("");
   const [eveningMood, setEveningMood] = useState(5);
 
   const handleSaveMorningJournal = async () => {
-    if (!gratitude.trim() || !greatToday.trim() || !affirmations.trim() || !whereAmINow.trim() || !whoToBecome.trim()) {
+    if (!gratitude.trim() || !greatToday.trim() || !affirmations.trim()) {
       toast.error("Please fill in all morning journal sections");
       return;
     }
@@ -46,16 +46,12 @@ export default function JournalSection() {
         gratitude: gratitude.trim(),
         greatToday: greatToday.trim(),
         affirmations: affirmations.trim(),
-        whereAmINow: whereAmINow.trim(),
-        whoToBecome: whoToBecome.trim(),
         mood: morningMood,
       });
       
       setGratitude("");
       setGreatToday("");
       setAffirmations("");
-      setWhereAmINow("");
-      setWhoToBecome("");
       setMorningMood(5);
       setShowMorningJournal(false);
       toast.success("Morning journal saved 🌅", { id: toastId });
@@ -65,8 +61,8 @@ export default function JournalSection() {
   };
 
   const handleSaveEveningJournal = async () => {
-    if (!wholeDayJournal.trim()) {
-      toast.error("Please write your whole day journal");
+    if (!wholeDayJournal.trim() || !whereAmINow.trim() || !whoToBecome.trim()) {
+      toast.error("Please fill in all evening journal sections");
       return;
     }
 
@@ -74,10 +70,14 @@ export default function JournalSection() {
     try {
       await addEveningJournal({
         wholeDayJournal: wholeDayJournal.trim(),
+        whereAmINow: whereAmINow.trim(),
+        whoToBecome: whoToBecome.trim(),
         mood: eveningMood,
       });
       
       setWholeDayJournal("");
+      setWhereAmINow("");
+      setWhoToBecome("");
       setEveningMood(5);
       setShowEveningJournal(false);
       toast.success("Evening journal saved 🌙", { id: toastId });
@@ -216,40 +216,6 @@ export default function JournalSection() {
                         </div>
                       </div>
 
-                      {/* Section 4: WHERE AM I RIGHT NOW? */}
-                      <div className="space-y-2 border-2 border-orange-300 dark:border-orange-700 rounded-xl p-4 bg-orange-50/50 dark:bg-orange-950/20">
-                        <Label className="flex items-center gap-2 text-orange-800 dark:text-orange-300 font-black text-base uppercase tracking-wide">
-                          <Target className="h-5 w-5 text-orange-600" />
-                          4. WHERE AM I RIGHT NOW?
-                        </Label>
-                        <p className="text-xs text-muted-foreground italic font-medium">
-                          "Be brutally honest. What's your current reality? Your skills, your discipline level, your financial situation, your daily habits..."
-                        </p>
-                        <Textarea
-                          value={whereAmINow}
-                          onChange={(e) => setWhereAmINow(e.target.value)}
-                          placeholder="Current reality check..."
-                          className="min-h-[100px] border-orange-200 dark:border-orange-800 focus:border-orange-500 transition-colors bg-white/70 dark:bg-orange-950/30"
-                        />
-                      </div>
-
-                      {/* Section 5: WHO DO I NEED TO BECOME? */}
-                      <div className="space-y-2 border-2 border-cyan-300 dark:border-cyan-700 rounded-xl p-4 bg-cyan-50/50 dark:bg-cyan-950/20">
-                        <Label className="flex items-center gap-2 text-cyan-800 dark:text-cyan-300 font-black text-base uppercase tracking-wide">
-                          <Sparkles className="h-5 w-5 text-cyan-600" />
-                          5. WHO DO I NEED TO BECOME?
-                        </Label>
-                        <p className="text-xs text-muted-foreground italic font-medium">
-                          "To accomplish the things I want to accomplish... What version of yourself closes the gap? What habits, mindset, skills?"
-                        </p>
-                        <Textarea
-                          value={whoToBecome}
-                          onChange={(e) => setWhoToBecome(e.target.value)}
-                          placeholder="The person I must become..."
-                          className="min-h-[100px] border-cyan-200 dark:border-cyan-800 focus:border-cyan-500 transition-colors bg-white/70 dark:bg-cyan-950/30"
-                        />
-                      </div>
-
                       {/* Mood Slider */}
                       <div className="pt-2">
                         <div className="flex justify-between items-center mb-2">
@@ -317,28 +283,20 @@ export default function JournalSection() {
                           </Button>
                         </div>
                         
-                        <div className="space-y-3 text-sm">
-                          <div>
-                            <span className="text-xs font-bold text-pink-600 dark:text-pink-400 uppercase block mb-0.5">Gratitude</span>
-                            <p className="text-muted-foreground line-clamp-2">{entry.gratitude}</p>
+                          <div className="space-y-3 text-sm">
+                            <div>
+                              <span className="text-xs font-bold text-pink-600 dark:text-pink-400 uppercase block mb-0.5">Gratitude</span>
+                              <p className="text-muted-foreground line-clamp-2">{entry.gratitude}</p>
+                            </div>
+                            <div>
+                              <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase block mb-0.5">Great Today</span>
+                              <p className="text-muted-foreground line-clamp-2">{entry.greatToday}</p>
+                            </div>
+                            <div className="bg-purple-900/5 dark:bg-purple-100/5 p-2 rounded-lg border border-purple-500/10">
+                              <span className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase block mb-0.5">Affirmations</span>
+                              <p className="font-serif italic text-purple-900 dark:text-purple-100 line-clamp-2">{entry.affirmations}</p>
+                            </div>
                           </div>
-                          <div>
-                            <span className="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase block mb-0.5">Great Today</span>
-                            <p className="text-muted-foreground line-clamp-2">{entry.greatToday}</p>
-                          </div>
-                          <div className="bg-purple-900/5 dark:bg-purple-100/5 p-2 rounded-lg border border-purple-500/10">
-                            <span className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase block mb-0.5">Affirmations</span>
-                            <p className="font-serif italic text-purple-900 dark:text-purple-100 line-clamp-2">{entry.affirmations}</p>
-                          </div>
-                          <div>
-                            <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase block mb-0.5">Where Am I Now</span>
-                            <p className="text-muted-foreground line-clamp-2">{entry.whereAmINow}</p>
-                          </div>
-                          <div>
-                            <span className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase block mb-0.5">Who To Become</span>
-                            <p className="text-muted-foreground line-clamp-2">{entry.whoToBecome}</p>
-                          </div>
-                        </div>
                       </motion.div>
                     ))}
                   </AnimatePresence>
@@ -379,6 +337,40 @@ export default function JournalSection() {
                           onChange={(e) => setWholeDayJournal(e.target.value)}
                           placeholder="Log your entire day here..."
                           className="min-h-[200px] border-indigo-200 dark:border-indigo-800 focus:border-emerald-500 transition-colors bg-white/50 dark:bg-indigo-950/30"
+                        />
+                      </div>
+
+                      {/* Section: WHERE AM I RIGHT NOW? */}
+                      <div className="space-y-2 border-2 border-orange-300 dark:border-orange-700 rounded-xl p-4 bg-orange-50/50 dark:bg-orange-950/20">
+                        <Label className="flex items-center gap-2 text-orange-800 dark:text-orange-300 font-black text-base uppercase tracking-wide">
+                          <Target className="h-5 w-5 text-orange-600" />
+                          WHERE AM I RIGHT NOW?
+                        </Label>
+                        <p className="text-xs text-muted-foreground italic font-medium">
+                          "Be brutally honest. What's your current reality? Your skills, your discipline level, your financial situation, your daily habits..."
+                        </p>
+                        <Textarea
+                          value={whereAmINow}
+                          onChange={(e) => setWhereAmINow(e.target.value)}
+                          placeholder="Current reality check..."
+                          className="min-h-[100px] border-orange-200 dark:border-orange-800 focus:border-orange-500 transition-colors bg-white/70 dark:bg-orange-950/30"
+                        />
+                      </div>
+
+                      {/* Section: WHO DO I NEED TO BECOME? */}
+                      <div className="space-y-2 border-2 border-cyan-300 dark:border-cyan-700 rounded-xl p-4 bg-cyan-50/50 dark:bg-cyan-950/20">
+                        <Label className="flex items-center gap-2 text-cyan-800 dark:text-cyan-300 font-black text-base uppercase tracking-wide">
+                          <Sparkles className="h-5 w-5 text-cyan-600" />
+                          WHO DO I NEED TO BECOME?
+                        </Label>
+                        <p className="text-xs text-muted-foreground italic font-medium">
+                          "To accomplish the things I want to accomplish... What version of yourself closes the gap? What habits, mindset, skills?"
+                        </p>
+                        <Textarea
+                          value={whoToBecome}
+                          onChange={(e) => setWhoToBecome(e.target.value)}
+                          placeholder="The person I must become..."
+                          className="min-h-[100px] border-cyan-200 dark:border-cyan-800 focus:border-cyan-500 transition-colors bg-white/70 dark:bg-cyan-950/30"
                         />
                       </div>
 
@@ -449,9 +441,19 @@ export default function JournalSection() {
                           </Button>
                         </div>
                         
-                        <div className="text-sm">
-                          <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase block mb-1">Whole Day Journal</span>
-                          <p className="text-muted-foreground whitespace-pre-wrap">{entry.wholeDayJournal}</p>
+                        <div className="space-y-3 text-sm">
+                          <div>
+                            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase block mb-1">Whole Day Journal</span>
+                            <p className="text-muted-foreground whitespace-pre-wrap line-clamp-3">{entry.wholeDayJournal}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-orange-600 dark:text-orange-400 uppercase block mb-0.5">Where Am I Now</span>
+                            <p className="text-muted-foreground line-clamp-2">{entry.whereAmINow}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase block mb-0.5">Who To Become</span>
+                            <p className="text-muted-foreground line-clamp-2">{entry.whoToBecome}</p>
+                          </div>
                         </div>
                       </motion.div>
                     ))}
