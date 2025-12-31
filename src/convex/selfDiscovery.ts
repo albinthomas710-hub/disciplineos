@@ -432,7 +432,125 @@ export const getJournalEntries = query({
   },
 });
 
-// Add journal entry
+// Add morning journal entry
+export const addMorningJournal = mutation({
+  args: {
+    gratitude: v.string(),
+    greatToday: v.string(),
+    affirmations: v.string(),
+    whereAmINow: v.string(),
+    whoToBecome: v.string(),
+    mood: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const today = new Date().toISOString().split("T")[0];
+
+    await ctx.db.insert("morningJournal", {
+      userId: user._id,
+      date: today,
+      gratitude: args.gratitude.trim(),
+      greatToday: args.greatToday.trim(),
+      affirmations: args.affirmations.trim(),
+      whereAmINow: args.whereAmINow.trim(),
+      whoToBecome: args.whoToBecome.trim(),
+      mood: args.mood,
+    });
+  },
+});
+
+// Add evening journal entry
+export const addEveningJournal = mutation({
+  args: {
+    wholeDayJournal: v.string(),
+    mood: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const today = new Date().toISOString().split("T")[0];
+
+    await ctx.db.insert("eveningJournal", {
+      userId: user._id,
+      date: today,
+      wholeDayJournal: args.wholeDayJournal.trim(),
+      mood: args.mood,
+    });
+  },
+});
+
+// Get morning journal entries
+export const getMorningJournals = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    const entries = await ctx.db
+      .query("morningJournal")
+      .withIndex("by_user_and_date", (q) => q.eq("userId", user._id))
+      .collect();
+
+    return entries
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, args.limit || 10);
+  },
+});
+
+// Get evening journal entries
+export const getEveningJournals = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    const entries = await ctx.db
+      .query("eveningJournal")
+      .withIndex("by_user_and_date", (q) => q.eq("userId", user._id))
+      .collect();
+
+    return entries
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .slice(0, args.limit || 10);
+  },
+});
+
+// Delete morning journal entry
+export const deleteMorningJournal = mutation({
+  args: { entryId: v.id("morningJournal") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const entry = await ctx.db.get(args.entryId);
+    if (!entry || entry.userId !== user._id) {
+      throw new Error("Entry not found or unauthorized");
+    }
+
+    await ctx.db.delete(args.entryId);
+  },
+});
+
+// Delete evening journal entry
+export const deleteEveningJournal = mutation({
+  args: { entryId: v.id("eveningJournal") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const entry = await ctx.db.get(args.entryId);
+    if (!entry || entry.userId !== user._id) {
+      throw new Error("Entry not found or unauthorized");
+    }
+
+    await ctx.db.delete(args.entryId);
+  },
+});
+
+// Legacy: Add journal entry (kept for backward compatibility)
 export const addJournalEntry = mutation({
   args: {
     prompt: v.string(),

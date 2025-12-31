@@ -34,6 +34,24 @@ const schema = defineSchema(
     dayTags,
 
     // Journal & Reflection
+    morningJournal: defineTable({
+      userId: v.id("users"),
+      date: v.string(),
+      gratitude: v.string(),
+      greatToday: v.string(),
+      affirmations: v.string(),
+      whereAmINow: v.string(),
+      whoToBecome: v.string(),
+      mood: v.optional(v.number()),
+    }).index("by_user_and_date", ["userId", "date"]),
+
+    eveningJournal: defineTable({
+      userId: v.id("users"),
+      date: v.string(),
+      wholeDayJournal: v.string(),
+      mood: v.optional(v.number()),
+    }).index("by_user_and_date", ["userId", "date"]),
+
     reflections: defineTable({
       userId: v.id("users"),
       date: v.string(),
