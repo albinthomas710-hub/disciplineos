@@ -112,7 +112,7 @@ export default function JournalSection() {
                       1. What am I grateful for?
                     </Label>
                     <p className="text-xs text-muted-foreground italic">
-                      "God gave me a great non-poor life, I know the truth..."
+                      "God gave me a great non-poor life, I know the truth. God gave me ambition and drive. I have another day to prove myself..."
                     </p>
                     <Textarea
                       value={gratitude}
@@ -129,7 +129,7 @@ export default function JournalSection() {
                       2. What would make today great?
                     </Label>
                     <p className="text-xs text-muted-foreground italic">
-                      "I have to make 100 outreaches, I have to build something..."
+                      "I have to make 100 outreaches, I have to build something. Be grateful and patient—today I dominate my discipline..."
                     </p>
                     <Textarea
                       value={greatToday}
@@ -146,8 +146,8 @@ export default function JournalSection() {
                         <Sparkles className="h-5 w-5 text-purple-500" />
                         3. DAILY AFFIRMATIONS
                       </Label>
-                      <p className="text-xs text-muted-foreground font-medium tracking-wider uppercase">
-                        Speak it into existence. This is your reality.
+                      <p className="text-xs text-muted-foreground font-medium tracking-wider">
+                        "I AM unstoppable. I AM disciplined. I AM building an empire. Every second I waste, my enemies get ahead. I don't have time for weakness."
                       </p>
                       <Textarea
                         value={affirmations}
@@ -165,7 +165,7 @@ export default function JournalSection() {
                       4. Whole Day Journal
                     </Label>
                     <p className="text-xs text-muted-foreground italic">
-                      "What happened today? What did you do? The complete story..."
+                      "Woke up at 5am, trained for 1 hour. Made 50 outreaches before lunch. Had a moment of weakness at 3pm but pushed through. Closed 2 clients. This is who I'm becoming..."
                     </p>
                     <Textarea
                       value={wholeDayJournal}
