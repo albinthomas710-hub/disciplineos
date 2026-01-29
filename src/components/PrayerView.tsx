@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { useMutation, useQuery } from "convex/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Heart, Loader2, Plus, BookOpen, Video } from "lucide-react";
+import { Heart, Loader2, Plus, BookOpen, Video, Shield } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Id } from "@/convex/_generated/dataModel";
@@ -15,6 +15,7 @@ import { ScriptureForm } from "@/components/prayer/ScriptureForm";
 import { ScriptureCard } from "@/components/prayer/ScriptureCard";
 import { HolyVideoForm } from "@/components/prayer/HolyVideoForm";
 import { HolyVideoCard } from "@/components/prayer/HolyVideoCard";
+import { SinListManager } from "@/components/prayer/SinListManager";
 
 export default function PrayerView() {
   const prayers = useQuery((api as any).prayers.getAll);
@@ -35,7 +36,7 @@ export default function PrayerView() {
   const toggleVideoFavorite = useMutation((api as any).holyVideos.toggleFavorite);
   const removeVideo = useMutation((api as any).holyVideos.remove);
 
-  const [activeTab, setActiveTab] = useState<"prayers" | "scriptures" | "videos">("prayers");
+  const [activeTab, setActiveTab] = useState<"prayers" | "scriptures" | "videos" | "sins">("prayers");
   const [showNewPrayer, setShowNewPrayer] = useState(false);
   const [showNewScripture, setShowNewScripture] = useState(false);
   const [showNewVideo, setShowNewVideo] = useState(false);
@@ -227,6 +228,14 @@ export default function PrayerView() {
         >
           <Video className="h-4 w-4 mr-2" />
           Holy Videos ({holyVideos.length})
+        </Button>
+        <Button
+          variant={activeTab === "sins" ? "default" : "outline"}
+          onClick={() => setActiveTab("sins")}
+          className="cursor-pointer border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-red-900 dark:hover:bg-red-950"
+        >
+          <Shield className="h-4 w-4 mr-2" />
+          Sin List
         </Button>
       </div>
 
@@ -430,6 +439,11 @@ export default function PrayerView() {
             />
           )}
         </div>
+      )}
+
+      {/* Sin List Tab */}
+      {activeTab === "sins" && (
+        <SinListManager />
       )}
     </div>
   );

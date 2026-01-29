@@ -207,6 +207,29 @@ const schema = defineSchema(
       rating: v.optional(v.number()),
     }).index("by_user_and_date", ["userId", "date"])
       .index("by_user", ["userId"]),
+
+    sinList: defineTable({
+      userId: v.id("users"),
+      title: v.string(),
+      category: v.optional(v.string()), // e.g., "Pride", "Lust", "Anger"
+      status: v.string(), // "active", "conquered"
+      scriptureAntidote: v.optional(v.string()),
+      lastRelapseDate: v.optional(v.string()),
+      unconfessedCount: v.number(),
+      notes: v.optional(v.string()),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_status", ["userId", "status"]),
+
+    sinLogs: defineTable({
+      userId: v.id("users"),
+      sinId: v.id("sinList"),
+      date: v.string(), // ISO date
+      timestamp: v.number(),
+      notes: v.optional(v.string()),
+      trigger: v.optional(v.string()),
+      type: v.string(), // "relapse", "confession"
+    }).index("by_user_and_sin", ["userId", "sinId"])
+      .index("by_user_and_date", ["userId", "date"]),
   },
   {
     schemaValidation: false,
