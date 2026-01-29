@@ -2,40 +2,51 @@ import { useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Doc } from "@/convex/_generated/dataModel";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, X, Flame, AlertTriangle, Info, ChevronDown, ChevronUp } from "lucide-react";
+import { Check, X, Flame, AlertTriangle, Info, ChevronDown, ChevronUp, Zap, Skull } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ResolutionCardProps {
   resolution: Doc<"resolutions">;
   todayLog?: Doc<"resolutionLogs">;
+  recentLogs: Doc<"resolutionLogs">[];
   streak: number;
 }
 
-export function ResolutionCard({ resolution, todayLog, streak }: ResolutionCardProps) {
+export function ResolutionCard({ resolution, todayLog, recentLogs, streak }: ResolutionCardProps) {
   const logProgress = useMutation(api.resolutions.logProgress);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   const isBuild = resolution.type === "build";
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
+
+  // Generate last 7 days dates for the visual tracker
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i)); // 6 days ago to today
+    return d.toISOString().split("T")[0];
+  });
 
   const handleLog = async (status: "success" | "failure") => {
     try {
       await logProgress({
         resolutionId: resolution._id,
-        date: today,
+        date: todayStr,
         status,
       });
       if (status === "success") {
-        toast.success(isBuild ? "Habit reinforced." : "Temptation resisted.", {
-          icon: "🔥"
+        toast.success(isBuild ? "Momentum built. Keep going." : "Temptation crushed. Well done.", {
+          icon: "🔥",
+          className: isBuild ? "bg-blue-50 border-blue-200" : "bg-red-50 border-red-200"
         });
       } else {
-        toast.error("Reset. Learn from this.", {
+        toast.error("Streak broken. Restart immediately.", {
           icon: "⚠️"
         });
       }
@@ -44,139 +55,212 @@ export function ResolutionCard({ resolution, todayLog, streak }: ResolutionCardP
     }
   };
 
+  const getDayStatus = (date: string) => {
+    const log = recentLogs.find(l => l.date === date);
+    if (!log) return "empty";
+    return log.status;
+  };
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -2 }}
+      transition={{ duration: 0.2 }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       <Card className={cn(
-        "overflow-hidden border-l-4 transition-all duration-300 hover:shadow-lg",
+        "overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 relative group",
         isBuild 
-          ? "border-l-blue-500 dark:border-l-blue-400 bg-gradient-to-br from-white to-blue-50/30 dark:from-gray-900 dark:to-blue-900/10" 
-          : "border-l-red-500 dark:border-l-red-400 bg-gradient-to-br from-white to-red-50/30 dark:from-gray-900 dark:to-red-900/10"
+          ? "bg-gradient-to-br from-white to-blue-50/50 dark:from-gray-900 dark:to-blue-950/20" 
+          : "bg-gradient-to-br from-white to-red-50/50 dark:from-gray-900 dark:to-red-950/20"
       )}>
+        {/* Left accent bar */}
+        <div className={cn(
+          "absolute left-0 top-0 bottom-0 w-1.5 transition-all duration-300",
+          isBuild ? "bg-blue-500 group-hover:bg-blue-600" : "bg-red-500 group-hover:bg-red-600"
+        )} />
+
         <CardContent className="p-0">
-          <div className="p-5 flex items-start justify-between gap-4">
-            <div className="flex-1 space-y-1">
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-lg leading-none tracking-tight">
-                  {resolution.title}
-                </h3>
-                {streak > 0 && (
-                  <span className={cn(
-                    "text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1",
-                    isBuild ? "bg-blue-100 text-blue-700" : "bg-red-100 text-red-700"
-                  )}>
-                    <Flame className="h-3 w-3" /> {streak}
-                  </span>
+          <div className="p-5 pl-7 flex flex-col gap-4">
+            {/* Header Section */}
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1.5 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-bold text-lg leading-tight tracking-tight text-foreground/90">
+                    {resolution.title}
+                  </h3>
+                  {streak > 0 && (
+                    <motion.div 
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className={cn(
+                        "text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-sm border",
+                        isBuild 
+                          ? "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/40 dark:text-blue-300 dark:border-blue-800" 
+                          : "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/40 dark:text-red-300 dark:border-red-800"
+                      )}
+                    >
+                      <Flame className={cn("h-3 w-3", isBuild ? "text-blue-600" : "text-red-600")} fill="currentColor" /> 
+                      {streak} day{streak !== 1 ? 's' : ''}
+                    </motion.div>
+                  )}
+                </div>
+                
+                <p className="text-sm text-muted-foreground line-clamp-1 font-medium italic opacity-80">
+                  "{resolution.why}"
+                </p>
+              </div>
+
+              {/* Action Button */}
+              <div className="shrink-0">
+                {todayLog ? (
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className={cn(
+                      "h-12 px-4 rounded-xl font-bold text-sm flex items-center gap-2 shadow-inner border",
+                      todayLog.status === "success" 
+                        ? "bg-green-100/50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900"
+                        : "bg-red-100/50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900"
+                    )}
+                  >
+                    {todayLog.status === "success" ? (
+                      <>
+                        <div className="bg-green-500 text-white rounded-full p-0.5">
+                          <Check className="h-4 w-4" />
+                        </div>
+                        <span>Done</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="bg-red-500 text-white rounded-full p-0.5">
+                          <X className="h-4 w-4" />
+                        </div>
+                        <span>Failed</span>
+                      </>
+                    )}
+                  </motion.div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-12 w-12 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            onClick={() => handleLog("failure")}
+                          >
+                            <X className="h-6 w-6" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Log Failure</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    <Button 
+                      size="lg" 
+                      className={cn(
+                        "h-12 px-6 rounded-xl font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 active:scale-95",
+                        isBuild 
+                          ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white" 
+                          : "bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white"
+                      )}
+                      onClick={() => handleLog("success")}
+                    >
+                      {isBuild ? <Check className="h-5 w-5 mr-2" /> : <Zap className="h-5 w-5 mr-2" />}
+                      {isBuild ? "Complete" : "Resisted"}
+                    </Button>
+                  </div>
                 )}
               </div>
-              
-              {/* The "Why" snippet - always visible but subtle */}
-              <p className="text-sm text-muted-foreground line-clamp-1 italic">
-                "{resolution.why}"
-              </p>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              {todayLog ? (
-                <div className={cn(
-                  "px-4 py-2 rounded-md font-bold text-sm flex items-center gap-2",
-                  todayLog.status === "success" 
-                    ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                    : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                )}>
-                  {todayLog.status === "success" ? (
-                    <>
-                      <Check className="h-4 w-4" />
-                      Done
-                    </>
-                  ) : (
-                    <>
-                      <X className="h-4 w-4" />
-                      Failed
-                    </>
-                  )}
+            {/* Tracker & Footer */}
+            <div className="flex items-end justify-between gap-4 pt-2">
+              {/* Visual History Tracker */}
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">Last 7 Days</span>
+                <div className="flex items-center gap-1.5">
+                  {last7Days.map((date, i) => {
+                    const status = getDayStatus(date);
+                    const isToday = date === todayStr;
+                    
+                    return (
+                      <TooltipProvider key={date}>
+                        <Tooltip>
+                          <TooltipTrigger>
+                            <div className={cn(
+                              "w-3 h-8 rounded-full transition-all duration-300",
+                              status === "success" 
+                                ? (isBuild ? "bg-blue-500 shadow-blue-200 dark:shadow-none" : "bg-red-500 shadow-red-200 dark:shadow-none")
+                                : status === "failure"
+                                  ? "bg-gray-300 dark:bg-gray-700 opacity-50"
+                                  : "bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700",
+                              isToday && !todayLog && "border-2 border-dashed border-primary animate-pulse",
+                              status === "success" && "shadow-sm"
+                            )} />
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="text-xs">
+                            <p>{new Date(date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</p>
+                            <p className="capitalize font-semibold">{status === "empty" ? "No Log" : status}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    );
+                  })}
                 </div>
-              ) : (
-                <div className="flex gap-2">
-                  {isBuild ? (
-                    <Button 
-                      size="sm" 
-                      className="bg-blue-600 hover:bg-blue-700 text-white shadow-md hover:shadow-blue-500/20 transition-all"
-                      onClick={() => handleLog("success")}
-                    >
-                      <Check className="h-4 w-4 mr-1" />
-                      Complete
-                    </Button>
-                  ) : (
-                    <Button 
-                      size="sm" 
-                      className="bg-green-600 hover:bg-green-700 text-white shadow-md hover:shadow-green-500/20 transition-all"
-                      onClick={() => handleLog("success")}
-                    >
-                      <Check className="h-4 w-4 mr-1" />
-                      Avoided
-                    </Button>
-                  )}
-                  
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => handleLog("failure")}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
+              </div>
+
+              {/* Expand Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 text-xs text-muted-foreground hover:text-foreground gap-1"
+                onClick={() => setIsExpanded(!isExpanded)}
+              >
+                {isExpanded ? "Hide Details" : "View Details"}
+                {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+              </Button>
             </div>
           </div>
 
-          {/* Expandable Details */}
-          <div 
-            className={cn(
-              "bg-muted/30 border-t px-5 py-3 cursor-pointer hover:bg-muted/50 transition-colors flex justify-center",
-              isExpanded && "border-b"
-            )}
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
-          </div>
-
+          {/* Expanded Details */}
           <AnimatePresence>
             {isExpanded && (
               <motion.div
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: "auto", opacity: 1 }}
                 exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
+                className="overflow-hidden bg-muted/30 border-t"
               >
-                <div className="p-5 space-y-4 bg-muted/10">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div className="space-y-2 p-3 rounded-lg bg-background border shadow-sm">
-                      <h4 className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
-                        <Info className="h-3 w-3" /> The Why
+                <div className="p-5 grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2 p-4 rounded-xl bg-background border shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 left-0 w-1 h-full bg-primary/50" />
+                    <h4 className="text-xs font-bold uppercase text-muted-foreground flex items-center gap-2">
+                      <Info className="h-3 w-3" /> The Why (Anchor)
+                    </h4>
+                    <p className="text-sm text-foreground/90 leading-relaxed font-medium">
+                      "{resolution.why}"
+                    </p>
+                  </div>
+                  
+                  {resolution.consequences && (
+                    <div className="space-y-2 p-4 rounded-xl bg-red-50/50 dark:bg-red-950/10 border border-red-100 dark:border-red-900/30 relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-red-500/50" />
+                      <h4 className="text-xs font-bold uppercase text-red-600 dark:text-red-400 flex items-center gap-2">
+                        <Skull className="h-3 w-3" /> Cost of Failure
                       </h4>
-                      <p className="text-sm italic text-foreground/90 leading-relaxed">
-                        {resolution.why}
+                      <p className="text-sm text-red-900/80 dark:text-red-200/80 leading-relaxed font-medium">
+                        "{resolution.consequences}"
                       </p>
                     </div>
-                    
-                    {resolution.consequences && (
-                      <div className="space-y-2 p-3 rounded-lg bg-red-50/50 dark:bg-red-950/10 border border-red-100 dark:border-red-900/30">
-                        <h4 className="text-xs font-bold uppercase text-red-600 dark:text-red-400 flex items-center gap-2">
-                          <AlertTriangle className="h-3 w-3" /> Consequences
-                        </h4>
-                        <p className="text-sm text-red-900/80 dark:text-red-200/80 leading-relaxed">
-                          {resolution.consequences}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               </motion.div>
             )}
