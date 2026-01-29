@@ -1,3 +1,7 @@
 {
-  "plan": "1. Verify the History view correctly displays the timetable name for past days.\n2. Check that the Yearly War Map tooltips show the correct timetable name and stats.\n3. Ensure 'Perfect Day' status is correctly awarded for 100% (or greater) completion.\n4. Confirm navigation from War Map to Detailed View still works seamlessly with the new data."
+  "file_paths": [
+    "src/components/YearlyWarMapView.tsx",
+    "src/convex/history.ts"
+  ],
+  "replace_files_in_context": false
 }
