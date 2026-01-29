@@ -88,14 +88,10 @@ export const toggleTask = mutation({
   },
 });
 
-// Add custom task
-export const addTask = mutation({
+// Set Battle Task
+export const setBattleTask = mutation({
   args: {
-    title: v.string(),
-    importance: v.optional(v.number()),
-    isRecurring: v.optional(v.boolean()),
-    recurringPattern: v.optional(v.string()),
-    dueDate: v.optional(v.string()),
+    taskId: v.string(),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -110,6 +106,47 @@ export const addTask = mutation({
 
     if (!vectalRecord) throw new Error("Vectal record not found");
 
+    // Unset any existing battle task and set the new one
+    const updatedTasks = vectalRecord.tasks.map((task: any) => ({
+      ...task,
+      isBattleTask: task.id === args.taskId
+    }));
+
+    await ctx.db.patch(vectalRecord._id, {
+      tasks: updatedTasks,
+    });
+  },
+});
+
+// Add custom task
+export const addTask = mutation({
+  args: {
+    title: v.string(),
+    importance: v.optional(v.number()),
+    isRecurring: v.optional(v.boolean()),
+    recurringPattern: v.optional(v.string()),
+    dueDate: v.optional(v.string()),
+    isBattleTask: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const today = new Date().toISOString().split("T")[0];
+    
+    const vectalRecord = await ctx.db
+      .query("vectal")
+      .withIndex("by_user_and_date", (q) => q.eq("userId", user._id).eq("date", today))
+      .first();
+
+    if (!vectalRecord) throw new Error("Vectal record not found");
+
+    // If this is a battle task, unset others
+    let currentTasks = vectalRecord.tasks;
+    if (args.isBattleTask) {
+      currentTasks = currentTasks.map((t: any) => ({ ...t, isBattleTask: false }));
+    }
+
     const newTask = {
       id: crypto.randomUUID(),
       title: args.title,
@@ -118,9 +155,10 @@ export const addTask = mutation({
       isRecurring: args.isRecurring ?? true,
       recurringPattern: args.recurringPattern ?? "every day",
       dueDate: args.dueDate,
+      isBattleTask: args.isBattleTask ?? false,
     };
 
-    const updatedTasks = [...vectalRecord.tasks, newTask];
+    const updatedTasks = [...currentTasks, newTask];
 
     await ctx.db.patch(vectalRecord._id, {
       tasks: updatedTasks,

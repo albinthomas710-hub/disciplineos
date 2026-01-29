@@ -33,6 +33,19 @@ const schema = defineSchema(
     calendarTags,
     dayTags,
 
+    // Quarterly Control Layer
+    quarterlyPlans: defineTable({
+      userId: v.id("users"),
+      year: v.number(),
+      quarter: v.number(), // 1, 2, 3, 4
+      objective: v.string(), // Single outcome, one sentence
+      metricTarget: v.string(), // Revenue, users, hours, or score
+      primaryFocus: v.string(), // Only ONE
+      initiatives: v.array(v.string()), // Max 3
+      constraints: v.string(), // What can break the quarter
+      nonNegotiables: v.optional(v.string()), // Rules that must be followed
+    }).index("by_user_year_quarter", ["userId", "year", "quarter"]),
+
     // Journal & Reflection
     morningJournal: defineTable({
       userId: v.id("users"),
@@ -152,8 +165,14 @@ const schema = defineSchema(
       mainObjectives: v.optional(v.any()),
       date: v.optional(v.string()),
       notes: v.optional(v.string()),
+      // New fields for Quarterly Layer integration
+      quarterlyPlanId: v.optional(v.id("quarterlyPlans")),
+      timeInvested: v.optional(v.number()), // Deep work hours
+      perfectDays: v.optional(v.number()),
+      completionRate: v.optional(v.number()),
     }).index("by_user_and_date", ["userId", "date"])
-      .index("by_user_and_month", ["userId", "month"]),
+      .index("by_user_and_month", ["userId", "month"])
+      .index("by_user_and_quarter", ["userId", "quarterlyPlanId"]),
 
     // Entrepreneur OS
     clientFeedback,
