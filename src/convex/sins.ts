@@ -56,6 +56,7 @@ export const create = mutation({
     category: v.optional(v.string()),
     scriptureAntidote: v.optional(v.string()),
     notes: v.optional(v.string()),
+    status: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -67,7 +68,7 @@ export const create = mutation({
       category: args.category,
       scriptureAntidote: args.scriptureAntidote,
       notes: args.notes,
-      status: "active",
+      status: args.status || "active",
       unconfessedCount: 0,
     });
   },

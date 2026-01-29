@@ -43,7 +43,7 @@ import QuotesView from "@/components/QuotesView";
 import ProjectsView from "@/components/ProjectsView";
 import ManifestationView from "@/components/ManifestationView";
 import KnowYourselfView from "@/components/KnowYourselfView";
-import PrayerView from "@/components/PrayerView";
+import { PrayerView } from "@/components/PrayerView";
 import VideoLibraryView from "@/components/VideoLibraryView";
 import AdviceView from "@/components/AdviceView";
 import NotToDoListView from "@/components/NotToDoListView";

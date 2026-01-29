@@ -6,21 +6,21 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Skull, CheckCircle2, AlertTriangle, Plus, Trash2, History, Sword, Flame, ListChecks, Calendar } from "lucide-react";
+import { Shield, Plus, ListChecks, Sword, Flame, CheckCircle2, AlertTriangle, History, Trophy } from "lucide-react";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
-import { Id } from "@/convex/_generated/dataModel";
+import { AnimatePresence } from "framer-motion";
+import { Id, Doc } from "@/convex/_generated/dataModel";
 import { Checkbox } from "@/components/ui/checkbox";
+import { SinCard } from "./SinCard";
+import { AddSinDialog } from "./AddSinDialog";
 
 export function SinListManager() {
   const activeSins = useQuery(api.sins.getActive);
   const conqueredSins = useQuery(api.sins.getConquered);
   const logs = useQuery(api.sins.getLogs);
   
-  const createSin = useMutation(api.sins.create);
   const logRelapse = useMutation(api.sins.logRelapse);
   const batchLogRelapse = useMutation(api.sins.batchLogRelapse);
   const confess = useMutation(api.sins.confess);
@@ -28,36 +28,40 @@ export function SinListManager() {
   const removeSin = useMutation(api.sins.remove);
 
   const [isAddOpen, setIsAddOpen] = useState(false);
+  const [addConqueredDefault, setAddConqueredDefault] = useState(false);
   const [isExamenOpen, setIsExamenOpen] = useState(false);
-  const [newSinTitle, setNewSinTitle] = useState("");
-  const [newSinCategory, setNewSinCategory] = useState("");
-  const [newSinAntidote, setNewSinAntidote] = useState("");
 
-  const [selectedSin, setSelectedSin] = useState<any>(null);
+  const [selectedSin, setSelectedSin] = useState<Doc<"sinList"> | null>(null);
   const [isLogOpen, setIsLogOpen] = useState(false);
   const [logType, setLogType] = useState<"relapse" | "confession">("relapse");
   const [logNotes, setLogNotes] = useState("");
   const [logTrigger, setLogTrigger] = useState("");
   
   // Examen state
-  const [examenSelected, setExamenSelected] = useState<string[]>([]);
+  const [examenSelected, setExamenSelected] = useState<Id<"sinList">[]>([]);
   const [examenNotes, setExamenNotes] = useState("");
 
-  const handleCreate = async () => {
-    if (!newSinTitle.trim()) return;
+  const handleToggleStatus = async (sinId: Id<"sinList">, currentStatus: string) => {
     try {
-      await createSin({
-        title: newSinTitle,
-        category: newSinCategory,
-        scriptureAntidote: newSinAntidote,
-      });
-      setNewSinTitle("");
-      setNewSinCategory("");
-      setNewSinAntidote("");
-      setIsAddOpen(false);
-      toast.success("Added to spiritual warfare list");
+      await toggleStatus({ sinId });
+      if (currentStatus === "active") {
+        toast.success("Victory! Moved to Conquered list.", { icon: "🏆" });
+      } else {
+        toast.info("Moved back to Active battles.");
+      }
     } catch (e) {
-      toast.error("Failed to add item");
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handleDelete = async (sinId: Id<"sinList">) => {
+    if (confirm("Delete this struggle permanently?")) {
+      try {
+        await removeSin({ sinId });
+        toast.success("Deleted");
+      } catch (e) {
+        toast.error("Failed to delete");
+      }
     }
   };
 
@@ -95,7 +99,7 @@ export function SinListManager() {
 
     try {
       await batchLogRelapse({
-        sinIds: examenSelected as Id<"sinList">[],
+        sinIds: examenSelected,
         notes: examenNotes || "Logged via Daily Examen",
       });
       toast.error(`Logged ${examenSelected.length} struggles. Keep fighting.`, { icon: "🛡️" });
@@ -107,7 +111,7 @@ export function SinListManager() {
     }
   };
 
-  const toggleExamenSelection = (sinId: string) => {
+  const toggleExamenSelection = (sinId: Id<"sinList">) => {
     setExamenSelected(prev => 
       prev.includes(sinId) 
         ? prev.filter(id => id !== sinId)
@@ -115,10 +119,15 @@ export function SinListManager() {
     );
   };
 
-  const openLogModal = (sin: any, type: "relapse" | "confession") => {
+  const openLogModal = (sin: Doc<"sinList">, type: "relapse" | "confession") => {
     setSelectedSin(sin);
     setLogType(type);
     setIsLogOpen(true);
+  };
+
+  const openAddDialog = (conquered: boolean) => {
+    setAddConqueredDefault(conquered);
+    setIsAddOpen(true);
   };
 
   if (!activeSins || !conqueredSins) return <div className="p-8 text-center">Loading spiritual inventory...</div>;
@@ -160,8 +169,8 @@ export function SinListManager() {
                         <div key={sin._id} className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors">
                           <Checkbox 
                             id={`examen-${sin._id}`} 
-                            checked={examenSelected.includes(sin._id)}
-                            onCheckedChange={() => toggleExamenSelection(sin._id)}
+                            checked={examenSelected.includes(sin._id as Id<"sinList">)}
+                            onCheckedChange={() => toggleExamenSelection(sin._id as Id<"sinList">)}
                           />
                           <div className="grid gap-1.5 leading-none">
                             <label
@@ -198,53 +207,21 @@ export function SinListManager() {
             </DialogContent>
           </Dialog>
 
-          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-            <DialogTrigger asChild>
-              <Button className="bg-red-600 hover:bg-red-700 text-white">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Struggle
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Identify a Struggle</DialogTitle>
-                <DialogDescription>
-                  "For we do not wrestle against flesh and blood..." - Eph 6:12
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Name of Sin/Struggle</label>
-                  <Input 
-                    placeholder="e.g., Pride, Anger, Lust, Sloth" 
-                    value={newSinTitle}
-                    onChange={(e) => setNewSinTitle(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Category (Optional)</label>
-                  <Input 
-                    placeholder="e.g., Thought, Word, Deed" 
-                    value={newSinCategory}
-                    onChange={(e) => setNewSinCategory(e.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Scripture Antidote</label>
-                  <Textarea 
-                    placeholder="A verse to fight this specific struggle..." 
-                    value={newSinAntidote}
-                    onChange={(e) => setNewSinAntidote(e.target.value)}
-                  />
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleCreate}>Add to List</Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button 
+            className="bg-red-600 hover:bg-red-700 text-white"
+            onClick={() => openAddDialog(false)}
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Struggle
+          </Button>
         </div>
       </div>
+
+      <AddSinDialog 
+        open={isAddOpen} 
+        onOpenChange={setIsAddOpen} 
+        defaultConquered={addConqueredDefault}
+      />
 
       <Tabs defaultValue="active" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
@@ -264,89 +241,14 @@ export function SinListManager() {
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {activeSins.map((sin) => (
-                  <motion.div
-                    key={sin._id}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                  >
-                    <Card className="h-full border-l-4 border-l-red-500 shadow-sm hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-2">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <CardTitle className="text-lg">{sin.title}</CardTitle>
-                            {sin.category && (
-                              <Badge variant="outline" className="mt-1 text-xs">
-                                {sin.category}
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex flex-col items-end">
-                            <Badge variant={sin.unconfessedCount > 0 ? "destructive" : "secondary"}>
-                              {sin.unconfessedCount} Unconfessed
-                            </Badge>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {sin.scriptureAntidote && (
-                          <div className="bg-muted/50 p-3 rounded-md text-sm italic border-l-2 border-primary">
-                            "{sin.scriptureAntidote}"
-                          </div>
-                        )}
-                        
-                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                          <History className="h-3 w-3" />
-                          Last Fall: {sin.lastRelapseDate ? new Date(sin.lastRelapseDate).toLocaleDateString() : "Never"}
-                        </div>
-
-                        <div className="flex gap-2 pt-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="flex-1 border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-red-900 dark:hover:bg-red-950"
-                            onClick={() => openLogModal(sin, "relapse")}
-                          >
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            Stumbled
-                          </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="flex-1 border-green-200 hover:bg-green-50 hover:text-green-600 dark:border-green-900 dark:hover:bg-green-950"
-                            onClick={() => openLogModal(sin, "confession")}
-                            disabled={sin.unconfessedCount === 0}
-                          >
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Confess
-                          </Button>
-                        </div>
-                        
-                        <div className="flex justify-between pt-2 border-t">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-xs text-muted-foreground h-6"
-                            onClick={() => toggleStatus({ sinId: sin._id })}
-                          >
-                            Mark Conquered
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="text-xs text-red-400 hover:text-red-600 h-6"
-                            onClick={() => {
-                              if (confirm("Delete this struggle permanently?")) {
-                                removeSin({ sinId: sin._id });
-                              }
-                            }}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
+                  <SinCard 
+                    key={sin._id} 
+                    sin={sin} 
+                    onLogRelapse={(s) => openLogModal(s, "relapse")}
+                    onConfess={(s) => openLogModal(s, "confession")}
+                    onToggleStatus={handleToggleStatus}
+                    onDelete={handleDelete}
+                  />
                 ))}
               </div>
             )}
@@ -354,26 +256,28 @@ export function SinListManager() {
         </TabsContent>
 
         <TabsContent value="conquered" className="mt-4">
-          <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg mb-4 text-sm text-green-800 dark:text-green-300 border border-green-200 dark:border-green-900">
-            <p><strong>Conquered Sins:</strong> These are struggles you have overcome or are no longer actively fighting daily. They are archived here as a testimony of victory.</p>
+          <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg mb-4 text-sm text-green-800 dark:text-green-300 border border-green-200 dark:border-green-900 flex justify-between items-center">
+            <p><strong>Conquered Sins:</strong> These are struggles you have overcome. Archived here as a testimony of victory.</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="bg-white dark:bg-black border-green-200 text-green-700 hover:bg-green-50"
+              onClick={() => openAddDialog(true)}
+            >
+              <Trophy className="h-3 w-3 mr-2" />
+              Add Past Victory
+            </Button>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {conqueredSins.map((sin) => (
-              <Card key={sin._id} className="opacity-75 border-l-4 border-l-green-500">
-                <CardHeader>
-                  <CardTitle className="line-through text-muted-foreground">{sin.title}</CardTitle>
-                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Conquered</Badge>
-                </CardHeader>
-                <CardContent>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => toggleStatus({ sinId: sin._id })}
-                  >
-                    Reactivate Struggle
-                  </Button>
-                </CardContent>
-              </Card>
+              <SinCard 
+                key={sin._id} 
+                sin={sin} 
+                onLogRelapse={(s) => openLogModal(s, "relapse")}
+                onConfess={(s) => openLogModal(s, "confession")}
+                onToggleStatus={handleToggleStatus}
+                onDelete={handleDelete}
+              />
             ))}
           </div>
         </TabsContent>

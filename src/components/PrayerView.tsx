@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Loader2, Plus, BookOpen, Video, Shield } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Id } from "@/convex/_generated/dataModel";
 import { FavoriteFilterButton } from "@/components/shared/FavoriteFilterButton";
 import { EmptyStateCard } from "@/components/shared/EmptyStateCard";
@@ -15,9 +16,9 @@ import { ScriptureForm } from "@/components/prayer/ScriptureForm";
 import { ScriptureCard } from "@/components/prayer/ScriptureCard";
 import { HolyVideoForm } from "@/components/prayer/HolyVideoForm";
 import { HolyVideoCard } from "@/components/prayer/HolyVideoCard";
-import { SinListManager } from "@/components/prayer/SinListManager";
+import { SinListManager } from "./prayer/SinListManager";
 
-export default function PrayerView() {
+export function PrayerView() {
   const prayers = useQuery((api as any).prayers.getAll);
   const scriptures = useQuery((api as any).scriptures.getAll);
   const holyVideos = useQuery((api as any).holyVideos.getAll);
@@ -178,7 +179,7 @@ export default function PrayerView() {
     : scriptures;
 
   return (
-    <div className="space-y-6">
+    <div className="h-full flex flex-col space-y-6 p-6">
       {/* Header */}
       <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
         <Card className="border-2 border-purple-300 dark:border-purple-700 bg-gradient-to-br from-purple-50 via-indigo-50 to-blue-50 dark:from-purple-950 dark:via-indigo-950 dark:to-blue-950 shadow-2xl">
@@ -203,248 +204,220 @@ export default function PrayerView() {
         </Card>
       </motion.div>
 
-      {/* Tabs */}
-      <div className="flex gap-2 flex-wrap">
-        <Button
-          variant={activeTab === "prayers" ? "default" : "outline"}
-          onClick={() => setActiveTab("prayers")}
-          className="cursor-pointer"
-        >
-          <Heart className="h-4 w-4 mr-2" />
-          Prayers ({prayers.length})
-        </Button>
-        <Button
-          variant={activeTab === "scriptures" ? "default" : "outline"}
-          onClick={() => setActiveTab("scriptures")}
-          className="cursor-pointer"
-        >
-          <BookOpen className="h-4 w-4 mr-2" />
-          Scriptures ({scriptures.length})
-        </Button>
-        <Button
-          variant={activeTab === "videos" ? "default" : "outline"}
-          onClick={() => setActiveTab("videos")}
-          className="cursor-pointer"
-        >
-          <Video className="h-4 w-4 mr-2" />
-          Holy Videos ({holyVideos.length})
-        </Button>
-        <Button
-          variant={activeTab === "sins" ? "default" : "outline"}
-          onClick={() => setActiveTab("sins")}
-          className="cursor-pointer border-red-200 hover:bg-red-50 hover:text-red-600 dark:border-red-900 dark:hover:bg-red-950"
-        >
-          <Shield className="h-4 w-4 mr-2" />
-          Sin List
-        </Button>
-      </div>
+      <Tabs defaultValue="prayers" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="prayers">Prayers</TabsTrigger>
+          <TabsTrigger value="scriptures">Scriptures</TabsTrigger>
+          <TabsTrigger value="videos">Holy Videos</TabsTrigger>
+          <TabsTrigger value="warfare">Spiritual Warfare</TabsTrigger>
+        </TabsList>
 
-      {/* Prayers Tab */}
-      {activeTab === "prayers" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <Button
-              onClick={() => setShowNewPrayer(!showNewPrayer)}
-              className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              New Prayer
-            </Button>
-            
-            <FavoriteFilterButton
-              showFavoritesOnly={showFavoritePrayersOnly}
-              onToggle={() => setShowFavoritePrayersOnly(!showFavoritePrayersOnly)}
-              favoriteCount={displayedPrayers.length}
-              totalCount={prayers.length}
-            />
-          </div>
+        {/* Prayers Tab */}
+        <TabsContent value="prayers" className="mt-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <Button
+                onClick={() => setShowNewPrayer(!showNewPrayer)}
+                className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                New Prayer
+              </Button>
+              
+              <FavoriteFilterButton
+                showFavoritesOnly={showFavoritePrayersOnly}
+                onToggle={() => setShowFavoritePrayersOnly(!showFavoritePrayersOnly)}
+                favoriteCount={displayedPrayers.length}
+                totalCount={prayers.length}
+              />
+            </div>
 
-          <AnimatePresence>
-            {showNewPrayer && (
-              <PrayerForm
-                title={prayerTitle}
-                content={prayerContent}
-                category={prayerCategory}
-                onTitleChange={setPrayerTitle}
-                onContentChange={setPrayerContent}
-                onCategoryChange={setPrayerCategory}
-                onSubmit={handleCreatePrayer}
-                onCancel={() => setShowNewPrayer(false)}
+            <AnimatePresence>
+              {showNewPrayer && (
+                <PrayerForm
+                  title={prayerTitle}
+                  content={prayerContent}
+                  category={prayerCategory}
+                  onTitleChange={setPrayerTitle}
+                  onContentChange={setPrayerContent}
+                  onCategoryChange={setPrayerCategory}
+                  onSubmit={handleCreatePrayer}
+                  onCancel={() => setShowNewPrayer(false)}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Prayer List */}
+            <div className="grid gap-4">
+              {displayedPrayers.map((prayer: any, i: number) => {
+                const category = categories.find((c) => c.value === prayer.category);
+                return (
+                  <PrayerCard
+                    key={prayer._id}
+                    prayer={prayer}
+                    categoryColor={category?.color || "from-gray-500 to-gray-600"}
+                    categoryLabel={category?.label || "Other"}
+                    onToggleFavorite={() => togglePrayerFavorite({ prayerId: prayer._id })}
+                    onMarkAnswered={() => handleMarkAnswered(prayer._id)}
+                    onDelete={() => removePrayer({ prayerId: prayer._id })}
+                    index={i}
+                  />
+                );
+              })}
+            </div>
+
+            {displayedPrayers.length === 0 && (
+              <EmptyStateCard
+                icon={Heart}
+                message={
+                  showFavoritePrayersOnly 
+                    ? "No favorite prayers yet. Star some prayers to see them here!" 
+                    : "No prayers yet. Start your prayer journal!"
+                }
+                iconClassName="text-purple-400"
               />
             )}
-          </AnimatePresence>
+          </div>
+        </TabsContent>
 
-          {/* Prayer List */}
-          <div className="grid gap-4">
-            {displayedPrayers.map((prayer: any, i: number) => {
-              const category = categories.find((c) => c.value === prayer.category);
-              return (
-                <PrayerCard
-                  key={prayer._id}
-                  prayer={prayer}
-                  categoryColor={category?.color || "from-gray-500 to-gray-600"}
-                  categoryLabel={category?.label || "Other"}
-                  onToggleFavorite={() => togglePrayerFavorite({ prayerId: prayer._id })}
-                  onMarkAnswered={() => handleMarkAnswered(prayer._id)}
-                  onDelete={() => removePrayer({ prayerId: prayer._id })}
+        {/* Scriptures Tab */}
+        <TabsContent value="scriptures" className="mt-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <Button
+                onClick={() => setShowNewScripture(!showNewScripture)}
+                className="cursor-pointer bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Scripture
+              </Button>
+              
+              <FavoriteFilterButton
+                showFavoritesOnly={showFavoriteScripturesOnly}
+                onToggle={() => setShowFavoriteScripturesOnly(!showFavoriteScripturesOnly)}
+                favoriteCount={displayedScriptures.length}
+                totalCount={scriptures.length}
+              />
+            </div>
+
+            <AnimatePresence>
+              {showNewScripture && (
+                <ScriptureForm
+                  reference={scriptureRef}
+                  text={scriptureText}
+                  translation={scriptureTranslation}
+                  category={scriptureCategory}
+                  notes={scriptureNotes}
+                  onReferenceChange={setScriptureRef}
+                  onTextChange={setScriptureText}
+                  onTranslationChange={setScriptureTranslation}
+                  onCategoryChange={setScriptureCategory}
+                  onNotesChange={setScriptureNotes}
+                  onSubmit={handleCreateScripture}
+                  onCancel={() => setShowNewScripture(false)}
+                />
+              )}
+            </AnimatePresence>
+
+            {/* Scripture List */}
+            <div className="grid gap-4">
+              {displayedScriptures.map((scripture: any, i: number) => (
+                <ScriptureCard
+                  key={scripture._id}
+                  scripture={scripture}
+                  onToggleFavorite={() => toggleScriptureFavorite({ scriptureId: scripture._id })}
+                  onDelete={() => removeScripture({ scriptureId: scripture._id })}
                   index={i}
                 />
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-          {displayedPrayers.length === 0 && (
-            <EmptyStateCard
-              icon={Heart}
-              message={
-                showFavoritePrayersOnly 
-                  ? "No favorite prayers yet. Star some prayers to see them here!" 
-                  : "No prayers yet. Start your prayer journal!"
-              }
-              iconClassName="text-purple-400"
-            />
-          )}
-        </div>
-      )}
-
-      {/* Scriptures Tab */}
-      {activeTab === "scriptures" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <Button
-              onClick={() => setShowNewScripture(!showNewScripture)}
-              className="cursor-pointer bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Scripture
-            </Button>
-            
-            <FavoriteFilterButton
-              showFavoritesOnly={showFavoriteScripturesOnly}
-              onToggle={() => setShowFavoriteScripturesOnly(!showFavoriteScripturesOnly)}
-              favoriteCount={displayedScriptures.length}
-              totalCount={scriptures.length}
-            />
-          </div>
-
-          <AnimatePresence>
-            {showNewScripture && (
-              <ScriptureForm
-                reference={scriptureRef}
-                text={scriptureText}
-                translation={scriptureTranslation}
-                category={scriptureCategory}
-                notes={scriptureNotes}
-                onReferenceChange={setScriptureRef}
-                onTextChange={setScriptureText}
-                onTranslationChange={setScriptureTranslation}
-                onCategoryChange={setScriptureCategory}
-                onNotesChange={setScriptureNotes}
-                onSubmit={handleCreateScripture}
-                onCancel={() => setShowNewScripture(false)}
+            {displayedScriptures.length === 0 && (
+              <EmptyStateCard
+                icon={BookOpen}
+                message={
+                  showFavoriteScripturesOnly 
+                    ? "No favorite scriptures yet. Star some scriptures to see them here!" 
+                    : "No scriptures saved yet. Start building your collection!"
+                }
+                iconClassName="text-blue-400"
               />
             )}
-          </AnimatePresence>
+          </div>
+        </TabsContent>
 
-          {/* Scripture List */}
-          <div className="grid gap-4">
-            {displayedScriptures.map((scripture: any, i: number) => (
-              <ScriptureCard
-                key={scripture._id}
-                scripture={scripture}
-                onToggleFavorite={() => toggleScriptureFavorite({ scriptureId: scripture._id })}
-                onDelete={() => removeScripture({ scriptureId: scripture._id })}
-                index={i}
+        {/* Holy Videos Tab */}
+        <TabsContent value="videos" className="mt-6">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <Button
+                onClick={() => setShowNewVideo(!showNewVideo)}
+                className="cursor-pointer bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Video
+              </Button>
+              
+              <FavoriteFilterButton
+                showFavoritesOnly={showFavoriteVideosOnly}
+                onToggle={() => setShowFavoriteVideosOnly(!showFavoriteVideosOnly)}
+                favoriteCount={favoriteVideos.length}
+                totalCount={holyVideos.length}
               />
-            ))}
-          </div>
+            </div>
 
-          {displayedScriptures.length === 0 && (
-            <EmptyStateCard
-              icon={BookOpen}
-              message={
-                showFavoriteScripturesOnly 
-                  ? "No favorite scriptures yet. Star some scriptures to see them here!" 
-                  : "No scriptures saved yet. Start building your collection!"
-              }
-              iconClassName="text-blue-400"
-            />
-          )}
-        </div>
-      )}
+            <AnimatePresence>
+              {showNewVideo && (
+                <HolyVideoForm
+                  title={videoTitle}
+                  url={videoUrl}
+                  description={videoDescription}
+                  category={videoCategory}
+                  speaker={videoSpeaker}
+                  notes={videoNotes}
+                  onTitleChange={setVideoTitle}
+                  onUrlChange={setVideoUrl}
+                  onDescriptionChange={setVideoDescription}
+                  onCategoryChange={setVideoCategory}
+                  onSpeakerChange={setVideoSpeaker}
+                  onNotesChange={setVideoNotes}
+                  onSubmit={handleCreateVideo}
+                  onCancel={() => setShowNewVideo(false)}
+                />
+              )}
+            </AnimatePresence>
 
-      {/* Holy Videos Tab */}
-      {activeTab === "videos" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            <Button
-              onClick={() => setShowNewVideo(!showNewVideo)}
-              className="cursor-pointer bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Video
-            </Button>
-            
-            <FavoriteFilterButton
-              showFavoritesOnly={showFavoriteVideosOnly}
-              onToggle={() => setShowFavoriteVideosOnly(!showFavoriteVideosOnly)}
-              favoriteCount={favoriteVideos.length}
-              totalCount={holyVideos.length}
-            />
-          </div>
+            {/* Video List */}
+            <div className="grid gap-4">
+              {displayedVideos.map((video: any, i: number) => (
+                <HolyVideoCard
+                  key={video._id}
+                  video={video}
+                  onToggleFavorite={() => toggleVideoFavorite({ videoId: video._id })}
+                  onDelete={() => removeVideo({ videoId: video._id })}
+                  index={i}
+                />
+              ))}
+            </div>
 
-          <AnimatePresence>
-            {showNewVideo && (
-              <HolyVideoForm
-                title={videoTitle}
-                url={videoUrl}
-                description={videoDescription}
-                category={videoCategory}
-                speaker={videoSpeaker}
-                notes={videoNotes}
-                onTitleChange={setVideoTitle}
-                onUrlChange={setVideoUrl}
-                onDescriptionChange={setVideoDescription}
-                onCategoryChange={setVideoCategory}
-                onSpeakerChange={setVideoSpeaker}
-                onNotesChange={setVideoNotes}
-                onSubmit={handleCreateVideo}
-                onCancel={() => setShowNewVideo(false)}
+            {displayedVideos.length === 0 && (
+              <EmptyStateCard
+                icon={Video}
+                message={
+                  showFavoriteVideosOnly 
+                    ? "No favorite videos yet. Star some videos to see them here!" 
+                    : "No videos saved yet. Start building your collection!"
+                }
+                iconClassName="text-red-400"
               />
             )}
-          </AnimatePresence>
-
-          {/* Video List */}
-          <div className="grid gap-4">
-            {displayedVideos.map((video: any, i: number) => (
-              <HolyVideoCard
-                key={video._id}
-                video={video}
-                onToggleFavorite={() => toggleVideoFavorite({ videoId: video._id })}
-                onDelete={() => removeVideo({ videoId: video._id })}
-                index={i}
-              />
-            ))}
           </div>
+        </TabsContent>
 
-          {displayedVideos.length === 0 && (
-            <EmptyStateCard
-              icon={Video}
-              message={
-                showFavoriteVideosOnly 
-                  ? "No favorite videos yet. Star some videos to see them here!" 
-                  : "No videos saved yet. Start building your collection!"
-              }
-              iconClassName="text-red-400"
-            />
-          )}
-        </div>
-      )}
-
-      {/* Sin List Tab */}
-      {activeTab === "sins" && (
-        <SinListManager />
-      )}
+        <TabsContent value="warfare" className="mt-6">
+          <SinListManager />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

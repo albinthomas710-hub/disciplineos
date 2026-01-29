@@ -1,21 +1,3 @@
-      focusScore: v.number(),
-      outputLog: v.string(),
-      dailyRating: v.number(),
+// ... existing code ...
 
-      const updateFields: any = {
-        focusScore: args.focusScore,
-        outputLog: args.outputLog,
-        dailyRating: args.dailyRating,
-        outputScore: args.outputScore,
-        workType: args.workType,
-        targetHours: args.targetHours,
-      };
-      if (args.productivityInventory !== undefined) updateFields.productivityInventory = args.productivityInventory;
-      if (args.improvements !== undefined) updateFields.improvements = args.improvements;
-      if (args.callsBooked !== undefined) updateFields.callsBooked = args.callsBooked;
-      if (args.callsConducted !== undefined) updateFields.callsConducted = args.callsConducted;
-      if (args.distractions !== undefined) updateFields.distractions = args.distractions;
-
-      if (existing) {
-        await ctx.db.patch(existing._id, updateFields);
-      }
+// ... existing code ...
