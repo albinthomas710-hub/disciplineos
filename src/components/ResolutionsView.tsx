@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
-import { Plus, Target, ShieldAlert, Sparkles, Trophy, ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
+import { Plus, Target, ShieldAlert, Sparkles, Trophy, ChevronLeft, ChevronRight, Calendar as CalendarIcon, Flame, CheckCircle2, XCircle } from "lucide-react";
 import { AddResolutionDialog } from "./resolutions/AddResolutionDialog";
 import { ResolutionCard } from "./resolutions/ResolutionCard";
 import { motion, AnimatePresence } from "framer-motion";
@@ -21,13 +21,12 @@ export function ResolutionsView() {
   const selectedDateStr = formatDate(selectedDate);
   
   // Calculate date range for fetching logs
-  // We need history for streaks, so let's fetch a good range around the selected date
-  // Or just fetch the last 30-60 days relative to today to cover most use cases
+  // Fetching 90 days for better streak calculation
   const now = new Date();
   const todayStr = formatDate(now);
   
   const startDateObj = new Date(selectedDate);
-  startDateObj.setDate(startDateObj.getDate() - 30); // 30 days back from selected
+  startDateObj.setDate(startDateObj.getDate() - 90); // 90 days back
   const startDate = formatDate(startDateObj);
   
   const endDateObj = new Date(selectedDate);
@@ -54,6 +53,7 @@ export function ResolutionsView() {
   // Calculate Daily Progress
   const todaysLogs = logs?.filter(l => l.date === selectedDateStr) || [];
   const successCount = todaysLogs.filter(l => l.status === "success").length;
+  const failureCount = todaysLogs.filter(l => l.status === "failure").length;
   const progressPercentage = totalResolutions > 0 ? (successCount / totalResolutions) * 100 : 0;
 
   // Helper to get streak
@@ -65,10 +65,6 @@ export function ResolutionsView() {
     
     if (resLogs.length === 0) return 0;
 
-    // Check if the most recent log is today or yesterday (relative to selected date or real today?)
-    // Streaks are usually relative to "Now". If viewing past, streak is what it was THEN?
-    // Let's keep streak simple: Consecutive days ending at selectedDate (if logged) or yesterday relative to selectedDate.
-    
     let streak = 0;
     let currentCheckDate = new Date(selectedDate);
     
@@ -78,7 +74,7 @@ export function ResolutionsView() {
         currentCheckDate.setDate(currentCheckDate.getDate() - 1);
     }
     
-    for (let i = 0; i < 365; i++) { // Limit check
+    for (let i = 0; i < 90; i++) { // Limit check to fetched range
         const checkStr = formatDate(currentCheckDate);
         const hasLog = resLogs.some(l => l.date === checkStr);
         
@@ -91,6 +87,12 @@ export function ResolutionsView() {
     }
     return streak;
   };
+
+  // Calculate Best Streak (Max of all current streaks)
+  const bestStreak = resolutions.reduce((max, res) => {
+    const streak = getStreak(res._id);
+    return streak > max ? streak : max;
+  }, 0);
 
   const navigateDate = (days: number) => {
     const newDate = new Date(selectedDate);
@@ -123,48 +125,70 @@ export function ResolutionsView() {
           </Button>
         </div>
 
-        {/* Date Navigator & Progress */}
-        <div className="flex flex-col md:flex-row gap-6 items-center justify-between bg-muted/30 p-4 rounded-2xl border">
-          <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
-            <Button variant="outline" size="icon" onClick={() => navigateDate(-1)} className="h-10 w-10 rounded-full">
+        {/* Date Navigator */}
+        <div className="flex items-center justify-between bg-muted/30 p-2 rounded-2xl border max-w-md mx-auto md:mx-0">
+            <Button variant="ghost" size="icon" onClick={() => navigateDate(-1)} className="h-10 w-10 rounded-full hover:bg-background">
               <ChevronLeft className="h-5 w-5" />
             </Button>
             
             <div className="flex flex-col items-center min-w-[140px]">
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                 {isToday ? "Today" : "Viewing"}
               </span>
-              <div className="flex items-center gap-2 text-xl font-bold">
-                <CalendarIcon className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-2 text-lg font-bold">
+                <CalendarIcon className="h-4 w-4 text-primary" />
                 {selectedDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
               </div>
             </div>
 
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="icon" 
               onClick={() => navigateDate(1)} 
               disabled={isToday}
-              className={cn("h-10 w-10 rounded-full", isToday && "opacity-50")}
+              className={cn("h-10 w-10 rounded-full hover:bg-background", isToday && "opacity-50")}
             >
               <ChevronRight className="h-5 w-5" />
             </Button>
-          </div>
+        </div>
 
-          <div className="flex-1 w-full md:max-w-md space-y-2">
-            <div className="flex justify-between text-sm font-medium">
-              <span className="text-muted-foreground">Daily Completion</span>
-              <span className="text-primary font-bold">{Math.round(progressPercentage)}%</span>
+        {/* Stats Dashboard */}
+        <div className="grid grid-cols-3 gap-4 md:gap-8">
+          <Card className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 border-green-100 dark:border-green-900/50 shadow-sm">
+            <CardContent className="p-4 md:p-6 flex flex-col items-center justify-center gap-1 md:gap-2 text-center">
+              <span className="text-3xl md:text-5xl font-black text-green-600 dark:text-green-400 tracking-tight">
+                {successCount}
+              </span>
+              <span className="text-[10px] md:text-xs font-bold text-green-700/70 dark:text-green-400/70 tracking-widest uppercase flex items-center gap-1.5">
+                <CheckCircle2 className="h-3 w-3 md:h-4 md:w-4" /> Wins
+              </span>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border-amber-100 dark:border-amber-900/50 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-2 opacity-10">
+              <Flame className="h-16 w-16 text-amber-500" />
             </div>
-            <div className="relative h-3 w-full bg-secondary rounded-full overflow-hidden">
-              <motion.div 
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
-                initial={{ width: 0 }}
-                animate={{ width: `${progressPercentage}%` }}
-                transition={{ type: "spring", stiffness: 50, damping: 15 }}
-              />
-            </div>
-          </div>
+            <CardContent className="p-4 md:p-6 flex flex-col items-center justify-center gap-1 md:gap-2 text-center relative z-10">
+              <span className="text-3xl md:text-5xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
+                {bestStreak}
+              </span>
+              <span className="text-[10px] md:text-xs font-bold text-amber-700/70 dark:text-amber-400/70 tracking-widest uppercase flex items-center gap-1.5">
+                <Flame className="h-3 w-3 md:h-4 md:w-4" /> Best Streak
+              </span>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-red-50 to-rose-50 dark:from-red-950/20 dark:to-rose-950/20 border-red-100 dark:border-red-900/50 shadow-sm">
+            <CardContent className="p-4 md:p-6 flex flex-col items-center justify-center gap-1 md:gap-2 text-center">
+              <span className="text-3xl md:text-5xl font-black text-red-600 dark:text-red-400 tracking-tight">
+                {failureCount}
+              </span>
+              <span className="text-[10px] md:text-xs font-bold text-red-700/70 dark:text-red-400/70 tracking-widest uppercase flex items-center gap-1.5">
+                <XCircle className="h-3 w-3 md:h-4 md:w-4" /> Slips
+              </span>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
