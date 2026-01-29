@@ -15,6 +15,7 @@ import { Id, Doc } from "@/convex/_generated/dataModel";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SinCard } from "./SinCard";
 import { AddSinDialog } from "./AddSinDialog";
+import { EasyCaptureTab } from "./EasyCaptureTab";
 
 export function SinListManager() {
   const activeSins = useQuery(api.sins.getActive);
@@ -224,10 +225,11 @@ export function SinListManager() {
       />
 
       <Tabs defaultValue="active" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="active">Active Battles ({activeSins.length})</TabsTrigger>
           <TabsTrigger value="conquered">Conquered ({conqueredSins.length})</TabsTrigger>
           <TabsTrigger value="history">History & Logs</TabsTrigger>
+          <TabsTrigger value="capture">Easy Capture</TabsTrigger>
         </TabsList>
 
         <TabsContent value="active" className="space-y-4 mt-4">
@@ -334,6 +336,10 @@ export function SinListManager() {
               </ScrollArea>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="capture">
+          <EasyCaptureTab />
         </TabsContent>
       </Tabs>
 

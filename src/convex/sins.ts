@@ -34,6 +34,22 @@ export const getConquered = query({
   },
 });
 
+// Get inbox/captured items (Easy Capture)
+export const getInbox = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    return await ctx.db
+      .query("sinList")
+      .withIndex("by_user_and_status", (q) => 
+        q.eq("userId", user._id).eq("status", "inbox")
+      )
+      .collect();
+  },
+});
+
 // Get logs (history of relapses and confessions)
 export const getLogs = query({
   args: {},
@@ -192,6 +208,20 @@ export const toggleStatus = mutation({
 
     const newStatus = sin.status === "active" ? "conquered" : "active";
     await ctx.db.patch(args.sinId, { status: newStatus });
+  },
+});
+
+// Update status explicitly (e.g. inbox -> active)
+export const updateStatus = mutation({
+  args: { sinId: v.id("sinList"), status: v.string() },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const sin = await ctx.db.get(args.sinId);
+    if (!sin || sin.userId !== user._id) throw new Error("Not found");
+
+    await ctx.db.patch(args.sinId, { status: args.status });
   },
 });
 
