@@ -33,19 +33,6 @@ const schema = defineSchema(
     calendarTags,
     dayTags,
 
-    // Quarterly Control Layer
-    quarterlyPlans: defineTable({
-      userId: v.id("users"),
-      year: v.number(),
-      quarter: v.number(), // 1, 2, 3, 4
-      objective: v.string(), // Single outcome, one sentence
-      metricTarget: v.string(), // Revenue, users, hours, or score
-      primaryFocus: v.string(), // Only ONE
-      initiatives: v.array(v.string()), // Max 3
-      constraints: v.string(), // What can break the quarter
-      nonNegotiables: v.optional(v.string()), // Rules that must be followed
-    }).index("by_user_year_quarter", ["userId", "year", "quarter"]),
-
     // Journal & Reflection
     morningJournal: defineTable({
       userId: v.id("users"),

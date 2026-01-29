@@ -37,7 +37,6 @@ import type * as notes from "../notes.js";
 import type * as prayers from "../prayers.js";
 import type * as problemVault from "../problemVault.js";
 import type * as projects from "../projects.js";
-import type * as quarterlyPlans from "../quarterlyPlans.js";
 import type * as quoteChains from "../quoteChains.js";
 import type * as quotes from "../quotes.js";
 import type * as realityAnchor from "../realityAnchor.js";
@@ -100,7 +99,6 @@ declare const fullApi: ApiFromModules<{
   prayers: typeof prayers;
   problemVault: typeof problemVault;
   projects: typeof projects;
-  quarterlyPlans: typeof quarterlyPlans;
   quoteChains: typeof quoteChains;
   quotes: typeof quotes;
   realityAnchor: typeof realityAnchor;

@@ -88,36 +88,6 @@ export const toggleTask = mutation({
   },
 });
 
-// Set Battle Task
-export const setBattleTask = mutation({
-  args: {
-    taskId: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
-
-    const today = new Date().toISOString().split("T")[0];
-    
-    const vectalRecord = await ctx.db
-      .query("vectal")
-      .withIndex("by_user_and_date", (q) => q.eq("userId", user._id).eq("date", today))
-      .first();
-
-    if (!vectalRecord) throw new Error("Vectal record not found");
-
-    // Unset any existing battle task and set the new one
-    const updatedTasks = vectalRecord.tasks.map((task: any) => ({
-      ...task,
-      isBattleTask: task.id === args.taskId
-    }));
-
-    await ctx.db.patch(vectalRecord._id, {
-      tasks: updatedTasks,
-    });
-  },
-});
-
 // Add custom task
 export const addTask = mutation({
   args: {
