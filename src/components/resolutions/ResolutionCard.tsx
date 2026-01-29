@@ -5,31 +5,30 @@ import { Doc } from "@/convex/_generated/dataModel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, X, Flame, AlertTriangle, Info, ChevronDown, ChevronUp, Zap, Skull } from "lucide-react";
+import { Check, X, Flame, AlertTriangle, Info, ChevronDown, ChevronUp, Zap, Skull, Play, SkipForward, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ResolutionCardProps {
   resolution: Doc<"resolutions">;
-  todayLog?: Doc<"resolutionLogs">;
+  date: string; // The date we are viewing/logging for
+  log?: Doc<"resolutionLogs">;
   recentLogs: Doc<"resolutionLogs">[];
   streak: number;
 }
 
-export function ResolutionCard({ resolution, todayLog, recentLogs, streak }: ResolutionCardProps) {
+export function ResolutionCard({ resolution, date, log, recentLogs, streak }: ResolutionCardProps) {
   const logProgress = useMutation(api.resolutions.logProgress);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   const isBuild = resolution.type === "build";
-  const today = new Date();
-  const todayStr = today.toISOString().split("T")[0];
-
-  // Generate last 7 days dates for the visual tracker
+  
+  // Generate last 7 days dates ending on the VIEWED date
   const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - (6 - i)); // 6 days ago to today
+    const d = new Date(date);
+    d.setDate(d.getDate() - (6 - i)); // 6 days ago to viewed date
     return d.toISOString().split("T")[0];
   });
 
@@ -37,7 +36,7 @@ export function ResolutionCard({ resolution, todayLog, recentLogs, streak }: Res
     try {
       await logProgress({
         resolutionId: resolution._id,
-        date: todayStr,
+        date: date,
         status,
       });
       if (status === "success") {
@@ -55,10 +54,10 @@ export function ResolutionCard({ resolution, todayLog, recentLogs, streak }: Res
     }
   };
 
-  const getDayStatus = (date: string) => {
-    const log = recentLogs.find(l => l.date === date);
-    if (!log) return "empty";
-    return log.status;
+  const getDayStatus = (d: string) => {
+    const l = recentLogs.find(log => log.date === d);
+    if (!l) return "empty";
+    return l.status;
   };
 
   return (
@@ -116,30 +115,30 @@ export function ResolutionCard({ resolution, todayLog, recentLogs, streak }: Res
 
               {/* Action Button */}
               <div className="shrink-0">
-                {todayLog ? (
+                {log ? (
                   <motion.div 
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     className={cn(
-                      "h-12 px-4 rounded-xl font-bold text-sm flex items-center gap-2 shadow-inner border",
-                      todayLog.status === "success" 
+                      "h-12 px-4 rounded-xl font-bold text-sm flex items-center gap-2 shadow-inner border min-w-[120px] justify-center",
+                      log.status === "success" 
                         ? "bg-green-100/50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900"
                         : "bg-red-100/50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900"
                     )}
                   >
-                    {todayLog.status === "success" ? (
+                    {log.status === "success" ? (
                       <>
                         <div className="bg-green-500 text-white rounded-full p-0.5">
                           <Check className="h-4 w-4" />
                         </div>
-                        <span>Done</span>
+                        <span>{isBuild ? "Done" : "Avoided"}</span>
                       </>
                     ) : (
                       <>
                         <div className="bg-red-500 text-white rounded-full p-0.5">
                           <X className="h-4 w-4" />
                         </div>
-                        <span>Failed</span>
+                        <span>{isBuild ? "Missed" : "Slipped"}</span>
                       </>
                     )}
                   </motion.div>
@@ -158,7 +157,7 @@ export function ResolutionCard({ resolution, todayLog, recentLogs, streak }: Res
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>Log Failure</p>
+                          <p>{isBuild ? "Missed" : "Slipped"}</p>
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
@@ -166,15 +165,15 @@ export function ResolutionCard({ resolution, todayLog, recentLogs, streak }: Res
                     <Button 
                       size="lg" 
                       className={cn(
-                        "h-12 px-6 rounded-xl font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 active:scale-95",
+                        "h-12 px-6 rounded-xl font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 active:scale-95 min-w-[120px]",
                         isBuild 
                           ? "bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white" 
                           : "bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white"
                       )}
                       onClick={() => handleLog("success")}
                     >
-                      {isBuild ? <Check className="h-5 w-5 mr-2" /> : <Zap className="h-5 w-5 mr-2" />}
-                      {isBuild ? "Complete" : "Resisted"}
+                      {isBuild ? <Check className="h-5 w-5 mr-2" /> : <ShieldAlert className="h-5 w-5 mr-2" />}
+                      {isBuild ? "Done" : "Avoided"}
                     </Button>
                   </div>
                 )}
@@ -185,14 +184,16 @@ export function ResolutionCard({ resolution, todayLog, recentLogs, streak }: Res
             <div className="flex items-end justify-between gap-4 pt-2">
               {/* Visual History Tracker */}
               <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">Last 7 Days</span>
+                <span className="text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">
+                  History (Ending {new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })})
+                </span>
                 <div className="flex items-center gap-1.5">
-                  {last7Days.map((date, i) => {
-                    const status = getDayStatus(date);
-                    const isToday = date === todayStr;
+                  {last7Days.map((d, i) => {
+                    const status = getDayStatus(d);
+                    const isCurrent = d === date;
                     
                     return (
-                      <TooltipProvider key={date}>
+                      <TooltipProvider key={d}>
                         <Tooltip>
                           <TooltipTrigger>
                             <div className={cn(
@@ -202,12 +203,12 @@ export function ResolutionCard({ resolution, todayLog, recentLogs, streak }: Res
                                 : status === "failure"
                                   ? "bg-gray-300 dark:bg-gray-700 opacity-50"
                                   : "bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700",
-                              isToday && !todayLog && "border-2 border-dashed border-primary animate-pulse",
+                              isCurrent && !log && "border-2 border-dashed border-primary animate-pulse",
                               status === "success" && "shadow-sm"
                             )} />
                           </TooltipTrigger>
                           <TooltipContent side="bottom" className="text-xs">
-                            <p>{new Date(date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</p>
+                            <p>{new Date(d).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</p>
                             <p className="capitalize font-semibold">{status === "empty" ? "No Log" : status}</p>
                           </TooltipContent>
                         </Tooltip>
@@ -224,7 +225,7 @@ export function ResolutionCard({ resolution, todayLog, recentLogs, streak }: Res
                 className="h-8 text-xs text-muted-foreground hover:text-foreground gap-1"
                 onClick={() => setIsExpanded(!isExpanded)}
               >
-                {isExpanded ? "Hide Details" : "View Details"}
+                {isExpanded ? "Hide Details" : "Details & Psychology"}
                 {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
               </Button>
             </div>
