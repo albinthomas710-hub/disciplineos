@@ -127,9 +127,10 @@ export function PrayerView() {
   const handleMarkAnswered = async (prayerId: Id<"prayers">) => {
     const toastId = toast.loading("Marking as answered...");
     try {
-      await markAnswered({ prayerId });
+      await markAnswered({ id: prayerId });
       toast.success("Praise God! Prayer answered! 🙌", { id: toastId });
     } catch (error) {
+      console.error(error);
       toast.error("Failed to update prayer", { id: toastId });
     }
   };
