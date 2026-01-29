@@ -9,6 +9,7 @@ import TimeDistributionCard from "./knowyourself/TimeDistributionCard";
 import JournalSection from "./knowyourself/JournalSection";
 import SelfDiscoveryHeader from "./knowyourself/SelfDiscoveryHeader";
 import PatternInsightsCard from "./knowyourself/PatternInsightsCard";
+import YearlyVerseBanner from "./YearlyVerseBanner";
 
 export default function KnowYourselfView() {
   const profile = useQuery((api as any).selfDiscovery.getProfile);
@@ -35,6 +36,7 @@ export default function KnowYourselfView() {
   const [newTimePercentage, setNewTimePercentage] = useState(0);
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editPercentage, setEditPercentage] = useState(0);
+  const [activeTab, setActiveTab] = useState("journal");
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
@@ -175,6 +177,37 @@ export default function KnowYourselfView() {
 
   return (
     <div className="space-y-6">
+      <YearlyVerseBanner />
+
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Know Yourself</h2>
+          <p className="text-lg text-muted-foreground">Discover your patterns, strengths, and growth areas</p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab("journal")}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === "journal"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted hover:bg-muted/80 text-muted-foreground"
+            }`}
+          >
+            Journal
+          </button>
+          <button
+            onClick={() => setActiveTab("insights")}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === "insights"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted hover:bg-muted/80 text-muted-foreground"
+            }`}
+          >
+            Insights
+          </button>
+        </div>
+      </div>
+
       {/* Header - Dark Psychology: Status & Achievement */}
       <SelfDiscoveryHeader 
         score={score} 
