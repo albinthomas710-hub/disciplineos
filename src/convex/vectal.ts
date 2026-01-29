@@ -126,7 +126,6 @@ export const addTask = mutation({
     isRecurring: v.optional(v.boolean()),
     recurringPattern: v.optional(v.string()),
     dueDate: v.optional(v.string()),
-    isBattleTask: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -141,12 +140,6 @@ export const addTask = mutation({
 
     if (!vectalRecord) throw new Error("Vectal record not found");
 
-    // If this is a battle task, unset others
-    let currentTasks = vectalRecord.tasks;
-    if (args.isBattleTask) {
-      currentTasks = currentTasks.map((t: any) => ({ ...t, isBattleTask: false }));
-    }
-
     const newTask = {
       id: crypto.randomUUID(),
       title: args.title,
@@ -155,10 +148,9 @@ export const addTask = mutation({
       isRecurring: args.isRecurring ?? true,
       recurringPattern: args.recurringPattern ?? "every day",
       dueDate: args.dueDate,
-      isBattleTask: args.isBattleTask ?? false,
     };
 
-    const updatedTasks = [...currentTasks, newTask];
+    const updatedTasks = [...vectalRecord.tasks, newTask];
 
     await ctx.db.patch(vectalRecord._id, {
       tasks: updatedTasks,

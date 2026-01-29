@@ -9,7 +9,6 @@ import { ArrowLeft, Calendar, BarChart3, Map } from "lucide-react";
 import HistoryCalendar from "./history/HistoryCalendar";
 import HistoryStatsCards from "./history/HistoryStatsCards";
 import YearlyWarMapView from "./YearlyWarMapView";
-import StrategicWarMapView from "./StrategicWarMapView";
 import { startOfMonth, endOfMonth, format, addMonths, subMonths, eachDayOfInterval } from "date-fns";
 
 interface HistoryViewProps {
@@ -18,7 +17,7 @@ interface HistoryViewProps {
 
 export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
-  const [viewMode, setViewMode] = useState<"calendar" | "stats" | "warmap" | "strategic">("strategic");
+  const [viewMode, setViewMode] = useState<"calendar" | "stats" | "warmap">("warmap");
 
   // Calendar State
   const [calendarDate, setCalendarDate] = useState(new Date());
@@ -103,10 +102,6 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
 
           <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)} className="w-auto">
             <TabsList>
-              <TabsTrigger value="strategic">
-                <Map className="h-4 w-4 mr-2" />
-                Strategy
-              </TabsTrigger>
               <TabsTrigger value="warmap">
                 <Calendar className="h-4 w-4 mr-2" />
                 Heatmap
@@ -123,10 +118,6 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
           </Tabs>
         </div>
       </div>
-
-      {viewMode === "strategic" && (
-        <StrategicWarMapView year={parseInt(selectedYear)} />
-      )}
 
       {viewMode === "warmap" && (
         <YearlyWarMapView year={parseInt(selectedYear)} />

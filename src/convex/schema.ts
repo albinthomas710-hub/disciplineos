@@ -165,14 +165,8 @@ const schema = defineSchema(
       mainObjectives: v.optional(v.any()),
       date: v.optional(v.string()),
       notes: v.optional(v.string()),
-      // New fields for Quarterly Layer integration
-      quarterlyPlanId: v.optional(v.id("quarterlyPlans")),
-      timeInvested: v.optional(v.number()), // Deep work hours
-      perfectDays: v.optional(v.number()),
-      completionRate: v.optional(v.number()),
     }).index("by_user_and_date", ["userId", "date"])
-      .index("by_user_and_month", ["userId", "month"])
-      .index("by_user_and_quarter", ["userId", "quarterlyPlanId"]),
+      .index("by_user_and_month", ["userId", "month"]),
 
     // Entrepreneur OS
     clientFeedback,
