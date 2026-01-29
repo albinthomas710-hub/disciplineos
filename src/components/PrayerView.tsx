@@ -48,7 +48,7 @@ export function PrayerView() {
   // Prayer form state
   const [prayerTitle, setPrayerTitle] = useState("");
   const [prayerContent, setPrayerContent] = useState("");
-  const [prayerCategory, setPrayerCategory] = useState<"gratitude" | "guidance" | "intercession" | "confession" | "praise" | "petition">("gratitude");
+  const [prayerCategory, setPrayerCategory] = useState<string | undefined>(undefined);
 
   // Scripture form state
   const [scriptureRef, setScriptureRef] = useState("");
@@ -85,10 +85,11 @@ export function PrayerView() {
       await createPrayer({
         title: prayerTitle,
         content: prayerContent,
-        category: prayerCategory,
+        category: prayerCategory as any,
       });
       setPrayerTitle("");
       setPrayerContent("");
+      setPrayerCategory(undefined);
       setShowNewPrayer(false);
       toast.success("Prayer saved! 🙏", { id: toastId });
     } catch (error) {
@@ -240,7 +241,7 @@ export function PrayerView() {
                   category={prayerCategory}
                   onTitleChange={setPrayerTitle}
                   onContentChange={setPrayerContent}
-                  onCategoryChange={setPrayerCategory}
+                  onCategoryChange={(val) => setPrayerCategory(val || undefined)}
                   onSubmit={handleCreatePrayer}
                   onCancel={() => setShowNewPrayer(false)}
                 />

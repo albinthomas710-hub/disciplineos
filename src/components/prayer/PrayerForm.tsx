@@ -9,10 +9,10 @@ import { motion } from "framer-motion";
 interface PrayerFormProps {
   title: string;
   content: string;
-  category: "gratitude" | "guidance" | "intercession" | "confession" | "praise" | "petition";
+  category?: string;
   onTitleChange: (value: string) => void;
   onContentChange: (value: string) => void;
-  onCategoryChange: (value: "gratitude" | "guidance" | "intercession" | "confession" | "praise" | "petition") => void;
+  onCategoryChange: (value: string) => void;
   onSubmit: () => void;
   onCancel: () => void;
 }
@@ -54,13 +54,13 @@ export function PrayerForm({
             />
           </div>
           <div>
-            <Label>Category</Label>
+            <Label>Category (Optional)</Label>
             <div className="grid grid-cols-3 gap-2 mt-2">
               {categories.map((cat) => (
                 <Button
                   key={cat.value}
                   variant={category === cat.value ? "default" : "outline"}
-                  onClick={() => onCategoryChange(cat.value as any)}
+                  onClick={() => onCategoryChange(category === cat.value ? "" : cat.value)}
                   className="cursor-pointer"
                 >
                   {cat.label}

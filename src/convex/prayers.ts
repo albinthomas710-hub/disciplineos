@@ -56,14 +56,14 @@ export const create = mutation({
   args: {
     title: v.string(),
     content: v.string(),
-    category: v.union(
+    category: v.optional(v.union(
       v.literal("gratitude"),
       v.literal("guidance"),
       v.literal("intercession"),
       v.literal("confession"),
       v.literal("praise"),
       v.literal("petition")
-    ),
+    )),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
@@ -95,14 +95,14 @@ export const update = mutation({
     prayerId: v.id("prayers"),
     title: v.string(),
     content: v.string(),
-    category: v.union(
+    category: v.optional(v.union(
       v.literal("gratitude"),
       v.literal("guidance"),
       v.literal("intercession"),
       v.literal("confession"),
       v.literal("praise"),
       v.literal("petition")
-    ),
+    )),
   },
   handler: async (ctx, args) => {
     const user = await getCurrentUser(ctx);
