@@ -225,6 +225,22 @@ export const updateStatus = mutation({
   },
 });
 
+// Toggle isPrayedFor status (for Easy Capture items)
+export const togglePrayedFor = mutation({
+  args: { sinId: v.id("sinList") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const sin = await ctx.db.get(args.sinId);
+    if (!sin || sin.userId !== user._id) throw new Error("Not found");
+
+    await ctx.db.patch(args.sinId, { 
+      isPrayedFor: !sin.isPrayedFor 
+    });
+  },
+});
+
 // Delete
 export const remove = mutation({
   args: { sinId: v.id("sinList") },

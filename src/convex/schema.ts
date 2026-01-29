@@ -217,6 +217,7 @@ const schema = defineSchema(
       lastRelapseDate: v.optional(v.string()),
       unconfessedCount: v.number(),
       notes: v.optional(v.string()),
+      isPrayedFor: v.optional(v.boolean()),
     }).index("by_user", ["userId"])
       .index("by_user_and_status", ["userId", "status"]),
 
