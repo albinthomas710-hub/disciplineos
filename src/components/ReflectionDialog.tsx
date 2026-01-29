@@ -80,6 +80,14 @@ export default function ReflectionDialog({
           <div className="space-y-4">
             <div>
               <Label htmlFor="didWell">What did I do well today?</Label>
+              <div className="mt-2 mb-2 text-sm text-muted-foreground">
+                <p className="font-medium text-primary/80">Write 3 wins from today:</p>
+                <div className="pl-1 mt-1 space-y-0.5 text-xs opacity-70 font-mono">
+                  <p>1. ____________________________________</p>
+                  <p>2. ____________________________________</p>
+                  <p>3. ____________________________________</p>
+                </div>
+              </div>
               <Textarea
                 id="didWell"
                 placeholder="Celebrate your wins, big or small..."
@@ -87,7 +95,7 @@ export default function ReflectionDialog({
                 onChange={(e) =>
                   setReflection({ ...reflection, didWell: e.target.value })
                 }
-                rows={3}
+                rows={5}
               />
             </div>
 
