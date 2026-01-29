@@ -231,6 +231,32 @@ const schema = defineSchema(
       type: v.string(), // "relapse", "confession"
     }).index("by_user_and_sin", ["userId", "sinId"])
       .index("by_user_and_date", ["userId", "date"]),
+
+    // New Year Resolutions / Habits
+    resolutions: defineTable({
+      userId: v.id("users"),
+      title: v.string(),
+      type: v.string(), // "build" (good) | "break" (bad)
+      description: v.optional(v.string()),
+      why: v.optional(v.string()), // The deep psychological driver
+      consequences: v.optional(v.string()), // The cost of failure
+      icon: v.optional(v.string()),
+      color: v.optional(v.string()),
+      active: v.boolean(),
+      startDate: v.string(),
+      archived: v.optional(v.boolean()),
+    }).index("by_user", ["userId"])
+      .index("by_user_and_active", ["userId", "active"]),
+
+    resolutionLogs: defineTable({
+      userId: v.id("users"),
+      resolutionId: v.id("resolutions"),
+      date: v.string(), // YYYY-MM-DD
+      status: v.string(), // "success" | "failure" | "skip"
+      notes: v.optional(v.string()),
+    }).index("by_user_and_date", ["userId", "date"])
+      .index("by_resolution", ["resolutionId"])
+      .index("by_user_resolution_date", ["userId", "resolutionId", "date"]),
   },
   {
     schemaValidation: false,
