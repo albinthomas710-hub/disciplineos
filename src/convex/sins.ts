@@ -34,6 +34,21 @@ export const getConquered = query({
   },
 });
 
+// Get logs (history of relapses and confessions)
+export const getLogs = query({
+  args: {},
+  handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return [];
+
+    return await ctx.db
+      .query("sinLogs")
+      .withIndex("by_user_and_date", (q) => q.eq("userId", user._id))
+      .order("desc")
+      .take(100); // Limit to last 100 entries
+  },
+});
+
 // Create a new struggle to track
 export const create = mutation({
   args: {
@@ -55,6 +70,43 @@ export const create = mutation({
       status: "active",
       unconfessedCount: 0,
     });
+  },
+});
+
+// Batch log relapses (for Daily Examen checklist)
+export const batchLogRelapse = mutation({
+  args: {
+    sinIds: v.array(v.id("sinList")),
+    notes: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) throw new Error("Not authenticated");
+
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
+
+    for (const sinId of args.sinIds) {
+      const sin = await ctx.db.get(sinId);
+      if (!sin || sin.userId !== user._id) continue;
+
+      // Log the event
+      await ctx.db.insert("sinLogs", {
+        userId: user._id,
+        sinId: sinId,
+        date: today,
+        timestamp: Date.now(),
+        notes: args.notes,
+        type: "relapse",
+        trigger: "Daily Examen",
+      });
+
+      // Update the main record
+      await ctx.db.patch(sinId, {
+        lastRelapseDate: today,
+        unconfessedCount: (sin.unconfessedCount || 0) + 1,
+      });
+    }
   },
 });
 
