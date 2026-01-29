@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/select";
 import TomorrowPlanCard from "./TomorrowPlanCard";
 import SignalVsNoiseCard from "./SignalVsNoiseCard";
+import MonthlyObjectivesGuide from "./history/MonthlyObjectivesGuide";
 
 interface HistoryViewProps {
   onNavigateToTimer?: () => void;
@@ -215,7 +216,10 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
               {/* Monthly Goals & Notes */}
               <Card className="border-2 border-muted/50">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-lg font-bold">Monthly Objectives</CardTitle>
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="text-lg font-bold">Monthly Objectives</CardTitle>
+                    <MonthlyObjectivesGuide />
+                  </div>
                   <Button 
                     variant="ghost" 
                     size="sm" 
