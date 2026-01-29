@@ -227,11 +227,11 @@ export default function Dashboard() {
 
       {/* Navigation Tabs */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
-        <div className="flex flex-wrap gap-2 bg-white/50 dark:bg-gray-900/50 p-1 rounded-lg">
+        <div className="flex overflow-x-auto pb-2 gap-2 bg-white/50 dark:bg-gray-900/50 p-1 rounded-lg scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
           <Button
             variant={activeTab === "timer" ? "default" : "ghost"}
             onClick={() => setActiveTab("timer")}
-            className="cursor-pointer"
+            className="cursor-pointer whitespace-nowrap flex-shrink-0"
             data-view="timer"
           >
             <Clock className="h-4 w-4 mr-2" />
@@ -240,7 +240,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "timetables" ? "default" : "ghost"}
             onClick={() => setActiveTab("timetables")}
-            className="cursor-pointer"
+            className="cursor-pointer whitespace-nowrap flex-shrink-0"
             data-view="timetables"
           >
             <Calendar className="h-4 w-4 mr-2" />
@@ -249,7 +249,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "analytics" ? "default" : "ghost"}
             onClick={() => setActiveTab("analytics")}
-            className="cursor-pointer"
+            className="cursor-pointer whitespace-nowrap flex-shrink-0"
             data-view="analytics"
           >
             <Target className="h-4 w-4 mr-2" />
@@ -258,7 +258,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "tasks" ? "default" : "ghost"}
             onClick={() => setActiveTab("tasks")}
-            className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700"
+            className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700 whitespace-nowrap flex-shrink-0"
           >
             <Target className="h-4 w-4 mr-2" />
             Tasks
@@ -266,7 +266,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "quotes" ? "default" : "ghost"}
             onClick={() => setActiveTab("quotes")}
-            className="cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700"
+            className="cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 whitespace-nowrap flex-shrink-0"
           >
             <BookOpen className="h-4 w-4 mr-2" />
             Quotes
@@ -274,7 +274,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "projects" ? "default" : "ghost"}
             onClick={() => setActiveTab("projects")}
-            className="cursor-pointer bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700"
+            className="cursor-pointer bg-gradient-to-r from-blue-600 to-cyan-600 text-white hover:from-blue-700 hover:to-cyan-700 whitespace-nowrap flex-shrink-0"
           >
             <FolderOpen className="h-4 w-4 mr-2" />
             Projects
@@ -282,7 +282,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "manifest" ? "default" : "ghost"}
             onClick={() => setActiveTab("manifest")}
-            className="cursor-pointer bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700"
+            className="cursor-pointer bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 whitespace-nowrap flex-shrink-0"
           >
             <Sparkles className="h-4 w-4 mr-2" />
             Manifest
@@ -290,7 +290,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "knowyourself" ? "default" : "ghost"}
             onClick={() => setActiveTab("knowyourself")}
-            className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700"
+            className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700 whitespace-nowrap flex-shrink-0"
           >
             <Brain className="h-4 w-4 mr-2" />
             Know Yourself
@@ -298,7 +298,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "prayer" ? "default" : "ghost"}
             onClick={() => setActiveTab("prayer")}
-            className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700"
+            className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 whitespace-nowrap flex-shrink-0"
           >
             <Heart className="h-4 w-4 mr-2" />
             Prayer
@@ -306,7 +306,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "videos" ? "default" : "ghost"}
             onClick={() => setActiveTab("videos")}
-            className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700"
+            className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700 whitespace-nowrap flex-shrink-0"
           >
             <Video className="h-4 w-4 mr-2" />
             Videos
@@ -314,7 +314,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "advice" ? "default" : "ghost"}
             onClick={() => setActiveTab("advice")}
-            className="cursor-pointer bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700"
+            className="cursor-pointer bg-gradient-to-r from-green-600 to-emerald-600 text-white hover:from-green-700 hover:to-emerald-700 whitespace-nowrap flex-shrink-0"
           >
             <Lightbulb className="h-4 w-4 mr-2" />
             Advice
@@ -322,7 +322,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "nottodo" ? "default" : "ghost"}
             onClick={() => setActiveTab("nottodo")}
-            className="cursor-pointer bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700"
+            className="cursor-pointer bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700 whitespace-nowrap flex-shrink-0"
           >
             <Ban className="h-4 w-4 mr-2" />
             Not To Do
@@ -330,7 +330,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "entrepreneur" ? "default" : "ghost"}
             onClick={() => setActiveTab("entrepreneur")}
-            className="cursor-pointer bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white hover:from-purple-700 hover:via-pink-700 hover:to-orange-700"
+            className="cursor-pointer bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 whitespace-nowrap flex-shrink-0"
           >
             <Rocket className="h-4 w-4 mr-2" />
             Entrepreneur OS
@@ -338,7 +338,7 @@ export default function Dashboard() {
             <Button
             variant={activeTab === "failure" ? "default" : "ghost"}
             onClick={() => setActiveTab("failure")}
-            className="cursor-pointer bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700"
+            className="cursor-pointer bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 whitespace-nowrap flex-shrink-0"
           >
             <AlertTriangle className="h-4 w-4 mr-2" />
             Mistake Vault
@@ -346,7 +346,7 @@ export default function Dashboard() {
           <Button
             variant={activeTab === "history" ? "default" : "ghost"}
             onClick={() => setActiveTab("history")}
-            className="cursor-pointer bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700"
+            className="cursor-pointer bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 whitespace-nowrap flex-shrink-0"
           >
             <Calendar className="h-4 w-4 mr-2" />
             History
@@ -354,7 +354,7 @@ export default function Dashboard() {
           <Button
             variant="ghost"
             onClick={() => setShowBackup(true)}
-            className="cursor-pointer bg-gradient-to-r from-slate-600 to-gray-600 text-white hover:from-slate-700 hover:to-gray-700"
+            className="cursor-pointer bg-gradient-to-r from-slate-600 to-gray-600 text-white hover:from-slate-700 hover:to-gray-700 whitespace-nowrap flex-shrink-0"
           >
             <Download className="h-4 w-4 mr-2" />
             Backup Data
