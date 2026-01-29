@@ -59,10 +59,10 @@ export default function Dashboard() {
   const [showReflection, setShowReflection] = useState(false);
   const [showBackup, setShowBackup] = useState(false);
 
-  const activeTimetable = useQuery((api as any).timetables.getActive);
-  const todayLogs = useQuery((api as any).completionLogs.getToday);
-  const reflectionCheck = useQuery((api as any).reflectionTriggers.shouldShowReflection);
-  const tasksCheck = useQuery((api as any).vectal.checkDailyCompletion);
+  const activeTimetable = useQuery((api as any).timetables.getActive, isAuthenticated ? {} : "skip");
+  const todayLogs = useQuery((api as any).completionLogs.getToday, isAuthenticated ? {} : "skip");
+  const reflectionCheck = useQuery((api as any).reflectionTriggers.shouldShowReflection, isAuthenticated ? {} : "skip");
+  const tasksCheck = useQuery((api as any).vectal.checkDailyCompletion, isAuthenticated ? {} : "skip");
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
