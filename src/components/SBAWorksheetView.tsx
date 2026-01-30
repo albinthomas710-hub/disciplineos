@@ -131,9 +131,9 @@ export function SBAWorksheetView() {
               >
                 {memory ? (
                   <>
-                    {memory.imageStorageId ? (
+                    {(memory.displayUrl || memory.imageUrl) ? (
                       <img 
-                        src={`${window.location.origin}/api/storage/${memory.imageStorageId}`} 
+                        src={memory.displayUrl || memory.imageUrl} 
                         alt={memory.title}
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
                       />
@@ -255,9 +255,9 @@ export function SBAWorksheetView() {
           {selectedMemory && (
             <>
               <div className="w-full md:w-1/2 h-64 md:h-full bg-black relative border-r border-[#E0E7D1]/10">
-                {selectedMemory.imageStorageId ? (
+                {(selectedMemory.displayUrl || selectedMemory.imageUrl) ? (
                   <img 
-                    src={`${window.location.origin}/api/storage/${selectedMemory.imageStorageId}`} 
+                    src={selectedMemory.displayUrl || selectedMemory.imageUrl} 
                     alt={selectedMemory.title}
                     className="w-full h-full object-cover opacity-90"
                   />

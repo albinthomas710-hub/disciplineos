@@ -9,10 +9,19 @@ export const getMemories = query({
     const user = await getCurrentUser(ctx);
     if (!user) return [];
 
-    return await ctx.db
+    const memories = await ctx.db
       .query("sbaMemories")
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
+
+    return await Promise.all(
+      memories.map(async (memory) => ({
+        ...memory,
+        displayUrl: memory.imageStorageId
+          ? await ctx.storage.getUrl(memory.imageStorageId)
+          : memory.imageUrl,
+      }))
+    );
   },
 });
 
