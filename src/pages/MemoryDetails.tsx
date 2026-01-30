@@ -83,11 +83,11 @@ export default function MemoryDetails() {
         >
           <Button 
             variant="ghost" 
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/dashboard?tab=sba")}
             className="text-gray-400 hover:text-white hover:bg-white/5 gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to Dashboard
+            Back to SBA Worksheet
           </Button>
 
           <div className="flex items-center gap-3">

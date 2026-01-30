@@ -32,8 +32,9 @@ import {
   Download,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "sonner";
+
 import ActiveTimerView from "@/components/ActiveTimerView";
 import TimetableManager from "@/components/TimetableManager";
 import AnalyticsView from "@/components/AnalyticsView";
@@ -57,7 +58,9 @@ import { SBAWorksheetView } from "@/components/SBAWorksheetView";
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "tasks" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure" | "history" | "resolutions" | "sba">("timer");
+  const [searchParams] = useSearchParams();
+  const defaultTab = (searchParams.get("tab") as any) || "timer";
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "tasks" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure" | "history" | "resolutions" | "sba">(defaultTab);
   const [showReflection, setShowReflection] = useState(false);
   const [showBackup, setShowBackup] = useState(false);
 
