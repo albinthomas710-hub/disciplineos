@@ -30,6 +30,10 @@ const router = createBrowserRouter([
     element: <Dashboard />,
   },
   {
+    path: "/memory/:id",
+    element: <MemoryDetails />,
+  },
+  {
     path: "*",
     element: <NotFound />,
   },

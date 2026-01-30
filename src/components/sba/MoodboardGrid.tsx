@@ -144,9 +144,6 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
                   <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-cyan-500/50 group-hover:bg-cyan-500/10 transition-all duration-300">
                     <Plus className="w-5 h-5 text-white/30 group-hover:text-cyan-400" />
                   </div>
-                  <span className="text-[10px] font-bold tracking-[0.2em] text-white/20 uppercase group-hover:text-cyan-400/70 transition-colors">
-                    Add Evidence
-                  </span>
                 </div>
               )}
             </div>
