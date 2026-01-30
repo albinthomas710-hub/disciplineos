@@ -90,7 +90,7 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-4 w-full max-w-2xl mx-auto mb-16">
+      <div className="grid grid-cols-3 gap-3 w-full max-w-xl mx-auto mb-12">
         {gridSlots.map((memory, index) => {
           const isCenter = index === 4;
           
