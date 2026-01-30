@@ -55,6 +55,60 @@ export function SBAWorksheetView() {
           <MoodboardGrid memories={memories} />
         </div>
 
+        {/* The Philosophy / Lesson Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8 }}
+          className="mt-32 max-w-3xl mx-auto relative"
+        >
+          {/* Decorative Background */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] bg-gradient-to-b from-red-900/5 via-orange-900/5 to-transparent blur-[100px] -z-10" />
+
+          <div className="border-l-2 border-red-500/30 pl-8 md:pl-12 py-4 space-y-8">
+            <div className="space-y-2">
+              <h3 className="text-sm font-bold text-red-500 tracking-[0.3em] uppercase flex items-center gap-3">
+                <span className="w-8 h-[1px] bg-red-500/50" />
+                The Philosophy
+              </h3>
+              <h2 className="text-3xl md:text-4xl font-black text-[#E0E0E0] tracking-tight uppercase leading-none">
+                See. Believe. Achieve.
+              </h2>
+            </div>
+
+            <div className="space-y-6 text-gray-400 leading-relaxed font-medium text-sm md:text-base max-w-2xl">
+              <p>
+                We often gaze so deeply into the future that we become blind to the mountains we've already climbed. We obsess over what we haven't done, forgetting the <span className="text-white font-bold">battles we've already won</span>.
+              </p>
+              <p>
+                This archive is your <span className="text-red-400">proof of power</span>. It is the reminder that you are capable, strong, and victorious. When the future feels impossible, look here. You have started businesses, conquered demons, and survived 100% of your bad days.
+              </p>
+              <div className="pt-4">
+                <p className="text-white/80 italic border-l-2 border-white/10 pl-4">
+                  "See what you have done. Believe in who you are. Then you will have the strength to Achieve what comes next."
+                </p>
+              </div>
+            </div>
+
+            {/* Key Takeaways */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+              <div className="bg-white/5 border border-white/5 p-4 rounded-lg">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2">The Trap</h4>
+                <p className="text-xs text-gray-500">
+                  Forgetting our achievements makes us feel weak and incapable when facing new challenges.
+                </p>
+              </div>
+              <div className="bg-white/5 border border-white/5 p-4 rounded-lg">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-2">The Truth</h4>
+                <p className="text-xs text-gray-500">
+                  You are already a conqueror. This story proves it. Use it as fuel for the next chapter.
+                </p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
       </div>
     </div>
   );
