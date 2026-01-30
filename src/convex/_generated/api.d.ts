@@ -44,6 +44,7 @@ import type * as recovery from "../recovery.js";
 import type * as reflectionTriggers from "../reflectionTriggers.js";
 import type * as reflections from "../reflections.js";
 import type * as resolutions from "../resolutions.js";
+import type * as sba from "../sba.js";
 import type * as schema_content from "../schema/content.js";
 import type * as schema_entrepreneur from "../schema/entrepreneur.js";
 import type * as schema_health from "../schema/health.js";
@@ -108,6 +109,7 @@ declare const fullApi: ApiFromModules<{
   reflectionTriggers: typeof reflectionTriggers;
   reflections: typeof reflections;
   resolutions: typeof resolutions;
+  sba: typeof sba;
   "schema/content": typeof schema_content;
   "schema/entrepreneur": typeof schema_entrepreneur;
   "schema/health": typeof schema_health;

@@ -257,6 +257,19 @@ const schema = defineSchema(
     }).index("by_user_and_date", ["userId", "date"])
       .index("by_resolution", ["resolutionId"])
       .index("by_user_resolution_date", ["userId", "resolutionId", "date"]),
+
+    // SBA Worksheet - Life Story Memories
+    sbaMemories: defineTable({
+      userId: v.id("users"),
+      title: v.string(),
+      story: v.string(), // The deep story
+      imageStorageId: v.optional(v.id("_storage")),
+      imageUrl: v.optional(v.string()),
+      date: v.string(), // For ordering/display
+      order: v.optional(v.number()),
+    })
+    .index("by_user", ["userId"])
+    .index("by_user_date", ["userId", "date"]),
   },
   {
     schemaValidation: false,

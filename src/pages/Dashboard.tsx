@@ -52,11 +52,12 @@ import { FailureWisdomView } from "@/components/FailureWisdomView";
 import { DataBackupDialog } from "@/components/DataBackupDialog";
 import HistoryView from "@/components/HistoryView";
 import { ResolutionsView } from "@/components/ResolutionsView";
+import { SBAWorksheetView } from "@/components/SBAWorksheetView";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "tasks" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure" | "history" | "resolutions">("timer");
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "tasks" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure" | "history" | "resolutions" | "sba">("timer");
   const [showReflection, setShowReflection] = useState(false);
   const [showBackup, setShowBackup] = useState(false);
 
@@ -257,6 +258,14 @@ export default function Dashboard() {
             Analytics
           </Button>
           <Button
+            variant={activeTab === "sba" ? "default" : "ghost"}
+            onClick={() => setActiveTab("sba")}
+            className="cursor-pointer bg-gradient-to-r from-red-900 to-red-700 text-white hover:from-red-800 hover:to-red-600 whitespace-nowrap flex-shrink-0 shadow-sm border border-red-900/50"
+          >
+            <Sparkles className="h-4 w-4 mr-2" />
+            SBA Worksheet
+          </Button>
+          <Button
             variant={activeTab === "resolutions" ? "default" : "ghost"}
             onClick={() => setActiveTab("resolutions")}
             className="cursor-pointer bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-700 hover:to-blue-700 whitespace-nowrap flex-shrink-0 shadow-sm"
@@ -376,6 +385,7 @@ export default function Dashboard() {
         {activeTab === "timer" && <ActiveTimerView />}
         {activeTab === "timetables" && <TimetableManager />}
         {activeTab === "analytics" && <AnalyticsView />}
+        {activeTab === "sba" && <SBAWorksheetView />}
         {activeTab === "resolutions" && <ResolutionsView />}
         {activeTab === "tasks" && <VectalView />}
         {activeTab === "quotes" && <QuotesView />}
