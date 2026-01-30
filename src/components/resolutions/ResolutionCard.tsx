@@ -5,10 +5,26 @@ import { Doc } from "@/convex/_generated/dataModel";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Check, X, Flame, AlertTriangle, Info, ChevronDown, ChevronUp, Zap, Skull, Play, SkipForward, ShieldAlert } from "lucide-react";
+import { Check, X, Flame, AlertTriangle, Info, ChevronDown, ChevronUp, Zap, Skull, Play, SkipForward, ShieldAlert, MoreHorizontal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ResolutionCardProps {
   resolution: Doc<"resolutions">;
@@ -20,8 +36,10 @@ interface ResolutionCardProps {
 
 export function ResolutionCard({ resolution, date, log, recentLogs, streak }: ResolutionCardProps) {
   const logProgress = useMutation(api.resolutions.logProgress);
+  const archiveResolution = useMutation(api.resolutions.archive);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
   const isBuild = resolution.type === "build";
   
@@ -54,6 +72,16 @@ export function ResolutionCard({ resolution, date, log, recentLogs, streak }: Re
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      await archiveResolution({ resolutionId: resolution._id });
+      toast.success("Resolution deleted");
+      setShowDeleteAlert(false);
+    } catch (e) {
+      toast.error("Failed to delete resolution");
+    }
+  };
+
   const getDayStatus = (d: string) => {
     const l = recentLogs.find(log => log.date === d);
     if (!l) return "empty";
@@ -61,6 +89,7 @@ export function ResolutionCard({ resolution, date, log, recentLogs, streak }: Re
   };
 
   return (
+    <>
     <motion.div
       layout
       initial={{ opacity: 0, y: 20 }}
@@ -113,8 +142,8 @@ export function ResolutionCard({ resolution, date, log, recentLogs, streak }: Re
                 </p>
               </div>
 
-              {/* Action Button */}
-              <div className="shrink-0">
+              {/* Action Button & Menu */}
+              <div className="shrink-0 flex items-start gap-2">
                 {log ? (
                   <motion.div 
                     initial={{ scale: 0.9, opacity: 0 }}
@@ -177,6 +206,23 @@ export function ResolutionCard({ resolution, date, log, recentLogs, streak }: Re
                     </Button>
                   </div>
                 )}
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem 
+                      className="text-destructive focus:text-destructive cursor-pointer"
+                      onClick={() => setShowDeleteAlert(true)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Resolution
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
@@ -269,5 +315,23 @@ export function ResolutionCard({ resolution, date, log, recentLogs, streak }: Re
         </CardContent>
       </Card>
     </motion.div>
+
+    <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete this resolution?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will remove "{resolution.title}" from your active protocols. History will be preserved in the archives.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            Delete
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
