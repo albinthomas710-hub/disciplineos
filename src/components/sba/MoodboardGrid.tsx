@@ -1,10 +1,12 @@
 import { useState, useRef } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { motion } from "framer-motion";
-import { Plus, Image as ImageIcon, Loader2, Upload, Sparkles } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Image as ImageIcon, Loader2, Upload, Sparkles, Trash2, Edit2, Calendar, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Id } from "@/convex/_generated/dataModel";
@@ -15,12 +17,20 @@ interface MoodboardGridProps {
 
 export function MoodboardGrid({ memories }: MoodboardGridProps) {
   const createMemory = useMutation(api.sba.createMemory);
+  const updateMemory = useMutation(api.sba.updateMemory);
+  const deleteMemory = useMutation(api.sba.deleteMemory);
   const generateUploadUrl = useMutation(api.sba.generateUploadUrl);
   
   const [isUploadOpen, setIsUploadOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Story Editor State
+  const [editingMemory, setEditingMemory] = useState<any>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editStory, setEditStory] = useState("");
+  const [editDate, setEditDate] = useState("");
 
   // Sort memories by date
   const sortedMemories = memories?.slice().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) || [];
@@ -50,10 +60,9 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
       });
       const { storageId } = await result.json();
 
-      // Create memory with placeholders - user will edit text in the Narrative section
       await createMemory({
         title: "UNTITLED MEMORY",
-        story: "Draft your story in the narrative log below...",
+        story: "",
         date: new Date().toISOString().split("T")[0],
         imageStorageId: storageId,
       });
@@ -68,51 +77,91 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
     }
   };
 
+  const handleDelete = async (id: Id<"sbaMemories">) => {
+    if (confirm("Are you sure you want to delete this memory?")) {
+      try {
+        await deleteMemory({ id });
+        toast.success("Memory deleted.");
+        if (editingMemory?._id === id) setEditingMemory(null);
+      } catch (e) {
+        toast.error("Failed to delete.");
+      }
+    }
+  };
+
+  const openEditor = (memory: any) => {
+    setEditingMemory(memory);
+    setEditTitle(memory.title);
+    setEditStory(memory.story || "");
+    setEditDate(memory.date);
+  };
+
+  const handleSaveStory = async () => {
+    if (!editingMemory) return;
+    try {
+      await updateMemory({
+        id: editingMemory._id,
+        title: editTitle,
+        story: editStory,
+        date: editDate,
+      });
+      toast.success("Story updated.");
+      setEditingMemory(null);
+    } catch (e) {
+      toast.error("Failed to save story.");
+    }
+  };
+
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl mx-auto mb-16">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl mx-auto mb-16">
         {gridSlots.map((memory, index) => (
           <motion.div
             key={memory?._id || index}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.05, duration: 0.5 }}
-            className="relative aspect-[4/5] group"
+            className="relative aspect-[4/5] group flex flex-col gap-3"
           >
+            {/* Image Container */}
             <div 
               onClick={() => !memory && setIsUploadOpen(true)}
               className={cn(
-                "w-full h-full rounded-xl relative overflow-hidden transition-all duration-500",
+                "w-full flex-1 rounded-xl relative overflow-hidden transition-all duration-500",
                 "bg-[#0f1219] border border-white/5",
                 memory ? "cursor-default" : "cursor-pointer hover:border-cyan-500/30 hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.15)]"
               )}
             >
-              {/* Gradient Top Line */}\n              <div className={cn(
+              {/* Gradient Top Line */}
+              <div className={cn(
                 "absolute top-0 left-0 right-0 h-1 bg-gradient-to-r z-10",
                 memory ? "from-cyan-500 via-purple-500 to-cyan-500" : "from-transparent via-white/5 to-transparent group-hover:via-cyan-500/50"
               )} />
 
               {memory ? (
-                <div className="w-full h-full relative">
+                <div className="w-full h-full relative group/image">
                   {(memory.displayUrl || memory.imageUrl) ? (
                     <img 
                       src={memory.displayUrl || memory.imageUrl} 
                       alt={memory.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover/image:scale-105"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
                       <ImageIcon className="w-12 h-12 text-white/10" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0b0d14] via-transparent to-transparent opacity-60" />
                   
-                  {/* Minimal Label on Hover */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-[10px] font-mono text-cyan-400 uppercase tracking-widest text-center">
-                      {memory.title}
-                    </p>
-                  </div>
+                  {/* Delete Button - Always visible on hover */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(memory._id);
+                    }}
+                    className="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white/70 hover:text-red-400 hover:bg-black/80 transition-all opacity-0 group-hover/image:opacity-100 z-20"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center h-full gap-4 group-hover:gap-3 transition-all duration-300">
@@ -125,11 +174,29 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
                 </div>
               )}
             </div>
+
+            {/* Title/Story Bar - Separate from image */}
+            {memory && (
+              <div 
+                onClick={() => openEditor(memory)}
+                className="h-14 bg-[#0f1219] border border-white/10 rounded-lg flex items-center justify-between px-4 cursor-pointer hover:border-purple-500/30 hover:bg-white/5 transition-all group/bar"
+              >
+                <div className="flex flex-col overflow-hidden">
+                  <span className="text-[10px] font-bold text-cyan-500/70 uppercase tracking-wider truncate">
+                    {memory.title || "Untitled"}
+                  </span>
+                  <span className="text-[10px] text-gray-500 font-mono truncate">
+                    {memory.date}
+                  </span>
+                </div>
+                <Edit2 className="w-3 h-3 text-gray-600 group-hover/bar:text-purple-400 transition-colors" />
+              </div>
+            )}
           </motion.div>
         ))}
       </div>
 
-      {/* Simplified Upload Dialog */}
+      {/* Upload Dialog */}
       <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
         <DialogContent className="bg-[#0f1219]/95 backdrop-blur-2xl border-white/10 text-white max-w-md p-0 overflow-hidden shadow-[0_0_100px_-20px_rgba(0,0,0,0.7)]">
           <div className="h-1 w-full bg-gradient-to-r from-cyan-500 via-purple-500 to-cyan-500" />
@@ -197,6 +264,89 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
                 className="bg-cyan-600/20 text-cyan-400 hover:bg-cyan-600/30 hover:text-cyan-300 border border-cyan-500/30 rounded-lg px-6 font-bold tracking-wider uppercase text-[10px]"
               >
                 {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : "Enshrine"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Story Editor Dialog */}
+      <Dialog open={!!editingMemory} onOpenChange={(open) => !open && setEditingMemory(null)}>
+        <DialogContent className="bg-[#0f1219]/95 backdrop-blur-2xl border-white/10 text-white max-w-2xl p-0 overflow-hidden shadow-[0_0_100px_-20px_rgba(168,85,247,0.3)]">
+          <div className="h-1 w-full bg-gradient-to-r from-purple-500 via-cyan-500 to-purple-500" />
+          
+          <div className="p-8 space-y-6">
+            <DialogHeader className="flex flex-row items-center justify-between">
+              <DialogTitle className="text-xl font-bold tracking-tight flex items-center gap-2">
+                <Edit2 className="w-5 h-5 text-purple-400" />
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                  THE CHRONICLES
+                </span>
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="grid grid-cols-3 gap-6">
+              {/* Image Preview */}
+              <div className="col-span-1 aspect-[4/5] rounded-lg overflow-hidden border border-white/10 bg-black/40 relative">
+                {editingMemory && (editingMemory.displayUrl || editingMemory.imageUrl) && (
+                  <img 
+                    src={editingMemory.displayUrl || editingMemory.imageUrl} 
+                    className="w-full h-full object-cover opacity-80"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                <div className="absolute bottom-3 left-3 right-3">
+                  <p className="text-[10px] text-gray-400 font-mono">{editDate}</p>
+                </div>
+              </div>
+
+              {/* Form */}
+              <div className="col-span-2 space-y-5">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Title of Memory</label>
+                  <Input 
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="bg-white/5 border-white/10 text-white focus:border-purple-500/50 h-10 font-bold tracking-wide"
+                    placeholder="THE TURNING POINT"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Date</label>
+                  <Input 
+                    type="date"
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    className="bg-white/5 border-white/10 text-white focus:border-purple-500/50 h-10 font-mono text-xs"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">The Story</label>
+                  <Textarea 
+                    value={editStory}
+                    onChange={(e) => setEditStory(e.target.value)}
+                    className="bg-white/5 border-white/10 text-gray-300 focus:border-purple-500/50 min-h-[150px] leading-relaxed resize-none p-4"
+                    placeholder="Write the legend..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+              <Button 
+                variant="ghost" 
+                onClick={() => setEditingMemory(null)}
+                className="text-gray-500 hover:text-white hover:bg-white/5 uppercase tracking-wider font-bold text-[10px]"
+              >
+                Close
+              </Button>
+              <Button 
+                onClick={handleSaveStory}
+                className="bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 hover:text-purple-300 border border-purple-500/30 rounded-lg px-6 font-bold tracking-wider uppercase text-[10px]"
+              >
+                Save Narrative
               </Button>
             </div>
           </div>

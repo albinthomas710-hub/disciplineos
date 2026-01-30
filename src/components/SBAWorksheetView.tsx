@@ -3,7 +3,6 @@ import { api } from "@/convex/_generated/api";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
 import { MoodboardGrid } from "./sba/MoodboardGrid";
-import { NarrativeList } from "./sba/NarrativeList";
 
 export function SBAWorksheetView() {
   const memories = useQuery(api.sba.getMemories) || [];
@@ -61,11 +60,8 @@ export function SBAWorksheetView() {
           </p>
         </motion.div>
 
-        {/* Moodboard Grid (Visuals) */}
+        {/* Moodboard Grid (Visuals + Story) */}
         <MoodboardGrid memories={memories} />
-
-        {/* Narrative List (Text) */}
-        <NarrativeList memories={memories} />
 
       </div>
     </div>
