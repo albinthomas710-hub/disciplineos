@@ -16,7 +16,7 @@ export function SBAWorksheetView() {
         <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-red-900/5 rounded-full blur-[120px]" />
       </div>
 
-      <div className="relative z-10 max-w-3xl mx-auto px-6 py-8 flex flex-col items-center">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-12 flex flex-col items-center">
         
         {/* Top Title Block (Reference Style) */}
         <motion.div 
