@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Image as ImageIcon, Loader2, Upload, Sparkles, Trash2, Edit2, Calendar, X } from "lucide-react";
+import { Plus, Image as ImageIcon, Loader2, Upload, Sparkles, Trash2, Edit2, Calendar, X, Rocket } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,103 +90,95 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl mx-auto mb-16">
-        {gridSlots.map((memory, index) => (
-          <motion.div
-            key={memory?._id || index}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.05, duration: 0.5 }}
-            className="relative aspect-[4/5] group flex flex-col gap-3"
-          >
-            {/* Image Container */}
-            <div 
-              onClick={() => !memory && setIsUploadOpen(true)}
-              className={cn(
-                "w-full flex-1 rounded-xl relative overflow-hidden transition-all duration-500",
-                "bg-[#0f1219] border border-white/5",
-                memory ? "cursor-default" : "cursor-pointer hover:border-cyan-500/30 hover:shadow-[0_0_30px_-5px_rgba(6,182,212,0.15)]"
-              )}
+      <div className="grid grid-cols-3 gap-4 w-full max-w-2xl mx-auto mb-16">
+        {gridSlots.map((memory, index) => {
+          const isCenter = index === 4;
+          
+          return (
+            <motion.div
+              key={memory?._id || index}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.05, duration: 0.5 }}
+              className="relative aspect-square group flex flex-col"
             >
-              {/* Gradient Top Line */}
-              <div className={cn(
-                "absolute top-0 left-0 right-0 h-1 bg-gradient-to-r z-10",
-                memory ? "from-cyan-500 via-purple-500 to-cyan-500" : "from-transparent via-white/5 to-transparent group-hover:via-cyan-500/50"
-              )} />
-
-              {memory ? (
-                <div className="w-full h-full relative group/image">
-                  {(memory.displayUrl || memory.imageUrl) ? (
-                    <img 
-                      src={memory.displayUrl || memory.imageUrl} 
-                      alt={memory.title}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover/image:scale-105"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
-                      <ImageIcon className="w-12 h-12 text-white/10" />
-                    </div>
-                  )}
-                  
-                  {/* Delete Button - Always visible on hover */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(memory._id);
-                    }}
-                    className="absolute top-3 right-3 p-2 rounded-full bg-black/60 text-white/70 hover:text-red-400 hover:bg-black/80 transition-all opacity-0 group-hover/image:opacity-100 z-20"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full gap-4 group-hover:gap-3 transition-all duration-300">
-                  <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-cyan-500/50 group-hover:bg-cyan-500/10 transition-all duration-300">
-                    <Plus className="w-5 h-5 text-white/30 group-hover:text-cyan-400" />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Title/Story Bar - Separate from image */}
-            {memory && (
+              {/* Image Container */}
               <div 
-                onClick={() => openEditor(memory)}
-                className="h-14 bg-[#0f1219] border border-white/10 rounded-lg flex items-center justify-between px-4 cursor-pointer hover:border-purple-500/30 hover:bg-white/5 transition-all group/bar"
+                onClick={() => !memory && setIsUploadOpen(true)}
+                className={cn(
+                  "w-full h-full rounded-2xl relative overflow-hidden transition-all duration-300",
+                  "bg-[#0A0A0A] border border-white/10",
+                  memory ? "cursor-default" : "cursor-pointer hover:border-white/30 hover:bg-[#111]"
+                )}
               >
-                <div className="flex flex-col overflow-hidden">
-                  <span className="text-[10px] font-bold text-cyan-500/70 uppercase tracking-wider truncate">
-                    {memory.title || "Untitled"}
-                  </span>
-                  <span className="text-[10px] text-gray-500 font-mono truncate">
-                    {memory.date}
-                  </span>
-                </div>
-                <Edit2 className="w-3 h-3 text-gray-600 group-hover/bar:text-purple-400 transition-colors" />
+                {memory ? (
+                  <div className="w-full h-full relative group/image">
+                    {(memory.displayUrl || memory.imageUrl) ? (
+                      <img 
+                        src={memory.displayUrl || memory.imageUrl} 
+                        alt={memory.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover/image:scale-105"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-[#0A0A0A]">
+                        <ImageIcon className="w-8 h-8 text-white/10" />
+                      </div>
+                    )}
+                    
+                    {/* Delete Button - Always visible on hover */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(memory._id);
+                      }}
+                      className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white/70 hover:text-red-400 hover:bg-black/80 transition-all opacity-0 group-hover/image:opacity-100 z-20"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+
+                    {/* Edit Overlay */}
+                    <div 
+                      onClick={() => openEditor(memory)}
+                      className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors cursor-pointer z-10"
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full">
+                    {isCenter ? (
+                      <div className="relative">
+                         <Rocket className="w-12 h-12 text-[#E0E0E0] -rotate-45 fill-white/10" />
+                      </div>
+                    ) : (
+                      <span className="text-[10px] font-bold text-[#444] uppercase tracking-widest group-hover:text-[#666] transition-colors">
+                        Picture
+                      </span>
+                    )}
+                  </div>
+                )}
               </div>
-            )}
-          </motion.div>
-        ))}
+            </motion.div>
+          );
+        })}
       </div>
 
       {/* Upload Dialog */}
       <Dialog open={isUploadOpen} onOpenChange={setIsUploadOpen}>
-        <DialogContent className="bg-[#0f1219]/95 backdrop-blur-2xl border-white/10 text-white max-w-md p-0 overflow-hidden shadow-[0_0_100px_-20px_rgba(0,0,0,0.7)]">
-          <div className="h-1 w-full bg-gradient-to-r from-cyan-500 via-purple-500 to-cyan-500" />
+        <DialogContent className="bg-[#0A0A0A] border-white/10 text-white max-w-md p-0 overflow-hidden">
+          <div className="h-1 w-full bg-gradient-to-r from-red-900 via-orange-800 to-red-900" />
           
           <div className="p-8">
             <DialogHeader className="mb-6">
-              <DialogTitle className="text-xl font-bold tracking-tight flex items-center gap-2">
-                <Upload className="w-5 h-5 text-cyan-400" />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                  UPLOAD EVIDENCE
+              <DialogTitle className="text-xl font-black tracking-tight flex items-center gap-2 uppercase">
+                <Upload className="w-5 h-5 text-red-500" />
+                <span className="text-[#E0E0E0]">
+                  Upload Evidence
                 </span>
               </DialogTitle>
             </DialogHeader>
 
             <div 
               onClick={() => fileInputRef.current?.click()}
-              className="h-64 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 hover:border-cyan-500/30 transition-all group relative overflow-hidden bg-black/20"
+              className="h-64 border-2 border-dashed border-white/10 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 hover:border-red-500/30 transition-all group relative overflow-hidden bg-black/20"
             >
               {selectedImage ? (
                 <div className="text-center z-10 relative w-full h-full flex flex-col items-center justify-center">
@@ -196,7 +188,7 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
                     className="absolute inset-0 w-full h-full object-cover opacity-40"
                   />
                   <div className="bg-black/60 px-4 py-2 rounded-full backdrop-blur-md border border-white/10 z-20">
-                    <p className="text-cyan-400 font-bold flex items-center gap-2 text-sm">
+                    <p className="text-red-400 font-bold flex items-center gap-2 text-sm">
                       <Sparkles className="w-3 h-3" />
                       {selectedImage.name}
                     </p>
@@ -205,8 +197,8 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
                 </div>
               ) : (
                 <div className="text-center space-y-4 z-10">
-                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform border border-white/10 group-hover:border-cyan-500/30">
-                    <ImageIcon className="w-6 h-6 text-gray-500 group-hover:text-cyan-400 transition-colors" />
+                  <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform border border-white/10 group-hover:border-red-500/30">
+                    <ImageIcon className="w-6 h-6 text-gray-500 group-hover:text-red-400 transition-colors" />
                   </div>
                   <div>
                     <p className="text-gray-400 font-bold text-sm group-hover:text-white transition-colors uppercase tracking-wider">Select Image</p>
@@ -234,7 +226,7 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
               <Button 
                 onClick={handleUpload}
                 disabled={!selectedImage || isSubmitting}
-                className="bg-cyan-600/20 text-cyan-400 hover:bg-cyan-600/30 hover:text-cyan-300 border border-cyan-500/30 rounded-lg px-6 font-bold tracking-wider uppercase text-[10px]"
+                className="bg-red-600 text-white hover:bg-red-700 border border-red-500/30 rounded-lg px-6 font-bold tracking-wider uppercase text-[10px]"
               >
                 {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : "Enshrine"}
               </Button>

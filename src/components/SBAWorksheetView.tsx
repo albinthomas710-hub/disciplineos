@@ -1,67 +1,59 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Rocket } from "lucide-react";
 import { MoodboardGrid } from "./sba/MoodboardGrid";
 
 export function SBAWorksheetView() {
   const memories = useQuery(api.sba.getMemories) || [];
 
   return (
-    <div className="min-h-screen bg-[#0b0d14] text-white font-sans selection:bg-cyan-500/30 selection:text-cyan-100 overflow-hidden relative">
-      {/* Background Effects */}
+    <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-red-500/30 selection:text-red-100 overflow-hidden relative">
+      {/* Background Effects - Red/Orange Gradient Light Leak */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#0b0d14] via-[#0f1219] to-[#0b0d14]" />
-        
-        <motion.div 
-          animate={{ 
-            x: [0, 100, 0], 
-            y: [0, -50, 0],
-            opacity: [0.3, 0.5, 0.3] 
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[120px]"
-        />
-        <motion.div 
-          animate={{ 
-            x: [0, -100, 0], 
-            y: [0, 50, 0],
-            opacity: [0.2, 0.4, 0.2] 
-          }}
-          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-          className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-cyan-900/10 rounded-full blur-[120px]"
-        />
+        <div className="absolute inset-0 bg-[#050505]" />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-[60%] bg-gradient-to-t from-red-900/20 via-orange-900/10 to-transparent blur-[100px]" />
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-red-900/5 rounded-full blur-[120px]" />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto px-6 py-12 flex flex-col items-center">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-12 flex flex-col items-center">
         
-        {/* Header Section */}
+        {/* Top Title Block (Reference Style) */}
         <motion.div 
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="text-center mb-16 space-y-6"
+          className="text-center mb-20 space-y-0"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md mb-4">
-            <Sparkles className="w-4 h-4 text-purple-400" />
-            <span className="text-xs font-medium tracking-widest uppercase text-purple-200/80">Identity Architecture</span>
-          </div>
-          
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-400">
-              STORY THUS FAR
-            </span>
+          <h1 className="text-7xl md:text-9xl font-black tracking-tighter text-[#E0E0E0] leading-[0.85]">
+            SBA
           </h1>
+          <h2 className="text-3xl md:text-5xl font-black tracking-widest text-[#E0E0E0] uppercase">
+            Worksheet
+          </h2>
           
-          <p className="text-sm md:text-base font-medium tracking-wide text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            <span className="text-cyan-400">I AM SOMEONE WHO</span> DOCUMENTS THE JOURNEY.
-            <br />
-            FROM THE BEGINNING TO THE LEGEND.
-          </p>
+          <div className="mt-12 flex flex-col items-center gap-2 opacity-80">
+             <div className="flex items-center gap-2 text-white/80">
+                <span className="text-xs font-bold tracking-[0.3em] uppercase">Discipline OS</span>
+                <Rocket className="w-4 h-4 -rotate-45 text-red-500" />
+             </div>
+          </div>
         </motion.div>
 
-        {/* Moodboard Grid (Visuals + Story) */}
-        <MoodboardGrid memories={memories} />
+        {/* Story Thus Far Section */}
+        <div className="w-full space-y-8">
+          <div className="text-center space-y-2">
+            <h3 className="text-2xl md:text-3xl font-black tracking-wide text-[#E0E0E0] uppercase">
+              Story Thus Far
+            </h3>
+            <p className="text-[10px] md:text-xs font-bold tracking-widest text-gray-500 uppercase max-w-md mx-auto">
+              Add photos showing snippets of your life all the way from your childhood to now
+            </p>
+          </div>
+
+          {/* Moodboard Grid (Visuals + Story) */}
+          <MoodboardGrid memories={memories} />
+        </div>
 
       </div>
     </div>
