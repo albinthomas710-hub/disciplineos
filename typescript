@@ -1,3 +1,9 @@
-// ... existing code ...
-
-// ... existing code ...
+export const createMemory = mutation({
+  args: {
+    title: v.string(),
+    story: v.string(),
+    imageStorageId: v.optional(v.id("_storage")),
+    imageUrl: v.optional(v.string()),
+    date: v.string(),
+  },
+  // ...
