@@ -12,6 +12,7 @@ import Landing from "@/pages/Landing";
 import Dashboard from "@/pages/Dashboard";
 import NotFound from "./pages/NotFound.tsx";
 import "./types/global.d.ts";
+import MemoryDetails from "./pages/MemoryDetails";
 
 const convex = new ConvexReactClient(import.meta.env.VITE_CONVEX_URL as string);
 

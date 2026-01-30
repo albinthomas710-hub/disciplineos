@@ -10,12 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Id } from "@/convex/_generated/dataModel";
+import { useNavigate } from "react-router";
 
 interface MoodboardGridProps {
   memories: any[];
 }
 
 export function MoodboardGrid({ memories }: MoodboardGridProps) {
+  const navigate = useNavigate();
   const createMemory = useMutation(api.sba.createMemory);
   const updateMemory = useMutation(api.sba.updateMemory);
   const deleteMemory = useMutation(api.sba.deleteMemory);
@@ -25,12 +27,6 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Story Editor State
-  const [editingMemory, setEditingMemory] = useState<any>(null);
-  const [editTitle, setEditTitle] = useState("");
-  const [editStory, setEditStory] = useState("");
-  const [editDate, setEditDate] = useState("");
 
   // Sort memories by date
   const sortedMemories = memories?.slice().sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) || [];
@@ -82,7 +78,6 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
       try {
         await deleteMemory({ id });
         toast.success("Memory deleted.");
-        if (editingMemory?._id === id) setEditingMemory(null);
       } catch (e) {
         toast.error("Failed to delete.");
       }
@@ -90,26 +85,7 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
   };
 
   const openEditor = (memory: any) => {
-    setEditingMemory(memory);
-    setEditTitle(memory.title);
-    setEditStory(memory.story || "");
-    setEditDate(memory.date);
-  };
-
-  const handleSaveStory = async () => {
-    if (!editingMemory) return;
-    try {
-      await updateMemory({
-        id: editingMemory._id,
-        title: editTitle,
-        story: editStory,
-        date: editDate,
-      });
-      toast.success("Story updated.");
-      setEditingMemory(null);
-    } catch (e) {
-      toast.error("Failed to save story.");
-    }
+    navigate(`/memory/${memory._id}`);
   };
 
   return (
@@ -264,89 +240,6 @@ export function MoodboardGrid({ memories }: MoodboardGridProps) {
                 className="bg-cyan-600/20 text-cyan-400 hover:bg-cyan-600/30 hover:text-cyan-300 border border-cyan-500/30 rounded-lg px-6 font-bold tracking-wider uppercase text-[10px]"
               >
                 {isSubmitting ? <Loader2 className="w-3 h-3 animate-spin" /> : "Enshrine"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Story Editor Dialog */}
-      <Dialog open={!!editingMemory} onOpenChange={(open) => !open && setEditingMemory(null)}>
-        <DialogContent className="bg-[#0f1219]/95 backdrop-blur-2xl border-white/10 text-white max-w-2xl p-0 overflow-hidden shadow-[0_0_100px_-20px_rgba(168,85,247,0.3)]">
-          <div className="h-1 w-full bg-gradient-to-r from-purple-500 via-cyan-500 to-purple-500" />
-          
-          <div className="p-8 space-y-6">
-            <DialogHeader className="flex flex-row items-center justify-between">
-              <DialogTitle className="text-xl font-bold tracking-tight flex items-center gap-2">
-                <Edit2 className="w-5 h-5 text-purple-400" />
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
-                  THE CHRONICLES
-                </span>
-              </DialogTitle>
-            </DialogHeader>
-
-            <div className="grid grid-cols-3 gap-6">
-              {/* Image Preview */}
-              <div className="col-span-1 aspect-[4/5] rounded-lg overflow-hidden border border-white/10 bg-black/40 relative">
-                {editingMemory && (editingMemory.displayUrl || editingMemory.imageUrl) && (
-                  <img 
-                    src={editingMemory.displayUrl || editingMemory.imageUrl} 
-                    className="w-full h-full object-cover opacity-80"
-                  />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-                <div className="absolute bottom-3 left-3 right-3">
-                  <p className="text-[10px] text-gray-400 font-mono">{editDate}</p>
-                </div>
-              </div>
-
-              {/* Form */}
-              <div className="col-span-2 space-y-5">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Title of Memory</label>
-                  <Input 
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    className="bg-white/5 border-white/10 text-white focus:border-purple-500/50 h-10 font-bold tracking-wide"
-                    placeholder="THE TURNING POINT"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Date</label>
-                  <Input 
-                    type="date"
-                    value={editDate}
-                    onChange={(e) => setEditDate(e.target.value)}
-                    className="bg-white/5 border-white/10 text-white focus:border-purple-500/50 h-10 font-mono text-xs"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">The Story</label>
-                  <Textarea 
-                    value={editStory}
-                    onChange={(e) => setEditStory(e.target.value)}
-                    className="bg-white/5 border-white/10 text-gray-300 focus:border-purple-500/50 min-h-[150px] leading-relaxed resize-none p-4"
-                    placeholder="Write the legend..."
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
-              <Button 
-                variant="ghost" 
-                onClick={() => setEditingMemory(null)}
-                className="text-gray-500 hover:text-white hover:bg-white/5 uppercase tracking-wider font-bold text-[10px]"
-              >
-                Close
-              </Button>
-              <Button 
-                onClick={handleSaveStory}
-                className="bg-purple-600/20 text-purple-400 hover:bg-purple-600/30 hover:text-purple-300 border border-purple-500/30 rounded-lg px-6 font-bold tracking-wider uppercase text-[10px]"
-              >
-                Save Narrative
               </Button>
             </div>
           </div>

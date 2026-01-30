@@ -25,6 +25,25 @@ export const getMemories = query({
   },
 });
 
+// Get a single memory by ID
+export const getMemory = query({
+  args: { id: v.id("sbaMemories") },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    if (!user) return null;
+
+    const memory = await ctx.db.get(args.id);
+    if (!memory || memory.userId !== user._id) return null;
+
+    return {
+      ...memory,
+      displayUrl: memory.imageStorageId
+        ? await ctx.storage.getUrl(memory.imageStorageId)
+        : memory.imageUrl,
+    };
+  },
+});
+
 // Generate upload URL for images
 export const generateUploadUrl = mutation(async (ctx) => {
   return await ctx.storage.generateUploadUrl();
