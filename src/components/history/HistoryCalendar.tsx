@@ -25,6 +25,10 @@ export default function HistoryCalendar({
   onSelectDate,
   calendarTags,
 }: HistoryCalendarProps) {
+  // Calculate the starting day of the week (0 = Sunday, 1 = Monday, etc.)
+  const startDay = dateRange.length > 0 ? dateRange[0].getDay() : 0;
+  const blanks = Array.from({ length: startDay });
+
   return (
     <Card className="border-2 border-muted/50">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -53,6 +57,11 @@ export default function HistoryCalendar({
           ))}
         </div>
         <div className="grid grid-cols-7 gap-2">
+          {/* Add empty slots for days before the start of the month */}
+          {blanks.map((_, i) => (
+            <div key={`blank-${i}`} className="aspect-square" />
+          ))}
+          
           {dateRange.map((date) => {
             const dateStr = format(date, "yyyy-MM-dd");
             const dayData = historyData?.[dateStr];
