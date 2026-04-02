@@ -189,28 +189,23 @@ export const processRecurringTasks = internalMutation({
   args: {},
   handler: async (ctx) => {
     const today = new Date().toISOString().split("T")[0];
-    const dayOfWeek = new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const dayOfWeek = new Date().getDay();
     const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
     const currentDayName = dayNames[dayOfWeek];
     const dateObj = new Date();
     const dayOfMonth = dateObj.getDate();
 
-    // Get all users
-    const allUsers = await ctx.db.query("users").collect();
+    // Process in batches of 50 to avoid excessive reads
+    const allUsers = await ctx.db.query("users").take(50);
 
-    for (const user of allUsers) {
-      // Check if today's vectal record exists
+    await Promise.all(allUsers.map(async (user) => {
       const existingRecord = await ctx.db
         .query("vectal")
         .withIndex("by_user_and_date", (q) => q.eq("userId", user._id).eq("date", today))
         .first();
 
-      if (existingRecord) {
-        // Record exists, skip this user
-        continue;
-      }
+      if (existingRecord) return;
 
-      // Get yesterday's record to find recurring tasks
       const yesterday = new Date(dateObj);
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayStr = yesterday.toISOString().split("T")[0];
@@ -221,7 +216,6 @@ export const processRecurringTasks = internalMutation({
         .first();
 
       if (!yesterdayRecord) {
-        // No previous record, create default tasks
         const defaultTasks = [
           { id: crypto.randomUUID(), title: "Morning Routine", completed: false, importance: 90, isRecurring: true, recurringPattern: "every day" },
           { id: crypto.randomUUID(), title: "Focus Work Block", completed: false, importance: 100, isRecurring: true, recurringPattern: "every day" },
@@ -229,7 +223,6 @@ export const processRecurringTasks = internalMutation({
           { id: crypto.randomUUID(), title: "Learning Session", completed: false, importance: 95, isRecurring: true, recurringPattern: "every day" },
           { id: crypto.randomUUID(), title: "Evening Reflection", completed: false, importance: 85, isRecurring: true, recurringPattern: "every day" },
         ];
-
         await ctx.db.insert("vectal", {
           userId: user._id,
           date: today,
@@ -237,45 +230,25 @@ export const processRecurringTasks = internalMutation({
           allCompleted: false,
           lastChecked: Date.now(),
         });
-        continue;
+        return;
       }
 
-      // Filter recurring tasks that match today's pattern
       const recurringTasks = yesterdayRecord.tasks.filter((task: any) => {
         if (!task.isRecurring || !task.recurringPattern) return false;
-
         const pattern = task.recurringPattern.toLowerCase().trim();
-
-        // Check pattern matching
-        if (pattern === "every day" || pattern === "everyday" || pattern === "daily") {
-          return true;
-        }
-
-        if (pattern === "every week" || pattern === "weekly") {
-          return dayOfWeek === 1; // Monday
-        }
-
-        if (pattern === "every month" || pattern === "monthly") {
-          return dayOfMonth === 1; // First day of month
-        }
-
-        // Check for specific day patterns
-        if (pattern.includes("every") && dayNames.some(day => pattern.includes(day))) {
-          return pattern.includes(currentDayName);
-        }
-
-        // Default: include if pattern is set
+        if (pattern === "every day" || pattern === "everyday" || pattern === "daily") return true;
+        if (pattern === "every week" || pattern === "weekly") return dayOfWeek === 1;
+        if (pattern === "every month" || pattern === "monthly") return dayOfMonth === 1;
+        if (pattern.includes("every") && dayNames.some(day => pattern.includes(day))) return pattern.includes(currentDayName);
         return true;
       });
 
-      // Create new tasks with reset completion status
       const newTasks = recurringTasks.map((task: any) => ({
         ...task,
-        id: crypto.randomUUID(), // New ID for new day
-        completed: false, // Reset completion
+        id: crypto.randomUUID(),
+        completed: false,
       }));
 
-      // Create today's record
       await ctx.db.insert("vectal", {
         userId: user._id,
         date: today,
@@ -283,6 +256,6 @@ export const processRecurringTasks = internalMutation({
         allCompleted: false,
         lastChecked: Date.now(),
       });
-    }
+    }));
   },
 })

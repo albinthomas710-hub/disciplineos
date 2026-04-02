@@ -6,11 +6,10 @@ import { internal } from "./_generated/api";
 export const calculateDailyStreaks = internalMutation({
   args: {},
   handler: async (ctx) => {
-    const allUsers = await ctx.db.query("users").collect();
+    // Process in batches of 50 to avoid excessive reads
+    const allUsers = await ctx.db.query("users").take(50);
     
-    for (const user of allUsers) {
-      await updateUserStreak(ctx, user._id);
-    }
+    await Promise.all(allUsers.map(user => updateUserStreak(ctx, user._id)));
   },
 });
 
@@ -19,11 +18,18 @@ async function updateUserStreak(ctx: any, userId: any) {
   const user = await ctx.db.get(userId);
   if (!user) return;
 
-  // Get ALL completion logs for this user
+  // Only look at last 90 days to limit data
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  const startDate = ninetyDaysAgo.toISOString().split("T")[0];
+  const today = new Date().toISOString().split("T")[0];
+
   const allLogs = await ctx.db
     .query("completionLogs")
-    .withIndex("by_user_and_date", (q: any) => q.eq("userId", userId))
-    .collect();
+    .withIndex("by_user_and_date", (q: any) => 
+      q.eq("userId", userId).gte("date", startDate).lte("date", today)
+    )
+    .take(500);
 
   // Group logs by date
   const logsByDate = new Map<string, any[]>();
@@ -48,14 +54,12 @@ async function updateUserStreak(ctx: any, userId: any) {
   let currentStreak = 0;
   let checkDate = new Date();
   
-  // Start from today
   while (true) {
     const dateStr = checkDate.toISOString().split("T")[0];
     if (successfulDates.has(dateStr)) {
       currentStreak++;
       checkDate.setDate(checkDate.getDate() - 1);
     } else if (currentStreak === 0) {
-      // If today isn't complete, check yesterday
       checkDate.setDate(checkDate.getDate() - 1);
       const yesterdayStr = checkDate.toISOString().split("T")[0];
       if (successfulDates.has(yesterdayStr)) {
@@ -69,7 +73,7 @@ async function updateUserStreak(ctx: any, userId: any) {
     }
   }
 
-  // Calculate longest streak ever
+  // Calculate longest streak
   const sortedDates = Array.from(successfulDates).sort();
   let longestStreak = 0;
   let tempStreak = 0;
@@ -77,7 +81,6 @@ async function updateUserStreak(ctx: any, userId: any) {
 
   for (const dateStr of sortedDates) {
     const currentDate = new Date(dateStr);
-    
     if (prevDate === null) {
       tempStreak = 1;
     } else {
@@ -89,15 +92,12 @@ async function updateUserStreak(ctx: any, userId: any) {
         tempStreak = 1;
       }
     }
-    
     prevDate = currentDate;
   }
   longestStreak = Math.max(longestStreak, tempStreak);
 
-  // Total days completed
   const totalDaysCompleted = successfulDates.size;
 
-  // Update with REAL stats
   await ctx.db.patch(userId, {
     currentStreak,
     longestStreak,
