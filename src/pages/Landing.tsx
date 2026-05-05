@@ -8,18 +8,10 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  Flame,
-  Focus,
   LineChart,
   Loader2,
-  Shield,
   Sparkles,
   Target,
-  Zap,
-  X,
-  TrendingUp,
-  Users,
-  Award,
   Rocket,
 } from "lucide-react";
 import { useNavigate } from "react-router";
