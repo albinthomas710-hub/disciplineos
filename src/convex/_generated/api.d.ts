@@ -53,7 +53,6 @@ import type * as schema_validators from "../schema/validators.js";
 import type * as scriptures from "../scriptures.js";
 import type * as security from "../security.js";
 import type * as seedData from "../seedData.js";
-import type * as selfDiscovery from "../selfDiscovery.js";
 import type * as sins from "../sins.js";
 import type * as streaks from "../streaks.js";
 import type * as timeBlockValidation from "../timeBlockValidation.js";
@@ -114,7 +113,6 @@ declare const fullApi: ApiFromModules<{
   scriptures: typeof scriptures;
   security: typeof security;
   seedData: typeof seedData;
-  selfDiscovery: typeof selfDiscovery;
   sins: typeof sins;
   streaks: typeof streaks;
   timeBlockValidation: typeof timeBlockValidation;

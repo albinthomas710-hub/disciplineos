@@ -7,7 +7,6 @@ import { motion } from "framer-motion";
 import {
   Clock,
   Target,
-  Brain,
   BookOpen,
   LogOut,
   Menu,
@@ -33,7 +32,6 @@ import ReflectionDialog from "@/components/ReflectionDialog";
 import QuotesView from "@/components/QuotesView";
 import ProjectsView from "@/components/ProjectsView";
 import ManifestationView from "@/components/ManifestationView";
-import KnowYourselfView from "@/components/KnowYourselfView";
 import { PrayerView } from "@/components/PrayerView";
 import VideoLibraryView from "@/components/VideoLibraryView";
 import AdviceView from "@/components/AdviceView";
@@ -47,7 +45,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const defaultTab = (searchParams.get("tab") as any) || "timer";
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "entrepreneur" | "failure" | "history" | "resolutions">(defaultTab);
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "quotes" | "projects" | "manifest" | "prayer" | "videos" | "advice" | "entrepreneur" | "failure" | "history" | "resolutions">(defaultTab);
   const [showReflection, setShowReflection] = useState(false);
 
   const todayLogs = useQuery((api as any).completionLogs.getToday, isAuthenticated ? {} : "skip");
@@ -292,14 +290,6 @@ export default function Dashboard() {
             Manifest
           </Button>
           <Button
-            variant={activeTab === "knowyourself" ? "default" : "ghost"}
-            onClick={() => setActiveTab("knowyourself")}
-            className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700 whitespace-nowrap flex-shrink-0"
-          >
-            <Brain className="h-4 w-4 mr-2" />
-            Know Yourself
-          </Button>
-          <Button
             variant={activeTab === "prayer" ? "default" : "ghost"}
             onClick={() => setActiveTab("prayer")}
             className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 whitespace-nowrap flex-shrink-0"
@@ -337,7 +327,6 @@ export default function Dashboard() {
         {activeTab === "quotes" && <QuotesView />}
         {activeTab === "projects" && <ProjectsView />}
         {activeTab === "manifest" && <ManifestationView />}
-        {activeTab === "knowyourself" && <KnowYourselfView />}
         {activeTab === "prayer" && <PrayerView />}
         {activeTab === "videos" && <VideoLibraryView />}
         {activeTab === "advice" && <AdviceView />}

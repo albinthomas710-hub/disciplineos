@@ -4,9 +4,9 @@ import { v } from "convex/values";
 import { ROLES, roleValidator } from "./schema/validators";
 import { users, userSettings } from "./schema/users";
 import { timetables, dailyTimetableOverrides, timeBlocks, completionLogs, customCategories, calendarTags, dayTags } from "./schema/productivity";
-import { reflections, selfReflectionJournal, prayers, scriptures, prayerStreaks, monthlyGoals } from "./schema/journal";
+import { reflections, prayers, scriptures, prayerStreaks, monthlyGoals } from "./schema/journal";
 import { clientFeedback, iterations, impactValidations, satisfactionMetrics, entrepreneurActions, weeklyReviews, productInsights, problems, solutions, customerLearnings, pivotLog, failuresVault, eightyTwentyActivities, hardDeadlines } from "./schema/entrepreneur";
-import { manifestations, futureTimeline, realityAnchor, affirmationIdeas, ideas, selfDiscovery, patternInsights } from "./schema/manifestation";
+import { manifestations, futureTimeline, realityAnchor, affirmationIdeas, ideas } from "./schema/manifestation";
 import { quotes, legendProfiles, quoteChains, projects, notes, holyVideos, videoCategories, videoLibrary, adviceCategories, adviceLibrary } from "./schema/content";
 import { dopamineShield, kitchenReclaim, emergencyTriggers, failureWisdom } from "./schema/health";
 
@@ -33,23 +33,6 @@ const schema = defineSchema(
     dayTags,
 
     // Journal & Reflection
-    morningJournal: defineTable({
-      userId: v.id("users"),
-      date: v.string(),
-      gratitude: v.string(),
-      greatToday: v.string(),
-      affirmations: v.string(),
-      mood: v.optional(v.number()),
-    }).index("by_user_and_date", ["userId", "date"]),
-
-    eveningJournal: defineTable({
-      userId: v.id("users"),
-      date: v.string(),
-      wholeDayJournal: v.string(),
-      whereAmINow: v.string(),
-      whoToBecome: v.string(),
-      mood: v.optional(v.number()),
-    }).index("by_user_and_date", ["userId", "date"]),
 
     reflections: defineTable({
       userId: v.id("users"),
@@ -79,19 +62,7 @@ const schema = defineSchema(
       brokeDispline: v.optional(v.string()),
     }).index("by_user_and_date", ["userId", "date"]),
 
-    selfReflectionJournal: defineTable({
-      userId: v.id("users"),
-      date: v.string(),
-      prompt: v.string(),
-      response: v.string(),
-      gratitude: v.optional(v.string()),
-      greatToday: v.optional(v.string()),
-      affirmations: v.optional(v.string()),
-      wholeDayJournal: v.optional(v.string()),
-      mood: v.optional(v.number()),
-      tags: v.optional(v.array(v.string())),
-      isPrivate: v.boolean(),
-    }).index("by_user_and_date", ["userId", "date"]),
+
 
     prayers: defineTable({
       userId: v.id("users"),
@@ -176,8 +147,6 @@ const schema = defineSchema(
     realityAnchor,
     affirmationIdeas,
     ideas,
-    selfDiscovery,
-    patternInsights,
 
     // Content & Library
     quotes,

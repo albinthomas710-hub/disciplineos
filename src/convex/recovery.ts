@@ -48,11 +48,6 @@ export const listAnonymousUsers = query({
           .collect();
 
         // NEW: Check all the missing data types
-        const vectal = await ctx.db
-          .query("vectal")
-          .withIndex("by_user_and_date", (q) => q.eq("userId", user._id))
-          .collect();
-
         const scriptures = await ctx.db
           .query("scriptures")
           .withIndex("by_user", (q) => q.eq("userId", user._id))
@@ -73,18 +68,10 @@ export const listAnonymousUsers = query({
           .withIndex("by_user", (q) => q.eq("userId", user._id))
           .collect();
 
-        const selfDiscovery = await ctx.db
-          .query("selfDiscovery")
-          .withIndex("by_user", (q) => q.eq("userId", user._id))
-          .collect();
-
         const legendProfiles = await ctx.db
           .query("legendProfiles")
           .withIndex("by_user", (q) => q.eq("userId", user._id))
           .collect();
-
-        // Calculate total Vectal tasks across all dates
-        const totalVectalTasks = vectal.reduce((sum, v) => sum + (v.tasks?.length || 0), 0);
 
         const accountData = {
           userId: user._id,
@@ -101,13 +88,11 @@ export const listAnonymousUsers = query({
             quotes: quotes.length,
             prayers: prayers.length,
             projects: projects.length,
-            vectalTasks: totalVectalTasks,
             scriptures: scriptures.length,
             holyVideos: holyVideos.length,
             videoLibrary: videoLibrary.length,
             adviceLibrary: adviceLibrary.length,
 
-            selfDiscovery: selfDiscovery.length,
             legendProfiles: legendProfiles.length,
           },
         };
@@ -118,13 +103,10 @@ export const listAnonymousUsers = query({
           quotes: quotes.length,
           prayers: prayers.length,
           projects: projects.length,
-          vectalTasks: totalVectalTasks,
           scriptures: scriptures.length,
           holyVideos: holyVideos.length,
           videoLibrary: videoLibrary.length,
           adviceLibrary: adviceLibrary.length,
-
-          selfDiscovery: selfDiscovery.length,
           legendProfiles: legendProfiles.length,
           email: user.email || 'none',
           isAnonymous: user.isAnonymous,

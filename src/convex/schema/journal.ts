@@ -49,17 +49,6 @@ export const reflections = defineTable({
 })
 .index("by_user_and_date", ["userId", "date"]);
 
-// Self-Reflection Journal
-export const selfReflectionJournal = defineTable({
-  userId: v.id("users"),
-  date: v.string(),
-  prompt: v.string(),
-  response: v.string(),
-  mood: v.optional(v.number()), // 1-10
-  tags: v.optional(v.array(v.string())),
-  isPrivate: v.boolean(),
-}).index("by_user_and_date", ["userId", "date"]);
-
 // Prayer Journal - Christian spiritual feature
 export const prayers = defineTable({
   userId: v.id("users"),
