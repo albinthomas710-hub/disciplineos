@@ -259,6 +259,15 @@ export default function Dashboard() {
           </Button>
 
           <Button
+            variant={activeTab === "history" ? "default" : "ghost"}
+            onClick={() => setActiveTab("history")}
+            className="cursor-pointer bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 whitespace-nowrap flex-shrink-0"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            History
+          </Button>
+
+          <Button
             variant={activeTab === "entrepreneur" ? "default" : "ghost"}
             onClick={() => setActiveTab("entrepreneur")}
             className="cursor-pointer bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 text-white hover:from-purple-700 hover:via-pink-700 hover:to-orange-700 whitespace-nowrap flex-shrink-0"
@@ -273,14 +282,6 @@ export default function Dashboard() {
           >
             <AlertTriangle className="h-4 w-4 mr-2" />
             Mistake Vault
-          </Button>
-          <Button
-            variant={activeTab === "history" ? "default" : "ghost"}
-            onClick={() => setActiveTab("history")}
-            className="cursor-pointer bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 whitespace-nowrap flex-shrink-0"
-          >
-            <Calendar className="h-4 w-4 mr-2" />
-            History
           </Button>
 
           <Button
