@@ -1,15 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent } from "@/components/ui/card";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@/hooks/use-auth";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { motion } from "framer-motion";
 import {
-  LayoutDashboard,
-  Briefcase,
   Clock,
-  Shield,
   Target,
   Brain,
   BookOpen,
@@ -20,25 +16,20 @@ import {
   Loader2,
   CheckCircle2,
   Calendar,
-  Plus,
-  Settings,
   Sparkles,
   Heart,
   Video,
   Lightbulb,
   Rocket,
   FolderOpen,
-  Download,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { toast } from "sonner";
 
 import ActiveTimerView from "@/components/ActiveTimerView";
 import TimetableManager from "@/components/TimetableManager";
 import AnalyticsView from "@/components/AnalyticsView";
 import ReflectionDialog from "@/components/ReflectionDialog";
-import VectalView from "@/components/VectalView";
 import QuotesView from "@/components/QuotesView";
 import ProjectsView from "@/components/ProjectsView";
 import ManifestationView from "@/components/ManifestationView";
@@ -48,7 +39,6 @@ import VideoLibraryView from "@/components/VideoLibraryView";
 import AdviceView from "@/components/AdviceView";
 import { EntrepreneurOSView } from "@/components/EntrepreneurOSView";
 import { FailureWisdomView } from "@/components/FailureWisdomView";
-import { DataBackupDialog } from "@/components/DataBackupDialog";
 import HistoryView from "@/components/HistoryView";
 import { ResolutionsView } from "@/components/ResolutionsView";
 
@@ -57,14 +47,11 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const defaultTab = (searchParams.get("tab") as any) || "timer";
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "tasks" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "entrepreneur" | "failure" | "history" | "resolutions">(defaultTab);
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "entrepreneur" | "failure" | "history" | "resolutions">(defaultTab);
   const [showReflection, setShowReflection] = useState(false);
-  const [showBackup, setShowBackup] = useState(false);
 
-  const activeTimetable = useQuery((api as any).timetables.getActive, isAuthenticated ? {} : "skip");
   const todayLogs = useQuery((api as any).completionLogs.getToday, isAuthenticated ? {} : "skip");
   const reflectionCheck = useQuery((api as any).reflectionTriggers.shouldShowReflection, isAuthenticated ? {} : "skip");
-  const tasksCheck = useQuery((api as any).vectal.checkDailyCompletion, isAuthenticated ? {} : "skip");
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -86,18 +73,6 @@ export default function Dashboard() {
     }
   }, [reflectionCheck, showReflection]);
 
-  // New: Show alert if daily tasks are not completed
-  useEffect(() => {
-    if (tasksCheck && !tasksCheck.allCompleted && tasksCheck.totalTasks > 0) {
-      const incompleteTasks = tasksCheck.totalTasks - tasksCheck.completedTasks;
-      if (incompleteTasks > 0) {
-        toast.info(
-          `⚠️ Tasks Check: ${incompleteTasks} task${incompleteTasks > 1 ? 's' : ''} remaining today`,
-          { duration: 5000 }
-        );
-      }
-    }
-  }, [tasksCheck]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -293,14 +268,6 @@ export default function Dashboard() {
             Resolutions
           </Button>
           <Button
-            variant={activeTab === "tasks" ? "default" : "ghost"}
-            onClick={() => setActiveTab("tasks")}
-            className="cursor-pointer bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700 whitespace-nowrap flex-shrink-0"
-          >
-            <Target className="h-4 w-4 mr-2" />
-            Tasks
-          </Button>
-          <Button
             variant={activeTab === "quotes" ? "default" : "ghost"}
             onClick={() => setActiveTab("quotes")}
             className="cursor-pointer bg-gradient-to-r from-amber-600 to-orange-600 text-white hover:from-amber-700 hover:to-orange-700 whitespace-nowrap flex-shrink-0"
@@ -357,14 +324,6 @@ export default function Dashboard() {
             Advice
           </Button>
 
-          <Button
-            variant="ghost"
-            onClick={() => setShowBackup(true)}
-            className="cursor-pointer bg-gradient-to-r from-slate-600 to-gray-600 text-white hover:from-slate-700 hover:to-gray-700 whitespace-nowrap flex-shrink-0"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Backup Data
-          </Button>
         </div>
       </div>
 
@@ -375,7 +334,6 @@ export default function Dashboard() {
         {activeTab === "analytics" && <AnalyticsView />}
 
         {activeTab === "resolutions" && <ResolutionsView />}
-        {activeTab === "tasks" && <VectalView />}
         {activeTab === "quotes" && <QuotesView />}
         {activeTab === "projects" && <ProjectsView />}
         {activeTab === "manifest" && <ManifestationView />}
@@ -395,11 +353,7 @@ export default function Dashboard() {
         onOpenChange={setShowReflection}
       />
 
-      {/* Backup Dialog */}
-      <DataBackupDialog 
-        open={showBackup} 
-        onOpenChange={setShowBackup} 
-      />
+
     </div>
   );
 }

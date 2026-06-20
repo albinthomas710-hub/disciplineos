@@ -9,15 +9,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
-import { Home, LogOut, Download } from "lucide-react";
+import { Home, LogOut } from "lucide-react";
 import { useNavigate } from "react-router";
-import { useState } from "react";
-import { DataBackupDialog } from "@/components/DataBackupDialog";
 
 export function LogoDropdown() {
   const { isAuthenticated, signOut } = useAuth();
   const navigate = useNavigate();
-  const [showBackup, setShowBackup] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -52,14 +49,6 @@ export function LogoDropdown() {
             Landing Page
           </DropdownMenuItem>
           
-          <DropdownMenuItem 
-            onClick={() => setShowBackup(true)} 
-            className="cursor-pointer"
-          >
-            <Download className="mr-2 h-4 w-4" />
-            Backup Data
-          </DropdownMenuItem>
-          
           {isAuthenticated && (
             <>
               <DropdownMenuSeparator />
@@ -74,8 +63,6 @@ export function LogoDropdown() {
           )}
         </DropdownMenuContent>
       </DropdownMenu>
-
-      <DataBackupDialog open={showBackup} onOpenChange={setShowBackup} />
     </>
   );
 }
