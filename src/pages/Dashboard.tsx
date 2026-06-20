@@ -53,14 +53,13 @@ import { FailureWisdomView } from "@/components/FailureWisdomView";
 import { DataBackupDialog } from "@/components/DataBackupDialog";
 import HistoryView from "@/components/HistoryView";
 import { ResolutionsView } from "@/components/ResolutionsView";
-import { SBAWorksheetView } from "@/components/SBAWorksheetView";
 
 export default function Dashboard() {
   const { isLoading, isAuthenticated, user, signOut } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const defaultTab = (searchParams.get("tab") as any) || "timer";
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "tasks" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure" | "history" | "resolutions" | "sba">(defaultTab);
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "tasks" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure" | "history" | "resolutions">(defaultTab);
   const [showReflection, setShowReflection] = useState(false);
   const [showBackup, setShowBackup] = useState(false);
 
@@ -260,14 +259,7 @@ export default function Dashboard() {
             <Target className="h-4 w-4 mr-2" />
             Analytics
           </Button>
-          <Button
-            variant={activeTab === "sba" ? "default" : "ghost"}
-            onClick={() => setActiveTab("sba")}
-            className="cursor-pointer bg-gradient-to-r from-red-900 to-red-700 text-white hover:from-red-800 hover:to-red-600 whitespace-nowrap flex-shrink-0 shadow-sm border border-red-900/50"
-          >
-            <Sparkles className="h-4 w-4 mr-2" />
-            SBA Worksheet
-          </Button>
+
           <Button
             variant={activeTab === "resolutions" ? "default" : "ghost"}
             onClick={() => setActiveTab("resolutions")}
@@ -388,7 +380,7 @@ export default function Dashboard() {
         {activeTab === "timer" && <ActiveTimerView />}
         {activeTab === "timetables" && <TimetableManager />}
         {activeTab === "analytics" && <AnalyticsView />}
-        {activeTab === "sba" && <SBAWorksheetView />}
+
         {activeTab === "resolutions" && <ResolutionsView />}
         {activeTab === "tasks" && <VectalView />}
         {activeTab === "quotes" && <QuotesView />}
