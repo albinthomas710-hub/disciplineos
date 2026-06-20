@@ -43,7 +43,6 @@ import {
 import TomorrowPlanCard from "./TomorrowPlanCard";
 import SignalVsNoiseCard from "./SignalVsNoiseCard";
 import MonthlyObjectivesGuide from "./history/MonthlyObjectivesGuide";
-import YearlyVerseBanner from "./YearlyVerseBanner";
 
 interface HistoryViewProps {
   onNavigateToTimer?: () => void;
@@ -179,8 +178,6 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
 
   return (
     <div className="space-y-6">
-      <YearlyVerseBanner />
-      
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h2 className="text-3xl font-bold tracking-tight">History & Progress</h2>
         <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "month" | "year")} className="w-full sm:w-auto">

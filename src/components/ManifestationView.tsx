@@ -34,7 +34,6 @@ import { ProgressAnalytics } from "./manifestation/ProgressAnalytics";
 import { ManifestationForm } from "./manifestation/ManifestationForm";
 import { ManifestationDashboard } from "./manifestation/ManifestationDashboard";
 import { BrainDump } from "./manifestation/BrainDump";
-import YearlyVerseBanner from "./YearlyVerseBanner";
 
 export default function ManifestationView() {
   const manifestations = useQuery((api as any).manifestations.getUserManifestations);
@@ -251,8 +250,6 @@ export default function ManifestationView() {
 
   return (
     <div className="space-y-6">
-      <YearlyVerseBanner />
-
       {celebratingItem && (
         <CelebrationModal item={celebratingItem} onClose={() => setCelebratingItem(null)} />
       )}
