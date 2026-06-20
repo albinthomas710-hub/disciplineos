@@ -256,6 +256,14 @@ export default function Dashboard() {
             <AlertTriangle className="h-4 w-4 mr-2" />
             Mistake Vault
           </Button>
+          <Button
+            variant={activeTab === "prayer" ? "default" : "ghost"}
+            onClick={() => setActiveTab("prayer")}
+            className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 whitespace-nowrap flex-shrink-0"
+          >
+            <Heart className="h-4 w-4 mr-2" />
+            Prayer
+          </Button>
 
           <Button
             variant={activeTab === "resolutions" ? "default" : "ghost"}
@@ -288,14 +296,6 @@ export default function Dashboard() {
           >
             <Sparkles className="h-4 w-4 mr-2" />
             Manifest
-          </Button>
-          <Button
-            variant={activeTab === "prayer" ? "default" : "ghost"}
-            onClick={() => setActiveTab("prayer")}
-            className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 whitespace-nowrap flex-shrink-0"
-          >
-            <Heart className="h-4 w-4 mr-2" />
-            Prayer
           </Button>
           <Button
             variant={activeTab === "videos" ? "default" : "ghost"}
