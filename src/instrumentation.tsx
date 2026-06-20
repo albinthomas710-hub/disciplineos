@@ -177,7 +177,7 @@ export function InstrumentationProvider({
   useEffect(() => {
     const handleError = async (event: ErrorEvent) => {
       try {
-        console.log(event);
+
         event.preventDefault();
         setError({
           error: event.message,
@@ -203,21 +203,19 @@ export function InstrumentationProvider({
 
     const handleRejection = async (event: PromiseRejectionEvent) => {
       try {
-        console.error(event);
-
         if (import.meta.env.VITE_VLY_APP_ID) {
           await reportErrorToVly({
-            error: event.reason.message,
-            stackTrace: event.reason.stack,
+            error: event.reason?.message || String(event.reason),
+            stackTrace: event.reason?.stack,
           });
         }
 
         setError({
-          error: event.reason.message,
-          stack: event.reason.stack,
+          error: event.reason?.message || String(event.reason),
+          stack: event.reason?.stack || "",
         });
       } catch (error) {
-        console.error("Error in handleRejection:", error);
+        // Prevent error reporting failures from cascading
       }
     };
 

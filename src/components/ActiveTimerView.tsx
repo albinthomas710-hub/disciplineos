@@ -65,10 +65,11 @@ export default function ActiveTimerView() {
   const [currentBlock, setCurrentBlock] = useState<any>(null);
   const [nextBlock, setNextBlock] = useState<any>(null);
 
+  // Update every 30 seconds instead of every second to prevent unnecessary re-renders
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
-    }, 1000);
+    }, 30000);
     return () => clearInterval(timer);
   }, []);
 
