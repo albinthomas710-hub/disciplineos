@@ -26,7 +26,6 @@ import {
   Heart,
   Video,
   Lightbulb,
-  Ban,
   Rocket,
   FolderOpen,
   Download,
@@ -47,7 +46,6 @@ import KnowYourselfView from "@/components/KnowYourselfView";
 import { PrayerView } from "@/components/PrayerView";
 import VideoLibraryView from "@/components/VideoLibraryView";
 import AdviceView from "@/components/AdviceView";
-import NotToDoListView from "@/components/NotToDoListView";
 import { EntrepreneurOSView } from "@/components/EntrepreneurOSView";
 import { FailureWisdomView } from "@/components/FailureWisdomView";
 import { DataBackupDialog } from "@/components/DataBackupDialog";
@@ -59,7 +57,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const defaultTab = (searchParams.get("tab") as any) || "timer";
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "tasks" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "nottodo" | "entrepreneur" | "failure" | "history" | "resolutions">(defaultTab);
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "tasks" | "quotes" | "projects" | "manifest" | "knowyourself" | "prayer" | "videos" | "advice" | "entrepreneur" | "failure" | "history" | "resolutions">(defaultTab);
   const [showReflection, setShowReflection] = useState(false);
   const [showBackup, setShowBackup] = useState(false);
 
@@ -332,14 +330,7 @@ export default function Dashboard() {
             <Lightbulb className="h-4 w-4 mr-2" />
             Advice
           </Button>
-          <Button
-            variant={activeTab === "nottodo" ? "default" : "ghost"}
-            onClick={() => setActiveTab("nottodo")}
-            className="cursor-pointer bg-gradient-to-r from-red-600 to-orange-600 text-white hover:from-red-700 hover:to-orange-700 whitespace-nowrap flex-shrink-0"
-          >
-            <Ban className="h-4 w-4 mr-2" />
-            Not To Do
-          </Button>
+
           <Button
             variant={activeTab === "entrepreneur" ? "default" : "ghost"}
             onClick={() => setActiveTab("entrepreneur")}
@@ -390,7 +381,7 @@ export default function Dashboard() {
         {activeTab === "prayer" && <PrayerView />}
         {activeTab === "videos" && <VideoLibraryView />}
         {activeTab === "advice" && <AdviceView />}
-        {activeTab === "nottodo" && <NotToDoListView />}
+
         {activeTab === "entrepreneur" && <EntrepreneurOSView />}
         {activeTab === "failure" && <FailureWisdomView />}
         {activeTab === "history" && <HistoryView onNavigateToTimer={() => setActiveTab("timer")} />}

@@ -32,7 +32,6 @@ import type * as legendProfiles from "../legendProfiles.js";
 import type * as manifestationAI from "../manifestationAI.js";
 import type * as manifestationActions from "../manifestationActions.js";
 import type * as manifestations from "../manifestations.js";
-import type * as notToDoList from "../notToDoList.js";
 import type * as notes from "../notes.js";
 import type * as prayers from "../prayers.js";
 import type * as problemVault from "../problemVault.js";
@@ -96,7 +95,6 @@ declare const fullApi: ApiFromModules<{
   manifestationAI: typeof manifestationAI;
   manifestationActions: typeof manifestationActions;
   manifestations: typeof manifestations;
-  notToDoList: typeof notToDoList;
   notes: typeof notes;
   prayers: typeof prayers;
   problemVault: typeof problemVault;

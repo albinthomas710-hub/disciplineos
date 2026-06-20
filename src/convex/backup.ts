@@ -45,7 +45,6 @@ export const getAllUserData = query({
       videoLibrary,
       adviceCategories,
       adviceLibrary,
-      notToDoList,
       hardDeadlines,
       clientFeedback,
       iterations,
@@ -101,7 +100,6 @@ export const getAllUserData = query({
       ctx.db.query("videoLibrary").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
       ctx.db.query("adviceCategories").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
       ctx.db.query("adviceLibrary").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
-      ctx.db.query("notToDoList").withIndex("by_user_and_date", (q) => q.eq("userId", userId)).collect(),
       ctx.db.query("hardDeadlines").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
       ctx.db.query("clientFeedback").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
       ctx.db.query("iterations").withIndex("by_user", (q) => q.eq("userId", userId)).collect(),
@@ -171,7 +169,6 @@ export const getAllUserData = query({
         videoLibrary,
         adviceCategories,
         adviceLibrary,
-        notToDoList,
         hardDeadlines,
         clientFeedback,
         iterations,
@@ -297,7 +294,6 @@ export const restoreUserData = mutation({
     await restoreTable("prayers", d.prayers);
     await restoreTable("scriptures", d.scriptures);
     await restoreTable("holyVideos", d.holyVideos);
-    await restoreTable("notToDoList", d.notToDoList);
     await restoreTable("weeklyReviews", d.weeklyReviews);
     await restoreTable("eightyTwentyActivities", d.eightyTwentyActivities);
     await restoreTable("failureWisdom", d.failureWisdom);

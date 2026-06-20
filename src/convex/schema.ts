@@ -8,7 +8,7 @@ import { reflections, selfReflectionJournal, prayers, scriptures, prayerStreaks,
 import { clientFeedback, iterations, impactValidations, satisfactionMetrics, entrepreneurActions, weeklyReviews, productInsights, problems, solutions, customerLearnings, pivotLog, failuresVault, eightyTwentyActivities, hardDeadlines } from "./schema/entrepreneur";
 import { manifestations, futureTimeline, realityAnchor, affirmationIdeas, ideas, selfDiscovery, patternInsights } from "./schema/manifestation";
 import { quotes, legendProfiles, quoteChains, projects, notes, holyVideos, videoCategories, videoLibrary, adviceCategories, adviceLibrary } from "./schema/content";
-import { dopamineShield, kitchenReclaim, emergencyTriggers, notToDoList, failureWisdom } from "./schema/health";
+import { dopamineShield, kitchenReclaim, emergencyTriggers, failureWisdom } from "./schema/health";
 
 // Export validators for use in other files
 export { ROLES, roleValidator };
@@ -196,7 +196,6 @@ const schema = defineSchema(
     dopamineShield,
     kitchenReclaim,
     emergencyTriggers,
-    notToDoList,
     failureWisdom,
     
     recovery: defineTable({
