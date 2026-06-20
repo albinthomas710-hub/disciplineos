@@ -12,7 +12,6 @@ import type * as advice from "../advice.js";
 import type * as affirmationIdeas from "../affirmationIdeas.js";
 import type * as auth from "../auth.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
-import type * as backup from "../backup.js";
 import type * as categories from "../categories.js";
 import type * as completionLogs from "../completionLogs.js";
 import type * as crons from "../crons.js";
@@ -61,7 +60,6 @@ import type * as timeBlockValidation from "../timeBlockValidation.js";
 import type * as timeBlocks from "../timeBlocks.js";
 import type * as timetables from "../timetables.js";
 import type * as users from "../users.js";
-import type * as vectal from "../vectal.js";
 import type * as videoLibrary from "../videoLibrary.js";
 
 import type {
@@ -75,7 +73,6 @@ declare const fullApi: ApiFromModules<{
   affirmationIdeas: typeof affirmationIdeas;
   auth: typeof auth;
   "auth/emailOtp": typeof auth_emailOtp;
-  backup: typeof backup;
   categories: typeof categories;
   completionLogs: typeof completionLogs;
   crons: typeof crons;
@@ -124,7 +121,6 @@ declare const fullApi: ApiFromModules<{
   timeBlocks: typeof timeBlocks;
   timetables: typeof timetables;
   users: typeof users;
-  vectal: typeof vectal;
   videoLibrary: typeof videoLibrary;
 }>;
 

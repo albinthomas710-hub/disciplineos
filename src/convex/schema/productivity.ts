@@ -48,25 +48,6 @@ export const completionLogs = defineTable({
   .index("by_user_and_date", ["userId", "date"])
   .index("by_user_and_timeblock", ["userId", "timeBlockId"]);
 
-// Vectal - Daily Task Tracking
-export const vectal = defineTable({
-  userId: v.id("users"),
-  date: v.string(), // "2025-01-11"
-  tasks: v.array(
-    v.object({
-      id: v.string(),
-      title: v.string(),
-      completed: v.boolean(),
-      importance: v.number(), // 0-100 score
-      isRecurring: v.boolean(), // true for recurring, false for date-specific
-      recurringPattern: v.optional(v.string()), // "every day", "every Monday", "every month", etc.
-      dueDate: v.optional(v.string()), // for date-specific tasks
-    })
-  ),
-  allCompleted: v.boolean(),
-  lastChecked: v.number(),
-}).index("by_user_and_date", ["userId", "date"]);
-
 // Custom Categories - user-defined time block categories
 export const customCategories = defineTable({
   userId: v.id("users"),

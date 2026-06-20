@@ -3,7 +3,7 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { ROLES, roleValidator } from "./schema/validators";
 import { users, userSettings } from "./schema/users";
-import { timetables, dailyTimetableOverrides, timeBlocks, completionLogs, vectal, customCategories, calendarTags, dayTags } from "./schema/productivity";
+import { timetables, dailyTimetableOverrides, timeBlocks, completionLogs, customCategories, calendarTags, dayTags } from "./schema/productivity";
 import { reflections, selfReflectionJournal, prayers, scriptures, prayerStreaks, monthlyGoals } from "./schema/journal";
 import { clientFeedback, iterations, impactValidations, satisfactionMetrics, entrepreneurActions, weeklyReviews, productInsights, problems, solutions, customerLearnings, pivotLog, failuresVault, eightyTwentyActivities, hardDeadlines } from "./schema/entrepreneur";
 import { manifestations, futureTimeline, realityAnchor, affirmationIdeas, ideas, selfDiscovery, patternInsights } from "./schema/manifestation";
@@ -28,7 +28,6 @@ const schema = defineSchema(
     dailyTimetableOverrides,
     timeBlocks,
     completionLogs,
-    vectal,
     customCategories,
     calendarTags,
     dayTags,
