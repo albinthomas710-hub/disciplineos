@@ -249,20 +249,20 @@ export default function Dashboard() {
             Entrepreneur OS
           </Button>
           <Button
-            variant={activeTab === "failure" ? "default" : "ghost"}
-            onClick={() => setActiveTab("failure")}
-            className="cursor-pointer bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 whitespace-nowrap flex-shrink-0"
-          >
-            <AlertTriangle className="h-4 w-4 mr-2" />
-            Mistake Vault
-          </Button>
-          <Button
             variant={activeTab === "prayer" ? "default" : "ghost"}
             onClick={() => setActiveTab("prayer")}
             className="cursor-pointer bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 whitespace-nowrap flex-shrink-0"
           >
             <Heart className="h-4 w-4 mr-2" />
             Prayer
+          </Button>
+          <Button
+            variant={activeTab === "failure" ? "default" : "ghost"}
+            onClick={() => setActiveTab("failure")}
+            className="cursor-pointer bg-gradient-to-r from-red-600 to-rose-600 text-white hover:from-red-700 hover:to-rose-700 whitespace-nowrap flex-shrink-0"
+          >
+            <AlertTriangle className="h-4 w-4 mr-2" />
+            Mistake Vault
           </Button>
 
           <Button

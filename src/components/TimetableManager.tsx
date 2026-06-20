@@ -116,7 +116,7 @@ export default function TimetableManager() {
               transition={{ delay: i * 0.1 }}
             >
               <Card
-                className={`cursor-pointer transition-all duration-300 ${
+                className={`group cursor-pointer transition-all duration-300 ${
                   isActive
                     ? "border-2 border-primary shadow-xl scale-[1.02] bg-gradient-to-br from-background to-accent/10"
                     : "hover:shadow-lg hover:border-primary/50 hover:-translate-y-1"
