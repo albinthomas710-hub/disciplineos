@@ -1,0 +1,12 @@
+--- a/src/components/DataBackupDialog.tsx
++++ b/src/components/DataBackupDialog.tsx
+@@ -42,7 +42,7 @@
+       const link = document.createElement("a");
+       link.href = url;
+       link.download = `discipline_os_backup_${new Date().toISOString().split('T')[0]}.json`;
+-      // Target _blank to ensure it opens/downloads correctly from cross-origin
+-      link.target = "_blank"; 
+       document.body.appendChild(link);
+       link.click();
+       document.body.removeChild(link);
+

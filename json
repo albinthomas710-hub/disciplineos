@@ -1,0 +1,7 @@
+{
+  "file_paths": [
+    "src/components/YearlyWarMapView.tsx",
+    "src/convex/history.ts"
+  ],
+  "replace_files_in_context": false
+}
