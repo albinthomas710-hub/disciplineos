@@ -213,13 +213,12 @@ export default function Dashboard() {
             Timer
           </Button>
           <Button
-            variant={activeTab === "timetables" ? "default" : "ghost"}
-            onClick={() => setActiveTab("timetables")}
-            className="cursor-pointer whitespace-nowrap flex-shrink-0"
-            data-view="timetables"
+            variant={activeTab === "history" ? "default" : "ghost"}
+            onClick={() => setActiveTab("history")}
+            className="cursor-pointer bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 whitespace-nowrap flex-shrink-0"
           >
             <Calendar className="h-4 w-4 mr-2" />
-            Timetables
+            History
           </Button>
           <Button
             variant={activeTab === "analytics" ? "default" : "ghost"}
@@ -230,16 +229,6 @@ export default function Dashboard() {
             <Target className="h-4 w-4 mr-2" />
             Analytics
           </Button>
-
-          <Button
-            variant={activeTab === "history" ? "default" : "ghost"}
-            onClick={() => setActiveTab("history")}
-            className="cursor-pointer bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 whitespace-nowrap flex-shrink-0"
-          >
-            <Calendar className="h-4 w-4 mr-2" />
-            History
-          </Button>
-
           <Button
             variant={activeTab === "entrepreneur" ? "default" : "ghost"}
             onClick={() => setActiveTab("entrepreneur")}
@@ -263,6 +252,15 @@ export default function Dashboard() {
           >
             <AlertTriangle className="h-4 w-4 mr-2" />
             Mistake Vault
+          </Button>
+          <Button
+            variant={activeTab === "timetables" ? "default" : "ghost"}
+            onClick={() => setActiveTab("timetables")}
+            className="cursor-pointer whitespace-nowrap flex-shrink-0"
+            data-view="timetables"
+          >
+            <Calendar className="h-4 w-4 mr-2" />
+            Timetables
           </Button>
 
           <Button
