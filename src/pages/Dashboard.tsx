@@ -9,7 +9,6 @@ import {
   Target,
   BookOpen,
   LogOut,
-  Menu,
   AlertTriangle,
   Flame,
   Loader2,
@@ -27,8 +26,7 @@ import { useNavigate, useSearchParams } from "react-router";
 
 import ActiveTimerView from "@/components/ActiveTimerView";
 import TimetableManager from "@/components/TimetableManager";
-import AnalyticsView from "@/components/AnalyticsView";
-import ReflectionDialog from "@/components/ReflectionDialog";
+
 import QuotesView from "@/components/QuotesView";
 import ProjectsView from "@/components/ProjectsView";
 import ManifestationView from "@/components/ManifestationView";
@@ -45,11 +43,9 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const defaultTab = (searchParams.get("tab") as any) || "timer";
-  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "analytics" | "quotes" | "projects" | "manifest" | "prayer" | "videos" | "advice" | "entrepreneur" | "failure" | "history" | "resolutions">(defaultTab);
-  const [showReflection, setShowReflection] = useState(false);
+  const [activeTab, setActiveTab] = useState<"timer" | "timetables" | "quotes" | "projects" | "manifest" | "prayer" | "videos" | "advice" | "entrepreneur" | "failure" | "history" | "resolutions">(defaultTab);
 
   const todayLogs = useQuery((api as any).completionLogs.getToday, isAuthenticated ? {} : "skip");
-  const reflectionCheck = useQuery((api as any).reflectionTriggers.shouldShowReflection, isAuthenticated ? {} : "skip");
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -59,18 +55,6 @@ export default function Dashboard() {
 
   // Removed automatic timetable seeding - users create their own
   // useEffect for seedData removed
-
-  // New: Auto-show reflection dialog when appropriate
-  useEffect(() => {
-    if (reflectionCheck?.shouldShow && !showReflection) {
-      // Small delay to avoid showing immediately on page load
-      const timer = setTimeout(() => {
-        setShowReflection(true);
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [reflectionCheck, showReflection]);
-
 
   const handleSignOut = async () => {
     await signOut();
@@ -115,14 +99,7 @@ export default function Dashboard() {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setShowReflection(true)}
-                className="cursor-pointer"
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
+
               <Button
                 variant="ghost"
                 size="icon"
@@ -220,15 +197,7 @@ export default function Dashboard() {
             <Calendar className="h-4 w-4 mr-2" />
             History
           </Button>
-          <Button
-            variant={activeTab === "analytics" ? "default" : "ghost"}
-            onClick={() => setActiveTab("analytics")}
-            className="cursor-pointer whitespace-nowrap flex-shrink-0"
-            data-view="analytics"
-          >
-            <Target className="h-4 w-4 mr-2" />
-            Analytics
-          </Button>
+
           <Button
             variant={activeTab === "entrepreneur" ? "default" : "ghost"}
             onClick={() => setActiveTab("entrepreneur")}
@@ -319,8 +288,6 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {activeTab === "timer" && <ActiveTimerView />}
         {activeTab === "timetables" && <TimetableManager />}
-        {activeTab === "analytics" && <AnalyticsView />}
-
         {activeTab === "resolutions" && <ResolutionsView />}
         {activeTab === "quotes" && <QuotesView />}
         {activeTab === "projects" && <ProjectsView />}
@@ -333,13 +300,6 @@ export default function Dashboard() {
         {activeTab === "failure" && <FailureWisdomView />}
         {activeTab === "history" && <HistoryView onNavigateToTimer={() => setActiveTab("timer")} />}
       </div>
-
-      {/* Reflection Dialog */}
-      <ReflectionDialog
-        open={showReflection}
-        onOpenChange={setShowReflection}
-      />
-
 
     </div>
   );
