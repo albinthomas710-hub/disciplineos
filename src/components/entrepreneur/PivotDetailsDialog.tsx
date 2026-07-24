@@ -8,7 +8,7 @@ interface PivotDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pivot: {
-    _id: Id<"pivotLog">;
+    _id: string;
     pivotDate: string;
     pivotType: string;
     fromWhat: string;

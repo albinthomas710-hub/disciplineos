@@ -7,7 +7,7 @@ import { Id } from "@/convex/_generated/dataModel";
 
 interface ProblemCardProps {
   problem: {
-    _id: Id<"problems">;
+    _id: string;
     problemTitle: string;
     problemDescription: string;
     status: string;

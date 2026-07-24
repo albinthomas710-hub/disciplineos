@@ -13,9 +13,9 @@ import { FailureWisdomForm } from "./failurewisdom/FailureWisdomForm";
 import { FailureWisdomSearch } from "./failurewisdom/FailureWisdomSearch";
 
 interface FailureEntry {
-  _id: Id<"failureWisdom">;
+  _id: string;
   _creationTime: number;
-  userId: Id<"users">;
+  userId: string;
   type: "recurring_mistake" | "single_lesson" | "multi_lesson" | "external_wisdom" | "titan_failures";
   title: string;
   description: string;
@@ -38,7 +38,7 @@ export function FailureWisdomView() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
-  const handleDelete = async (id: Id<"failureWisdom">) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Forget this lesson?")) {
       await deleteEntry({ id });
       toast.success("Deleted.");

@@ -27,14 +27,14 @@ export const getRecent = query({
     const user = await getCurrentUser(ctx);
     if (!user) return [];
 
-    const reflections = await ctx.db
+    const limit = args.limit || 7;
+
+    // Use order desc to get most recent first, take only what we need
+    return await ctx.db
       .query("reflections")
       .withIndex("by_user_and_date", (q) => q.eq("userId", user._id))
-      .collect();
-
-    return reflections
-      .sort((a, b) => b.date.localeCompare(a.date))
-      .slice(0, args.limit || 7);
+      .order("desc")
+      .take(limit);
   },
 });
 

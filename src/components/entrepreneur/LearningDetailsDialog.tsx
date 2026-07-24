@@ -8,7 +8,7 @@ interface LearningDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   learning: {
-    _id: Id<"customerLearnings">;
+    _id: string;
     date: string;
     customerName: string;
     conversationType: string;

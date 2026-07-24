@@ -20,7 +20,7 @@ export const getToday = query({
   },
 });
 
-// Get logs for date range
+// Get logs for date range - optimized to use index filtering
 export const getByDateRange = query({
   args: {
     startDate: v.string(),
@@ -30,14 +30,15 @@ export const getByDateRange = query({
     const user = await getCurrentUser(ctx);
     if (!user) return [];
 
-    const logs = await ctx.db
+    // Use index range query instead of collecting all logs
+    return await ctx.db
       .query("completionLogs")
-      .withIndex("by_user_and_date", (q) => q.eq("userId", user._id))
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id)
+         .gte("date", args.startDate)
+         .lte("date", args.endDate)
+      )
       .collect();
-
-    return logs.filter(
-      (log) => log.date >= args.startDate && log.date <= args.endDate
-    );
   },
 });
 

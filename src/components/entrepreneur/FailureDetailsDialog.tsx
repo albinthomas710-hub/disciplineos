@@ -8,7 +8,7 @@ interface FailureDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   failure: {
-    _id: Id<"failuresVault">;
+    _id: string;
     failureDate: string;
     whatFailed: string;
     whyItFailed: string;

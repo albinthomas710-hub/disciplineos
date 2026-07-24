@@ -8,7 +8,7 @@ interface SolutionDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   solution: {
-    _id: Id<"solutions">;
+    _id: string;
     solutionTitle: string;
     solutionDescription: string;
     hypothesis: string;

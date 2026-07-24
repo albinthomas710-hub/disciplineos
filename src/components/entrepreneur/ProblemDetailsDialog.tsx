@@ -8,7 +8,7 @@ interface ProblemDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   problem: {
-    _id: Id<"problems">;
+    _id: string;
     problemTitle: string;
     problemDescription: string;
     status: string;

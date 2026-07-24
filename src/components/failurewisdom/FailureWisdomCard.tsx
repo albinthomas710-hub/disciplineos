@@ -8,9 +8,9 @@ import { useMutation } from "convex/react";
 import { toast } from "sonner";
 
 interface FailureEntry {
-  _id: Id<"failureWisdom">;
+  _id: string;
   _creationTime: number;
-  userId: Id<"users">;
+  userId: string;
   type: "recurring_mistake" | "single_lesson" | "multi_lesson" | "external_wisdom" | "titan_failures";
   title: string;
   description: string;
@@ -28,7 +28,7 @@ interface FailureEntry {
 interface FailureWisdomCardProps {
   entry: FailureEntry;
   index: number;
-  onDelete: (id: Id<"failureWisdom">) => void;
+  onDelete: (id: string) => void;
 }
 
 export function FailureWisdomCard({ entry, index, onDelete }: FailureWisdomCardProps) {
