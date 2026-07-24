@@ -17,13 +17,12 @@ export const manifestations = defineTable({
   isAchieved: v.boolean(),
   createdAt: v.number(),
   updatedAt: v.number(),
-  // World-class features
-  imageUrl: v.optional(v.string()), // Vision board image
-  currentState: v.optional(v.string()), // Where you are now
-  desiredState: v.optional(v.string()), // Where you want to be
-  energyScore: v.optional(v.number()), // 0-100 manifestation power score
-  visualizationStreak: v.optional(v.number()), // Days of consistent visualization
-  lastVisualized: v.optional(v.number()), // Timestamp of last visualization
+  imageUrl: v.optional(v.string()),
+  currentState: v.optional(v.string()),
+  desiredState: v.optional(v.string()),
+  energyScore: v.optional(v.number()),
+  visualizationStreak: v.optional(v.number()),
+  lastVisualized: v.optional(v.number()),
   microSteps: v.optional(v.array(v.object({
     step: v.string(),
     completed: v.boolean(),
@@ -32,30 +31,29 @@ export const manifestations = defineTable({
   synchronicities: v.optional(v.array(v.object({
     description: v.string(),
     timestamp: v.number(),
-    significance: v.number(), // 1-5 rating
+    significance: v.number(),
   }))),
   journalEntries: v.optional(v.array(v.object({
     date: v.string(),
     entry: v.string(),
-    mood: v.number(), // 1-10
-    actionsToken: v.string(), // What actions were taken
+    mood: v.number(),
+    actionsToken: v.string(),
     timestamp: v.number(),
   }))),
-  achievedAt: v.optional(v.number()), // When it was achieved
-  celebrationViewed: v.optional(v.boolean()), // Has user seen celebration animation
-  // NEW: Evidence-based manifestation features
-  identityStatement: v.optional(v.string()), // "I am the person who..."
-  painLeverage: v.optional(v.string()), // What it costs to NOT achieve this
+  achievedAt: v.optional(v.number()),
+  celebrationViewed: v.optional(v.boolean()),
+  identityStatement: v.optional(v.string()),
+  painLeverage: v.optional(v.string()),
   dailyActions: v.optional(v.array(v.object({
     date: v.string(),
     actions: v.array(v.string()),
     timestamp: v.number(),
   }))),
-  actionStreak: v.optional(v.number()), // Days of consistent action
+  actionStreak: v.optional(v.number()),
   lastActionDate: v.optional(v.string()),
   evidenceLog: v.optional(v.array(v.object({
     date: v.string(),
-    evidence: v.string(), // Proof this is working
+    evidence: v.string(),
     timestamp: v.number(),
   }))),
   limitingBeliefs: v.optional(v.array(v.object({
@@ -66,9 +64,9 @@ export const manifestations = defineTable({
   }))),
   visualizationSessions: v.optional(v.array(v.object({
     date: v.string(),
-    emotionalIntensity: v.number(), // 1-10
-    sensoryDetails: v.string(), // What they saw/felt/heard
-    duration: v.number(), // minutes
+    emotionalIntensity: v.number(),
+    sensoryDetails: v.string(),
+    duration: v.number(),
     timestamp: v.number(),
   }))),
   aiInsights: v.optional(v.array(v.object({
@@ -90,14 +88,6 @@ export const manifestations = defineTable({
 }).index("by_user", ["userId"])
   .index("by_user_and_type", ["userId", "type"])
   .index("by_user_and_achieved", ["userId", "isAchieved"]);
-
-// Future Timeline - Template-based parallel futures (no AI required)
-export const futureTimeline = defineTable({
-  userId: v.id("users"),
-  timelineAVibrancy: v.number(), // 0-100, how vivid Timeline A appears
-  timelineBVibrancy: v.number(), // 0-100, how vivid Timeline B appears
-  lastUpdated: v.number(),
-}).index("by_user", ["userId"]);
 
 // Reality Anchor - Fantasy To Plan Converter
 export const realityAnchor = defineTable({
@@ -148,8 +138,8 @@ export const realityAnchor = defineTable({
 export const affirmationIdeas = defineTable({
   userId: v.id("users"),
   content: v.string(),
-  completed: v.boolean(), // True when converted to full affirmation
-  manifestationId: v.optional(v.id("manifestations")), // Link to created manifestation
+  completed: v.boolean(),
+  manifestationId: v.optional(v.id("manifestations")),
   createdAt: v.number(),
 }).index("by_user", ["userId"])
   .index("by_user_and_completed", ["userId", "completed"]);
@@ -159,9 +149,8 @@ export const ideas = defineTable({
   userId: v.id("users"),
   projectId: v.optional(v.id("projects")),
   content: v.string(),
-  color: v.optional(v.string()), // sticky note color
+  color: v.optional(v.string()),
   completed: v.boolean(),
   createdAt: v.number(),
 }).index("by_user", ["userId"])
   .index("by_project", ["projectId"]);
-

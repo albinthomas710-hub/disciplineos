@@ -4,7 +4,7 @@ import { v } from "convex/values";
 // Daily Reflections
 export const reflections = defineTable({
   userId: v.id("users"),
-  date: v.string(), // YYYY-MM-DD
+  date: v.string(),
   didWell: v.string(),
   brokeDispline: v.string(),
   improvement: v.string(),
@@ -20,16 +20,15 @@ export const reflections = defineTable({
   callsConducted: v.optional(v.number()),
   callsClosed: v.optional(v.number()),
   distractions: v.optional(v.array(v.string())),
-  tomorrowPlan: v.optional(v.string()), // Plan for the next day
-  // Signal vs Noise - The ONE Thing tracking
+  tomorrowPlan: v.optional(v.string()),
   signalTasks: v.optional(v.array(v.object({
     id: v.string(),
     task: v.string(),
     importance: v.union(
-      v.literal("the_one_thing"), // The needle mover
-      v.literal("high_signal"),   // Critical signal
-      v.literal("medium_signal"), // Important signal
-      v.literal("low_signal")     // Minor signal
+      v.literal("the_one_thing"),
+      v.literal("high_signal"),
+      v.literal("medium_signal"),
+      v.literal("low_signal")
     ),
     completed: v.boolean(),
     completedAt: v.optional(v.number()),
@@ -38,14 +37,14 @@ export const reflections = defineTable({
     id: v.string(),
     task: v.string(),
     importance: v.union(
-      v.literal("high_noise"),   // Urgent but not important
-      v.literal("low_noise")     // Neither urgent nor important
+      v.literal("high_noise"),
+      v.literal("low_noise")
     ),
     completed: v.boolean(),
     completedAt: v.optional(v.number()),
   }))),
-  signalCompletionRate: v.optional(v.number()), // % of signal tasks completed
-  theOneThingCompleted: v.optional(v.boolean()), // Did they do THE ONE THING?
+  signalCompletionRate: v.optional(v.number()),
+  theOneThingCompleted: v.optional(v.boolean()),
 })
 .index("by_user_and_date", ["userId", "date"]);
 
@@ -74,10 +73,10 @@ export const prayers = defineTable({
 // Bible Scriptures Collection
 export const scriptures = defineTable({
   userId: v.id("users"),
-  reference: v.string(), // e.g., "John 3:16"
+  reference: v.string(),
   text: v.string(),
-  translation: v.optional(v.string()), // e.g., "NIV", "KJV"
-  category: v.optional(v.string()), // "faith", "hope", "love", "strength", etc.
+  translation: v.optional(v.string()),
+  category: v.optional(v.string()),
   isFavorite: v.boolean(),
   notes: v.optional(v.string()),
   createdAt: v.number(),
@@ -87,20 +86,3 @@ export const scriptures = defineTable({
     searchField: "reference",
     filterFields: ["userId"],
   });
-
-// Prayer Streak Tracking
-export const prayerStreaks = defineTable({
-  userId: v.id("users"),
-  date: v.string(), // "2025-01-11"
-  prayersCount: v.number(),
-  scripturesRead: v.number(),
-  completed: v.boolean(),
-}).index("by_user_and_date", ["userId", "date"]);
-
-// Monthly Goals & Notes (War Map features)
-export const monthlyGoals = defineTable({
-  userId: v.id("users"),
-  month: v.string(), // "2025-01"
-  mainObjectives: v.optional(v.string()),
-  notes: v.optional(v.string()),
-}).index("by_user_and_month", ["userId", "month"]);
