@@ -94,11 +94,18 @@ async function updateStreak(ctx: any, userId: any) {
 
   const today = new Date().toISOString().split("T")[0];
   
-  // Get all completion logs for this user, sorted by date
+  // Only look at last 90 days to limit data reads (reduces bandwidth)
+  const ninetyDaysAgo = new Date();
+  ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+  const startDate = ninetyDaysAgo.toISOString().split("T")[0];
+  
+  // Get completion logs for this user - scoped to last 90 days
   const allLogs = await ctx.db
     .query("completionLogs")
-    .withIndex("by_user_and_date", (q: any) => q.eq("userId", userId))
-    .collect();
+    .withIndex("by_user_and_date", (q: any) => 
+      q.eq("userId", userId).gte("date", startDate).lte("date", today)
+    )
+    .take(500);
 
   // Group logs by date
   const logsByDate = new Map<string, any[]>();
@@ -132,7 +139,7 @@ async function updateStreak(ctx: any, userId: any) {
     }
   }
 
-  // Calculate longest streak ever
+  // Calculate longest streak from available data
   const sortedDates = Array.from(successfulDates).sort();
   let longestStreak = 0;
   let tempStreak = 0;

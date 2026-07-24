@@ -39,7 +39,6 @@ import type * as quoteChains from "../quoteChains.js";
 import type * as quotes from "../quotes.js";
 import type * as realityAnchor from "../realityAnchor.js";
 import type * as recovery from "../recovery.js";
-import type * as reflectionTriggers from "../reflectionTriggers.js";
 import type * as reflections from "../reflections.js";
 import type * as resolutions from "../resolutions.js";
 import type * as schema_content from "../schema/content.js";
@@ -99,7 +98,6 @@ declare const fullApi: ApiFromModules<{
   quotes: typeof quotes;
   realityAnchor: typeof realityAnchor;
   recovery: typeof recovery;
-  reflectionTriggers: typeof reflectionTriggers;
   reflections: typeof reflections;
   resolutions: typeof resolutions;
   "schema/content": typeof schema_content;

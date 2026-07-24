@@ -1,27 +1,12 @@
 import { cronJobs } from "convex/server";
-import { internal } from "./_generated/api";
 
 const crons = cronJobs();
 
-// Run streak calculation daily at midnight UTC
-crons.daily(
-  "calculate daily streaks",
-  { hourUTC: 0, minuteUTC: 0 },
-  (internal as any).streaks.calculateDailyStreaks
-);
-
-// Reset reality anchor weekly counters
-crons.weekly(
-  "reset reality anchor weekly",
-  { hourUTC: 0, minuteUTC: 0, dayOfWeek: "monday" },
-  (internal as any).realityAnchor.resetWeeklyCounter
-);
-
-// Reset kitchen reclaim weekly stats
-crons.weekly(
-  "reset kitchen reclaim weekly",
-  { hourUTC: 0, minuteUTC: 0, dayOfWeek: "monday" },
-  (internal as any).kitchenReclaim.resetWeeklyStats
-);
+// All cron jobs temporarily disabled to reduce database bandwidth usage.
+// The shared Convex plan has limited bandwidth, and scanning all user records
+// daily/weekly was consuming too much.
+//
+// Streak calculation still happens per-user on each block completion
+// (see completionLogs.ts -> updateStreak) so streaks still work.
 
 export default crons;
