@@ -262,6 +262,11 @@ export const addSynchronicity = mutation({
       significance: args.significance,
     });
 
+    // Enforce size limit - keep only most recent 50 entries
+    while (synchronicities.length > 50) {
+      synchronicities.shift();
+    }
+
     await ctx.db.patch(args.manifestationId, {
       synchronicities,
       updatedAt: Date.now(),
@@ -297,6 +302,11 @@ export const addJournalEntry = mutation({
       timestamp: Date.now(),
     });
 
+    // Enforce size limit - keep only most recent 90 entries
+    while (journalEntries.length > 90) {
+      journalEntries.shift();
+    }
+
     await ctx.db.patch(args.manifestationId, {
       journalEntries,
       updatedAt: Date.now(),
@@ -324,7 +334,7 @@ export const updateMicroSteps = mutation({
     }
 
     await ctx.db.patch(args.manifestationId, {
-      microSteps: args.microSteps,
+      microSteps: args.microSteps.slice(0, 30), // Max 30 steps
       updatedAt: Date.now(),
     });
   },
@@ -375,6 +385,11 @@ export const addAIInsights = internalMutation({
         timestamp: Date.now(),
       });
     });
+
+    // Enforce size limit
+    while (aiInsights.length > 50) {
+      aiInsights.shift();
+    }
 
     await ctx.db.patch(args.manifestationId, {
       aiInsights,

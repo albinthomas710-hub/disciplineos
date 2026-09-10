@@ -2,6 +2,16 @@ import { v } from "convex/values";
 import { mutation, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
 
+// Maximum number of entries to keep in sub-collections (90 days)
+const MAX_DAILY_ACTIONS = 90;
+const MAX_EVIDENCE_LOG = 90;
+const MAX_VISUALIZATION_SESSIONS = 90;
+const MAX_AI_INSIGHTS = 50;
+const MAX_LIMITING_BELIEFS = 30;
+const MAX_OBSTACLES = 60;
+const MAX_JOURNAL_ENTRIES = 90;
+const MAX_SYNCHRONICITIES = 50;
+
 // Log daily actions
 export const logDailyActions = mutation({
   args: {
@@ -30,6 +40,11 @@ export const logDailyActions = mutation({
         actions: args.actions,
         timestamp: Date.now(),
       });
+    }
+    
+    // Enforce size limit - keep only most recent entries
+    while (dailyActions.length > MAX_DAILY_ACTIONS) {
+      dailyActions.shift();
     }
 
     // Update action streak
@@ -77,6 +92,11 @@ export const logEvidence = mutation({
       evidence: args.evidence.trim(),
       timestamp: Date.now(),
     });
+    
+    // Enforce size limit - keep only most recent entries
+    while (evidenceLog.length > MAX_EVIDENCE_LOG) {
+      evidenceLog.shift();
+    }
 
     await ctx.db.patch(args.manifestationId, {
       evidenceLog,
@@ -112,6 +132,11 @@ export const logVisualizationSession = mutation({
       duration: args.duration,
       timestamp: Date.now(),
     });
+    
+    // Enforce size limit - keep only most recent entries
+    while (visualizationSessions.length > MAX_VISUALIZATION_SESSIONS) {
+      visualizationSessions.shift();
+    }
 
     // Update visualization streak
     const now = Date.now();
@@ -157,6 +182,11 @@ export const addLimitingBelief = mutation({
       identified: Date.now(),
       resolved: false,
     });
+    
+    // Enforce size limit - keep only most recent entries
+    while (limitingBeliefs.length > MAX_LIMITING_BELIEFS) {
+      limitingBeliefs.shift();
+    }
 
     await ctx.db.patch(args.manifestationId, {
       limitingBeliefs,
@@ -190,6 +220,11 @@ export const logObstacle = mutation({
       solution: args.solution.trim(),
       timestamp: Date.now(),
     });
+    
+    // Enforce size limit - keep only most recent entries
+    while (obstacles.length > MAX_OBSTACLES) {
+      obstacles.shift();
+    }
 
     await ctx.db.patch(args.manifestationId, {
       obstacles,
@@ -253,6 +288,11 @@ export const addAIInsights = internalMutation({
         timestamp: Date.now(),
       });
     });
+    
+    // Enforce size limit - keep only most recent entries
+    while (aiInsights.length > MAX_AI_INSIGHTS) {
+      aiInsights.shift();
+    }
 
     await ctx.db.patch(args.manifestationId, {
       aiInsights,

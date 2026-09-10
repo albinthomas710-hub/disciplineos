@@ -32,17 +32,17 @@ export function SinListManager() {
   const [addConqueredDefault, setAddConqueredDefault] = useState(false);
   const [isExamenOpen, setIsExamenOpen] = useState(false);
 
-  const [selectedSin, setSelectedSin] = useState<Doc<"sinList"> | null>(null);
+  const [selectedSin, setSelectedSin] = useState<any | null>(null);
   const [isLogOpen, setIsLogOpen] = useState(false);
   const [logType, setLogType] = useState<"relapse" | "confession">("relapse");
   const [logNotes, setLogNotes] = useState("");
   const [logTrigger, setLogTrigger] = useState("");
   
   // Examen state
-  const [examenSelected, setExamenSelected] = useState<Id<"sinList">[]>([]);
+  const [examenSelected, setExamenSelected] = useState<string[]>([]);
   const [examenNotes, setExamenNotes] = useState("");
 
-  const handleToggleStatus = async (sinId: Id<"sinList">, currentStatus: string) => {
+  const handleToggleStatus = async (sinId: string, currentStatus: string) => {
     try {
       await toggleStatus({ sinId });
       if (currentStatus === "active") {
@@ -55,7 +55,7 @@ export function SinListManager() {
     }
   };
 
-  const handleDelete = async (sinId: Id<"sinList">) => {
+  const handleDelete = async (sinId: string) => {
     if (confirm("Delete this struggle permanently?")) {
       try {
         await removeSin({ sinId });
@@ -112,7 +112,7 @@ export function SinListManager() {
     }
   };
 
-  const toggleExamenSelection = (sinId: Id<"sinList">) => {
+  const toggleExamenSelection = (sinId: string) => {
     setExamenSelected(prev => 
       prev.includes(sinId) 
         ? prev.filter(id => id !== sinId)
@@ -120,7 +120,7 @@ export function SinListManager() {
     );
   };
 
-  const openLogModal = (sin: Doc<"sinList">, type: "relapse" | "confession") => {
+  const openLogModal = (sin: any, type: "relapse" | "confession") => {
     setSelectedSin(sin);
     setLogType(type);
     setIsLogOpen(true);

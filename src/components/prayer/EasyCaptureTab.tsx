@@ -34,7 +34,7 @@ export function EasyCaptureTab() {
     }
   };
 
-  const handleTogglePrayed = async (sinId: Id<"sinList">, currentStatus?: boolean) => {
+  const handleTogglePrayed = async (sinId: string, currentStatus?: boolean) => {
     try {
       await togglePrayedFor({ sinId });
       if (!currentStatus) {
@@ -45,7 +45,7 @@ export function EasyCaptureTab() {
     }
   };
 
-  const handlePromote = async (sinId: Id<"sinList">) => {
+  const handlePromote = async (sinId: string) => {
     try {
       await updateStatus({ sinId, status: "active" });
       toast.success("Moved to Active Battles");
@@ -54,7 +54,7 @@ export function EasyCaptureTab() {
     }
   };
 
-  const handleDelete = async (sinId: Id<"sinList">) => {
+  const handleDelete = async (sinId: string) => {
     try {
       await removeSin({ sinId });
       toast.success("Removed");

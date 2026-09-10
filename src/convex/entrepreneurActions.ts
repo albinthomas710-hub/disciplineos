@@ -22,19 +22,25 @@ export const getTodayAction = query({
   },
 });
 
-// Get recent actions (last 7 days)
+// Get recent actions (last 7 days) - FIXED: uses date range filter
 export const getRecentActions = query({
   args: {},
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user) return [];
 
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
+
     const actions = await ctx.db
       .query("entrepreneurActions")
-      .withIndex("by_user_and_date", (q) => q.eq("userId", user._id))
-      .collect();
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id).gte("date", sevenDaysAgo).lte("date", today)
+      )
+      .order("desc")
+      .take(7);
 
-    return actions.sort((a, b) => b.createdAt - a.createdAt).slice(0, 7);
+    return actions;
   },
 });
 
@@ -155,36 +161,37 @@ export const upsertTodayAction = mutation({
   },
 });
 
-// Get weekly stats
+// Get weekly stats - FIXED: uses date range filter
 export const getWeeklyStats = query({
   args: {},
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user) return null;
 
-    const sevenDaysAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    const today = new Date().toISOString().split('T')[0];
     
     const actions = await ctx.db
       .query("entrepreneurActions")
-      .withIndex("by_user_and_date", (q) => q.eq("userId", user._id))
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id).gte("date", sevenDaysAgo).lte("date", today)
+      )
       .collect();
 
-    const recentActions = actions.filter(a => a.createdAt >= sevenDaysAgo);
-
-    const totalHours = recentActions.reduce((sum, a) => sum + (a.hoursWorked || 0), 0);
-    const daysBuilt = recentActions.filter(a => a.builtSomething).length;
-    const totalCustomers = recentActions.reduce((sum, a) => sum + (a.customersCount || 0), 0);
-    const daysLearned = recentActions.filter(a => a.learnedNewSkill).length;
-    const totalRevenue = recentActions.reduce((sum, a) => sum + (a.revenueClosed || 0), 0);
-    const totalPipeline = recentActions.reduce((sum, a) => sum + (a.pipelineAdded || 0), 0);
-    const totalDeals = recentActions.reduce((sum, a) => sum + (a.dealsClosed || 0), 0);
+    const totalHours = actions.reduce((sum, a) => sum + (a.hoursWorked || 0), 0);
+    const daysBuilt = actions.filter(a => a.builtSomething).length;
+    const totalCustomers = actions.reduce((sum, a) => sum + (a.customersCount || 0), 0);
+    const daysLearned = actions.filter(a => a.learnedNewSkill).length;
+    const totalRevenue = actions.reduce((sum, a) => sum + (a.revenueClosed || 0), 0);
+    const totalPipeline = actions.reduce((sum, a) => sum + (a.pipelineAdded || 0), 0);
+    const totalDeals = actions.reduce((sum, a) => sum + (a.dealsClosed || 0), 0);
 
     return {
       totalHours,
       daysBuilt,
       totalCustomers,
       daysLearned,
-      daysTracked: recentActions.length,
+      daysTracked: actions.length,
       totalRevenue,
       totalPipeline,
       totalDeals,
@@ -214,7 +221,7 @@ export const getCurrentStreaks = query({
   },
 });
 
-// Create weekly review
+// Create weekly review - FIXED: uses date range filter
 export const createWeeklyReview = mutation({
   args: {
     weekStartDate: v.string(),
@@ -227,22 +234,22 @@ export const createWeeklyReview = mutation({
     const user = await getCurrentUser(ctx);
     if (!user) throw new Error("Not authenticated");
 
-    // Calculate metrics for the week
+    // Calculate metrics for the week - FIXED: uses date range filter
     const actions = await ctx.db
       .query("entrepreneurActions")
-      .withIndex("by_user_and_date", (q) => q.eq("userId", user._id))
+      .withIndex("by_user_and_date", (q) => 
+        q.eq("userId", user._id).gte("date", args.weekStartDate).lte("date", args.weekEndDate)
+      )
       .collect();
 
-    const weekActions = actions.filter(a => a.date >= args.weekStartDate && a.date <= args.weekEndDate);
+    const totalConversations = actions.reduce((sum, a) => sum + (a.customersCount || 0), 0);
+    const thingsBuilt = actions.filter(a => a.builtSomething).length;
+    const skillsLearned = actions.filter(a => a.skillLearned).map(a => a.skillLearned!);
+    const totalRevenue = actions.reduce((sum, a) => sum + (a.revenueClosed || 0), 0);
+    const totalHours = actions.reduce((sum, a) => sum + (a.hoursWorked || 0), 0);
+    const avgHoursPerDay = totalHours / (actions.length || 1);
 
-    const totalConversations = weekActions.reduce((sum, a) => sum + (a.customersCount || 0), 0);
-    const thingsBuilt = weekActions.filter(a => a.builtSomething).length;
-    const skillsLearned = weekActions.filter(a => a.skillLearned).map(a => a.skillLearned!);
-    const totalRevenue = weekActions.reduce((sum, a) => sum + (a.revenueClosed || 0), 0);
-    const totalHours = weekActions.reduce((sum, a) => sum + (a.hoursWorked || 0), 0);
-    const avgHoursPerDay = totalHours / weekActions.length || 0;
-
-    // Get last week's review for comparison
+    // Get last week's review for comparison - FIXED: uses index with take(1)
     const lastWeekStart = new Date(new Date(args.weekStartDate).getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
     const lastWeekReview = await ctx.db
       .query("weeklyReviews")
@@ -270,18 +277,19 @@ export const createWeeklyReview = mutation({
   },
 });
 
-// Get latest weekly review
+// Get latest weekly review - FIXED: uses .take(1) instead of collecting all
 export const getLatestWeeklyReview = query({
   args: {},
   handler: async (ctx) => {
     const user = await getCurrentUser(ctx);
     if (!user) return null;
 
-    const reviews = await ctx.db
+    const review = await ctx.db
       .query("weeklyReviews")
       .withIndex("by_user_and_week", (q) => q.eq("userId", user._id))
-      .collect();
+      .order("desc")
+      .take(1);
 
-    return reviews.sort((a, b) => b.createdAt - a.createdAt)[0] || null;
+    return review[0] || null;
   },
 });

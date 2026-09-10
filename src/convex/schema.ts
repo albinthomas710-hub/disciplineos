@@ -100,30 +100,7 @@ const schema = defineSchema(
         filterFields: ["userId"],
       }),
 
-    prayerStreaks: defineTable({
-      userId: v.id("users"),
-      streak: v.number(),
-      lastPrayerDate: v.optional(v.string()),
-      currentStreak: v.optional(v.number()),
-      isPrivate: v.boolean(),
-      date: v.optional(v.string()),
-    }).index("by_user_and_date", ["userId", "date"]),
 
-    monthlyGoals: defineTable({
-      userId: v.id("users"),
-      goal: v.string(),
-      category: v.string(),
-      targetDate: v.optional(v.string()),
-      progress: v.optional(v.number()),
-      status: v.optional(v.string()),
-      tags: v.optional(v.array(v.string())),
-      isPrivate: v.boolean(),
-      month: v.optional(v.string()),
-      mainObjectives: v.optional(v.any()),
-      date: v.optional(v.string()),
-      notes: v.optional(v.string()),
-    }).index("by_user_and_date", ["userId", "date"])
-      .index("by_user_and_month", ["userId", "month"]),
 
     // Entrepreneur OS
     clientFeedback,
@@ -157,38 +134,7 @@ const schema = defineSchema(
     kitchenReclaim,
     emergencyTriggers,
     
-    recovery: defineTable({
-      userId: v.id("users"),
-      date: v.string(),
-      type: v.string(),
-      notes: v.optional(v.string()),
-      rating: v.optional(v.number()),
-    }).index("by_user_and_date", ["userId", "date"])
-      .index("by_user", ["userId"]),
 
-    sinList: defineTable({
-      userId: v.id("users"),
-      title: v.string(),
-      category: v.optional(v.string()), // e.g., "Pride", "Lust", "Anger"
-      status: v.string(), // "active", "conquered"
-      scriptureAntidote: v.optional(v.string()),
-      lastRelapseDate: v.optional(v.string()),
-      unconfessedCount: v.number(),
-      notes: v.optional(v.string()),
-      isPrayedFor: v.optional(v.boolean()),
-    }).index("by_user", ["userId"])
-      .index("by_user_and_status", ["userId", "status"]),
-
-    sinLogs: defineTable({
-      userId: v.id("users"),
-      sinId: v.id("sinList"),
-      date: v.string(), // ISO date
-      timestamp: v.number(),
-      notes: v.optional(v.string()),
-      trigger: v.optional(v.string()),
-      type: v.string(), // "relapse", "confession"
-    }).index("by_user_and_sin", ["userId", "sinId"])
-      .index("by_user_and_date", ["userId", "date"]),
 
     // New Year Resolutions / Habits
     resolutions: defineTable({

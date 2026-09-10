@@ -69,8 +69,8 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
     endDate: format(monthEnd, "yyyy-MM-dd"),
   });
 
-  const monthlyGoals = useQuery(api.history.getMonthlyGoals, { month: currentMonthStr });
-  const updateMonthlyGoals = useMutation(api.history.updateMonthlyGoals);
+  // Monthly goals stored in localStorage to reduce bandwidth
+  const monthlyGoalsKey = `monthlyGoals_${currentMonthStr}`;
   
   // Fetch all timetables for the dropdown
   const allTimetables = useQuery(api.timetables.list);
@@ -79,26 +79,27 @@ export default function HistoryView({ onNavigateToTimer }: HistoryViewProps) {
   // Fetch calendar tags for visualization
   const calendarTags = useQuery(api.history.getCalendarTags);
 
-  // Sync monthly goals when data loads
+  // Sync monthly goals from localStorage when month changes
   useEffect(() => {
-    if (monthlyGoals) {
-      setObjectives(monthlyGoals.mainObjectives || "");
-      setNotes(monthlyGoals.notes || "");
+    const saved = localStorage.getItem(monthlyGoalsKey);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      setObjectives(parsed.objectives || "");
+      setNotes(parsed.notes || "");
     } else {
       setObjectives("");
       setNotes("");
     }
-  }, [monthlyGoals, currentMonthStr]);
+  }, [monthlyGoalsKey]);
 
-  const handleSaveGoals = async () => {
+  const handleSaveGoals = () => {
     try {
-      await updateMonthlyGoals({
-        month: currentMonthStr,
-        mainObjectives: objectives,
-        notes: notes,
-      });
+      localStorage.setItem(monthlyGoalsKey, JSON.stringify({
+        objectives,
+        notes,
+      }));
       setIsEditingGoals(false);
-      toast.success("Monthly goals saved");
+      toast.success("Monthly goals saved locally");
     } catch (error) {
       toast.error("Failed to save goals");
     }
