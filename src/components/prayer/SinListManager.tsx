@@ -11,16 +11,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield, Plus, ListChecks, Sword, Flame, CheckCircle2, AlertTriangle, History, Trophy } from "lucide-react";
 import { toast } from "sonner";
 import { AnimatePresence } from "framer-motion";
-import { Id, Doc } from "@/convex/_generated/dataModel";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SinCard } from "./SinCard";
 import { AddSinDialog } from "./AddSinDialog";
 import { EasyCaptureTab } from "./EasyCaptureTab";
 
+// Type for items from the stubbed sins API (sinList table was removed)
+interface SinItem { _id: string; title: string; category?: string; status?: string; isPrayedFor?: boolean; scriptureAntidote?: string; notes?: string; }
+interface SinLogItem { _id: string; sinId: string; date: string; timestamp: number; type: string; trigger?: string; notes?: string; }
+
 export function SinListManager() {
-  const activeSins = useQuery(api.sins.getActive);
-  const conqueredSins = useQuery(api.sins.getConquered);
-  const logs = useQuery(api.sins.getLogs);
+  const activeSins = (useQuery(api.sins.getActive) ?? []) as SinItem[];
+  const conqueredSins = (useQuery(api.sins.getConquered) ?? []) as SinItem[];
+  const logs = (useQuery(api.sins.getLogs) ?? []) as SinLogItem[];
   
   const logRelapse = useMutation(api.sins.logRelapse);
   const batchLogRelapse = useMutation(api.sins.batchLogRelapse);
@@ -32,7 +35,7 @@ export function SinListManager() {
   const [addConqueredDefault, setAddConqueredDefault] = useState(false);
   const [isExamenOpen, setIsExamenOpen] = useState(false);
 
-  const [selectedSin, setSelectedSin] = useState<any | null>(null);
+  const [selectedSin, setSelectedSin] = useState<SinItem | null>(null);
   const [isLogOpen, setIsLogOpen] = useState(false);
   const [logType, setLogType] = useState<"relapse" | "confession">("relapse");
   const [logNotes, setLogNotes] = useState("");
@@ -120,7 +123,7 @@ export function SinListManager() {
     );
   };
 
-  const openLogModal = (sin: any, type: "relapse" | "confession") => {
+  const openLogModal = (sin: SinItem, type: "relapse" | "confession") => {
     setSelectedSin(sin);
     setLogType(type);
     setIsLogOpen(true);
@@ -130,8 +133,6 @@ export function SinListManager() {
     setAddConqueredDefault(conquered);
     setIsAddOpen(true);
   };
-
-  if (!activeSins || !conqueredSins) return <div className="p-8 text-center">Loading spiritual inventory...</div>;
 
   return (
     <div className="space-y-6">
@@ -166,12 +167,12 @@ export function SinListManager() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {activeSins.map(sin => (
+                      {activeSins.map((sin: SinItem) => (
                         <div key={sin._id} className="flex items-start space-x-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors">
                           <Checkbox 
                             id={`examen-${sin._id}`} 
-                            checked={examenSelected.includes(sin._id as Id<"sinList">)}
-                            onCheckedChange={() => toggleExamenSelection(sin._id as Id<"sinList">)}
+                            checked={examenSelected.includes(sin._id)}
+                            onCheckedChange={() => toggleExamenSelection(sin._id)}
                           />
                           <div className="grid gap-1.5 leading-none">
                             <label
@@ -242,12 +243,12 @@ export function SinListManager() {
               </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {activeSins.map((sin) => (
+                {activeSins.map((sin: SinItem) => (
                   <SinCard 
                     key={sin._id} 
-                    sin={sin} 
-                    onLogRelapse={(s) => openLogModal(s, "relapse")}
-                    onConfess={(s) => openLogModal(s, "confession")}
+                    sin={sin as any} 
+                    onLogRelapse={(s: any) => openLogModal(s, "relapse")}
+                    onConfess={(s: any) => openLogModal(s, "confession")}
                     onToggleStatus={handleToggleStatus}
                     onDelete={handleDelete}
                   />
@@ -271,12 +272,12 @@ export function SinListManager() {
             </Button>
           </div>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {conqueredSins.map((sin) => (
+            {conqueredSins.map((sin: SinItem) => (
               <SinCard 
                 key={sin._id} 
-                sin={sin} 
-                onLogRelapse={(s) => openLogModal(s, "relapse")}
-                onConfess={(s) => openLogModal(s, "confession")}
+                sin={sin as any} 
+                onLogRelapse={(s: any) => openLogModal(s, "relapse")}
+                onConfess={(s: any) => openLogModal(s, "confession")}
                 onToggleStatus={handleToggleStatus}
                 onDelete={handleDelete}
               />
@@ -297,16 +298,13 @@ export function SinListManager() {
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[400px]">
-                {!logs ? (
-                  <div className="p-4 text-center">Loading history...</div>
-                ) : logs.length === 0 ? (
+                {logs.length === 0 ? (
                   <div className="p-8 text-center text-muted-foreground">
                     No history recorded yet.
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {logs.map((log: any) => {
-                      // Find the sin title from active or conquered lists
+                    {logs.map((log: SinLogItem) => {
                       const sinTitle = [...activeSins, ...conqueredSins].find(s => s._id === log.sinId)?.title || "Unknown Struggle";
                       
                       return (

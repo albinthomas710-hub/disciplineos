@@ -6,12 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Plus, ArrowRight, Trash2, Sparkles, Zap, Check } from "lucide-react";
 import { toast } from "sonner";
-import { Id, Doc } from "@/convex/_generated/dataModel";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
+// Type for items from the stubbed sins API (sinList table was removed)
+interface SinItem { _id: string; title: string; isPrayedFor?: boolean; category?: string; status?: string; }
+
 export function EasyCaptureTab() {
-  const inboxItems = useQuery(api.sins.getInbox);
+  const inboxItems = (useQuery(api.sins.getInbox) ?? []) as SinItem[];
   const createSin = useMutation(api.sins.create);
   const updateStatus = useMutation(api.sins.updateStatus);
   const removeSin = useMutation(api.sins.remove);
@@ -91,15 +93,13 @@ export function EasyCaptureTab() {
       </Card>
 
       <div className="space-y-2">
-        {inboxItems === undefined ? (
-          <div className="text-center py-4 text-muted-foreground">Loading...</div>
-        ) : inboxItems.length === 0 ? (
+        {inboxItems.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground bg-accent/20 rounded-lg">
             Inbox is empty. Capture something above.
           </div>
         ) : (
           <div className="grid gap-2">
-            {inboxItems.map((item) => (
+            {inboxItems.map((item: SinItem) => (
               <div 
                 key={item._id} 
                 className={cn(
