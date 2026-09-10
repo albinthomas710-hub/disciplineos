@@ -162,6 +162,15 @@ const schema = defineSchema(
       .index("by_resolution", ["resolutionId"])
       .index("by_user_resolution_date", ["userId", "resolutionId", "date"]),
 
+    // Rate limiting — tracks per-user mutation counts to prevent spam/abuse
+    rateLimits: defineTable({
+      userId: v.id("users"),
+      action: v.string(),       // e.g. "completionLogs.markComplete"
+      windowStart: v.number(),   // timestamp of this mutation
+    })
+      .index("by_user_and_action", ["userId", "action", "windowStart"])
+      .index("by_window", ["windowStart"]),
+
   },
   {
     schemaValidation: false,

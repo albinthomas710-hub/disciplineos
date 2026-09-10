@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, internalMutation } from "./_generated/server";
 import { getCurrentUser } from "./users";
+import { checkRateLimit } from "./rateLimiting";
 
 // Maximum number of entries to keep in sub-collections (90 days)
 const MAX_DAILY_ACTIONS = 90;
@@ -12,15 +13,21 @@ const MAX_OBSTACLES = 60;
 const MAX_JOURNAL_ENTRIES = 90;
 const MAX_SYNCHRONICITIES = 50;
 
-// Log daily actions
+// Log daily actions — rate limited
 export const logDailyActions = mutation({
   args: {
     manifestationId: v.id("manifestations"),
     actions: v.array(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
+    try {
+      const rateCheck = await checkRateLimit(ctx, "manifestationActions.logDailyActions");
+      if (!rateCheck.allowed) {
+        throw new Error(`Slow down! Try again in ${Math.ceil(rateCheck.retryAfterMs / 1000)} seconds.`);
+      }
+
+      const user = await getCurrentUser(ctx);
+      if (!user) throw new Error("Not authenticated");
 
     const manifestation = await ctx.db.get(args.manifestationId);
     if (!manifestation || manifestation.userId !== user._id) {
@@ -66,18 +73,31 @@ export const logDailyActions = mutation({
     });
 
     return actionStreak;
+    } catch (error: any) {
+      if (error.message?.includes("Rate limited") || error.message?.includes("Not authenticated") || error.message?.includes("not found")) {
+        throw error;
+      }
+      console.error("logDailyActions error:", error);
+      throw new Error("Failed to log actions. Please try again.");
+    }
   },
 });
 
-// Log evidence
+// Log evidence — rate limited
 export const logEvidence = mutation({
   args: {
     manifestationId: v.id("manifestations"),
     evidence: v.string(),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
+    try {
+      const rateCheck = await checkRateLimit(ctx, "manifestationActions.logEvidence");
+      if (!rateCheck.allowed) {
+        throw new Error(`Slow down! Try again in ${Math.ceil(rateCheck.retryAfterMs / 1000)} seconds.`);
+      }
+
+      const user = await getCurrentUser(ctx);
+      if (!user) throw new Error("Not authenticated");
 
     const manifestation = await ctx.db.get(args.manifestationId);
     if (!manifestation || manifestation.userId !== user._id) {
@@ -102,10 +122,17 @@ export const logEvidence = mutation({
       evidenceLog,
       updatedAt: Date.now(),
     });
+    } catch (error: any) {
+      if (error.message?.includes("Rate limited") || error.message?.includes("Not authenticated") || error.message?.includes("not found")) {
+        throw error;
+      }
+      console.error("logEvidence error:", error);
+      throw new Error("Failed to log evidence. Please try again.");
+    }
   },
 });
 
-// Log structured visualization session
+// Log structured visualization session — rate limited
 export const logVisualizationSession = mutation({
   args: {
     manifestationId: v.id("manifestations"),
@@ -114,8 +141,14 @@ export const logVisualizationSession = mutation({
     duration: v.number(),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
+    try {
+      const rateCheck = await checkRateLimit(ctx, "manifestationActions.logVisualizationSession");
+      if (!rateCheck.allowed) {
+        throw new Error(`Slow down! Try again in ${Math.ceil(rateCheck.retryAfterMs / 1000)} seconds.`);
+      }
+
+      const user = await getCurrentUser(ctx);
+      if (!user) throw new Error("Not authenticated");
 
     const manifestation = await ctx.db.get(args.manifestationId);
     if (!manifestation || manifestation.userId !== user._id) {
@@ -155,10 +188,17 @@ export const logVisualizationSession = mutation({
     });
 
     return streak;
+    } catch (error: any) {
+      if (error.message?.includes("Rate limited") || error.message?.includes("Not authenticated") || error.message?.includes("not found")) {
+        throw error;
+      }
+      console.error("logVisualizationSession error:", error);
+      throw new Error("Failed to log visualization. Please try again.");
+    }
   },
 });
 
-// Add limiting belief
+// Add limiting belief — rate limited
 export const addLimitingBelief = mutation({
   args: {
     manifestationId: v.id("manifestations"),
@@ -166,8 +206,14 @@ export const addLimitingBelief = mutation({
     reframe: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
+    try {
+      const rateCheck = await checkRateLimit(ctx, "manifestationActions.addLimitingBelief");
+      if (!rateCheck.allowed) {
+        throw new Error(`Slow down! Try again in ${Math.ceil(rateCheck.retryAfterMs / 1000)} seconds.`);
+      }
+
+      const user = await getCurrentUser(ctx);
+      if (!user) throw new Error("Not authenticated");
 
     const manifestation = await ctx.db.get(args.manifestationId);
     if (!manifestation || manifestation.userId !== user._id) {
@@ -192,6 +238,13 @@ export const addLimitingBelief = mutation({
       limitingBeliefs,
       updatedAt: Date.now(),
     });
+    } catch (error: any) {
+      if (error.message?.includes("Rate limited") || error.message?.includes("Not authenticated") || error.message?.includes("not found")) {
+        throw error;
+      }
+      console.error("addLimitingBelief error:", error);
+      throw new Error("Failed to add belief. Please try again.");
+    }
   },
 });
 

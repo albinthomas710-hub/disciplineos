@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./users";
+import { checkRateLimit } from "./rateLimiting";
 
 // Get today's action log
 export const getTodayAction = query({
@@ -68,19 +69,26 @@ export const upsertTodayAction = mutation({
     goal90days: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
+    try {
+      // Rate limit check
+      const rateCheck = await checkRateLimit(ctx, "entrepreneurActions.upsertTodayAction");
+      if (!rateCheck.allowed) {
+        throw new Error(`Slow down! Try again in ${Math.ceil(rateCheck.retryAfterMs / 1000)} seconds.`);
+      }
 
-    const today = new Date().toISOString().split('T')[0];
-    
-    const existing = await ctx.db
-      .query("entrepreneurActions")
-      .withIndex("by_user_and_date", (q) => 
-        q.eq("userId", user._id).eq("date", today)
-      )
-      .first();
+      const user = await getCurrentUser(ctx);
+      if (!user) throw new Error("Not authenticated");
 
-    const data: any = {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const existing = await ctx.db
+        .query("entrepreneurActions")
+        .withIndex("by_user_and_date", (q) => 
+          q.eq("userId", user._id).eq("date", today)
+        )
+        .first();
+
+      const data: any = {
       updatedAt: Date.now(),
     };
 
@@ -127,11 +135,11 @@ export const upsertTodayAction = mutation({
       };
     }
 
-    if (existing) {
-      await ctx.db.patch(existing._id, data);
-      return existing._id;
-    } else {
-      return await ctx.db.insert("entrepreneurActions", {
+      if (existing) {
+        await ctx.db.patch(existing._id, data);
+        return existing._id;
+      } else {
+        return await ctx.db.insert("entrepreneurActions", {
         userId: user._id,
         date: today,
         builtSomething: args.builtSomething || false,
@@ -157,6 +165,13 @@ export const upsertTodayAction = mutation({
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });
+      }
+    } catch (error: any) {
+      if (error.message?.includes("Rate limited") || error.message?.includes("Not authenticated")) {
+        throw error;
+      }
+      console.error("upsertTodayAction error:", error);
+      throw new Error("Failed to save action. Please try again.");
     }
   },
 });
@@ -231,8 +246,9 @@ export const createWeeklyReview = mutation({
     topPriority: v.string(),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
+    try {
+      const user = await getCurrentUser(ctx);
+      if (!user) throw new Error("Not authenticated");
 
     // Calculate metrics for the week - FIXED: uses date range filter
     const actions = await ctx.db
@@ -274,6 +290,11 @@ export const createWeeklyReview = mutation({
       hoursChange: lastWeekReview ? totalHours - lastWeekReview.totalHours : undefined,
       createdAt: Date.now(),
     });
+    } catch (error: any) {
+      if (error.message?.includes("Not authenticated")) throw error;
+      console.error("createWeeklyReview error:", error);
+      throw new Error("Failed to create weekly review. Please try again.");
+    }
   },
 });
 

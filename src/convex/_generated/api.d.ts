@@ -33,6 +33,7 @@ import type * as prayers from "../prayers.js";
 import type * as projects from "../projects.js";
 import type * as quoteChains from "../quoteChains.js";
 import type * as quotes from "../quotes.js";
+import type * as rateLimiting from "../rateLimiting.js";
 import type * as realityAnchor from "../realityAnchor.js";
 import type * as recovery from "../recovery.js";
 import type * as reflections from "../reflections.js";
@@ -85,6 +86,7 @@ declare const fullApi: ApiFromModules<{
   projects: typeof projects;
   quoteChains: typeof quoteChains;
   quotes: typeof quotes;
+  rateLimiting: typeof rateLimiting;
   realityAnchor: typeof realityAnchor;
   recovery: typeof recovery;
   reflections: typeof reflections;

@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./users";
+import { checkRateLimit } from "./rateLimiting";
 
 // Get all active resolutions
 export const get = query({
@@ -55,7 +56,7 @@ export const getLogs = query({
   },
 });
 
-// Create a new resolution
+// Create a new resolution — rate limited
 export const create = mutation({
   args: {
     title: v.string(),
@@ -67,28 +68,39 @@ export const create = mutation({
     color: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
+    try {
+      const rateCheck = await checkRateLimit(ctx, "resolutions.create");
+      if (!rateCheck.allowed) {
+        throw new Error(`Slow down! Try again in ${Math.ceil(rateCheck.retryAfterMs / 1000)} seconds.`);
+      }
 
-    const now = new Date();
-    const today = now.toISOString().split("T")[0];
+      const user = await getCurrentUser(ctx);
+      if (!user) throw new Error("Not authenticated");
 
-    return await ctx.db.insert("resolutions", {
-      userId: user._id,
-      title: args.title,
-      type: args.type,
-      description: args.description,
-      why: args.why,
-      consequences: args.consequences,
-      icon: args.icon,
-      color: args.color,
-      active: true,
-      startDate: today,
-    });
+      const now = new Date();
+      const today = now.toISOString().split("T")[0];
+
+      return await ctx.db.insert("resolutions", {
+        userId: user._id,
+        title: args.title,
+        type: args.type,
+        description: args.description,
+        why: args.why,
+        consequences: args.consequences,
+        icon: args.icon,
+        color: args.color,
+        active: true,
+        startDate: today,
+      });
+    } catch (error: any) {
+      if (error.message?.includes("Rate limited") || error.message?.includes("Not authenticated")) throw error;
+      console.error("resolutions.create error:", error);
+      throw new Error("Failed to create resolution. Please try again.");
+    }
   },
 });
 
-// Log daily progress
+// Log daily progress — rate limited
 export const logProgress = mutation({
   args: {
     resolutionId: v.id("resolutions"),
@@ -97,32 +109,42 @@ export const logProgress = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
+    try {
+      const rateCheck = await checkRateLimit(ctx, "resolutions.logProgress");
+      if (!rateCheck.allowed) {
+        throw new Error(`Slow down! Try again in ${Math.ceil(rateCheck.retryAfterMs / 1000)} seconds.`);
+      }
 
-    // Check if log exists
-    const existing = await ctx.db
-      .query("resolutionLogs")
-      .withIndex("by_user_resolution_date", (q) => 
-        q.eq("userId", user._id)
-         .eq("resolutionId", args.resolutionId)
-         .eq("date", args.date)
-      )
-      .first();
+      const user = await getCurrentUser(ctx);
+      if (!user) throw new Error("Not authenticated");
 
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        status: args.status,
-        notes: args.notes,
-      });
-    } else {
-      await ctx.db.insert("resolutionLogs", {
-        userId: user._id,
-        resolutionId: args.resolutionId,
-        date: args.date,
-        status: args.status,
-        notes: args.notes,
-      });
+      const existing = await ctx.db
+        .query("resolutionLogs")
+        .withIndex("by_user_resolution_date", (q) => 
+          q.eq("userId", user._id)
+           .eq("resolutionId", args.resolutionId)
+           .eq("date", args.date)
+        )
+        .first();
+
+      if (existing) {
+        await ctx.db.patch(existing._id, {
+          status: args.status,
+          notes: args.notes,
+        });
+      } else {
+        await ctx.db.insert("resolutionLogs", {
+          userId: user._id,
+          resolutionId: args.resolutionId,
+          date: args.date,
+          status: args.status,
+          notes: args.notes,
+        });
+      }
+    } catch (error: any) {
+      if (error.message?.includes("Rate limited") || error.message?.includes("Not authenticated")) throw error;
+      console.error("resolutions.logProgress error:", error);
+      throw new Error("Failed to log progress. Please try again.");
     }
   },
 });

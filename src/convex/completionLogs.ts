@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { getCurrentUser } from "./users";
+import { checkRateLimit } from "./rateLimiting";
 
 // Get today's completion logs
 export const getToday = query({
@@ -13,7 +14,7 @@ export const getToday = query({
 
     return await ctx.db
       .query("completionLogs")
-      .withIndex("by_user_and_date", (q) => 
+      .withIndex("by_user_and_date", (q) =>
         q.eq("userId", user._id).eq("date", today)
       )
       .collect();
@@ -30,10 +31,9 @@ export const getByDateRange = query({
     const user = await getCurrentUser(ctx);
     if (!user) return [];
 
-    // Use index range query instead of collecting all logs
     return await ctx.db
       .query("completionLogs")
-      .withIndex("by_user_and_date", (q) => 
+      .withIndex("by_user_and_date", (q) =>
         q.eq("userId", user._id)
          .gte("date", args.startDate)
          .lte("date", args.endDate)
@@ -42,68 +42,82 @@ export const getByDateRange = query({
   },
 });
 
-// Mark block as complete
+// Mark block as complete — rate limited + error handled
 export const markComplete = mutation({
   args: {
     timeBlockId: v.id("timeBlocks"),
     completed: v.boolean(),
   },
   handler: async (ctx, args) => {
-    const user = await getCurrentUser(ctx);
-    if (!user) throw new Error("Not authenticated");
+    try {
+      // Rate limit check
+      const rateCheck = await checkRateLimit(ctx, "completionLogs.markComplete");
+      if (!rateCheck.allowed) {
+        throw new Error(`Slow down! Try again in ${Math.ceil(rateCheck.retryAfterMs / 1000)} seconds.`);
+      }
 
-    const block = await ctx.db.get(args.timeBlockId);
-    if (!block) throw new Error("Block not found");
+      const user = await getCurrentUser(ctx);
+      if (!user) throw new Error("Not authenticated");
 
-    const today = new Date().toISOString().split("T")[0];
+      const block = await ctx.db.get(args.timeBlockId);
+      if (!block) throw new Error("Block not found");
 
-    // Check if log exists
-    const existing = await ctx.db
-      .query("completionLogs")
-      .withIndex("by_user_and_date", (q) => 
-        q.eq("userId", user._id).eq("date", today)
-      )
-      .collect();
+      const today = new Date().toISOString().split("T")[0];
 
-    const existingLog = existing.find((log) => log.timeBlockId === args.timeBlockId);
+      // Check if log exists
+      const existing = await ctx.db
+        .query("completionLogs")
+        .withIndex("by_user_and_date", (q) =>
+          q.eq("userId", user._id).eq("date", today)
+        )
+        .collect();
 
-    if (existingLog) {
-      await ctx.db.patch(existingLog._id, {
-        completed: args.completed,
-        completedAt: args.completed ? Date.now() : undefined,
-      });
-    } else {
-      await ctx.db.insert("completionLogs", {
-        userId: user._id,
-        timetableId: block.timetableId,
-        timeBlockId: args.timeBlockId,
-        date: today,
-        completed: args.completed,
-        completedAt: args.completed ? Date.now() : undefined,
-      });
+      const existingLog = existing.find((log) => log.timeBlockId === args.timeBlockId);
+
+      if (existingLog) {
+        await ctx.db.patch(existingLog._id, {
+          completed: args.completed,
+          completedAt: args.completed ? Date.now() : undefined,
+        });
+      } else {
+        await ctx.db.insert("completionLogs", {
+          userId: user._id,
+          timetableId: block.timetableId,
+          timeBlockId: args.timeBlockId,
+          date: today,
+          completed: args.completed,
+          completedAt: args.completed ? Date.now() : undefined,
+        });
+      }
+
+      // Update streak if needed
+      await updateStreak(ctx, user._id);
+    } catch (error: any) {
+      // Re-throw known errors, wrap unknown ones
+      if (error.message?.includes("Rate limited") || error.message?.includes("Not authenticated") || error.message?.includes("Block not found")) {
+        throw error;
+      }
+      console.error("markComplete error:", error);
+      throw new Error("Failed to update completion. Please try again.");
     }
-
-    // Update streak if needed
-    await updateStreak(ctx, user._id);
   },
 });
 
-// Helper to update user streak - HONEST calculation based on actual completion
+// Helper to update user streak - optimized to last 90 days
 async function updateStreak(ctx: any, userId: any) {
   const user = await ctx.db.get(userId);
   if (!user) return;
 
   const today = new Date().toISOString().split("T")[0];
-  
-  // Only look at last 90 days to limit data reads (reduces bandwidth)
+
+  // Only look at last 90 days to limit data reads
   const ninetyDaysAgo = new Date();
   ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
   const startDate = ninetyDaysAgo.toISOString().split("T")[0];
-  
-  // Get completion logs for this user - scoped to last 90 days
+
   const allLogs = await ctx.db
     .query("completionLogs")
-    .withIndex("by_user_and_date", (q: any) => 
+    .withIndex("by_user_and_date", (q: any) =>
       q.eq("userId", userId).gte("date", startDate).lte("date", today)
     )
     .take(500);
@@ -127,7 +141,7 @@ async function updateStreak(ctx: any, userId: any) {
     }
   }
 
-  // Calculate current streak (consecutive days ending today)
+  // Calculate current streak
   let currentStreak = 0;
   let checkDate = new Date();
   while (true) {
@@ -140,7 +154,7 @@ async function updateStreak(ctx: any, userId: any) {
     }
   }
 
-  // Calculate longest streak from available data
+  // Calculate longest streak
   const sortedDates = Array.from(successfulDates).sort();
   let longestStreak = 0;
   let tempStreak = 0;
@@ -148,7 +162,7 @@ async function updateStreak(ctx: any, userId: any) {
 
   for (const dateStr of sortedDates) {
     const currentDate = new Date(dateStr);
-    
+
     if (prevDate === null) {
       tempStreak = 1;
     } else {
@@ -160,15 +174,13 @@ async function updateStreak(ctx: any, userId: any) {
         tempStreak = 1;
       }
     }
-    
+
     prevDate = currentDate;
   }
   longestStreak = Math.max(longestStreak, tempStreak);
 
-  // Total days completed is just the count of successful days
   const totalDaysCompleted = successfulDates.size;
 
-  // Update user with REAL stats
   await ctx.db.patch(userId, {
     currentStreak,
     longestStreak,
